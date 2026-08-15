@@ -15,8 +15,8 @@ export const MESSAGE_PAGE_SIZE = 30;
 function toMessage(row: Record<string, unknown>): Message {
   return {
     ...(row as unknown as Message),
-    attachments: (row.attachments as Attachment[] | null) ?? [],
-    mentions: (row.mentions as string[] | null) ?? [],
+    attachments: (row["attachments"] as Attachment[] | null) ?? [],
+    mentions: (row["mentions"] as string[] | null) ?? [],
   };
 }
 

@@ -101,3 +101,79 @@ export interface InvitePreview {
   valid: boolean;
   reason: string;
 }
+
+/* ---------------------------------------------------------------- Fase 2/3 */
+
+export type PermissionKey =
+  | "view_channel"
+  | "send_messages"
+  | "connect"
+  | "speak"
+  | "mute_members"
+  | "deafen_members"
+  | "move_members"
+  | "manage_channel";
+
+export interface Attachment {
+  path: string;
+  name: string;
+  size: number;
+  mime: string;
+  kind: "image" | "file";
+}
+
+export interface Message {
+  id: string;
+  channel_id: string;
+  author_id: string;
+  content: string;
+  reply_to_id: string | null;
+  attachments: Attachment[];
+  mentions: string[];
+  edited_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MessageReaction {
+  id: string;
+  message_id: string;
+  user_id: string;
+  emoji: string;
+  created_at: string;
+}
+
+export interface ReactionGroup {
+  emoji: string;
+  count: number;
+  mine: boolean;
+}
+
+export interface MessageWithMeta extends Message {
+  author: Profile | null;
+  reactions: ReactionGroup[];
+  replyTo: { id: string; content: string; author: Profile | null } | null;
+}
+
+export interface ChannelReadState {
+  id: string;
+  channel_id: string;
+  user_id: string;
+  last_read_message_id: string | null;
+  last_read_at: string;
+  updated_at: string;
+}
+
+export type VoiceConnectionState =
+  | "disconnected"
+  | "connecting"
+  | "connected"
+  | "reconnecting"
+  | "error";
+
+export interface VoiceParticipant {
+  user_id: string;
+  muted: boolean;
+  deafened: boolean;
+  speaking: boolean;
+}

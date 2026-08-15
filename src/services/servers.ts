@@ -32,8 +32,8 @@ export const serversService = {
   async create({ name, description, iconUrl }: CreateServerInput): Promise<string> {
     const { data, error } = await supabase.rpc("create_server", {
       _name: name,
-      _description: description ?? null,
-      _icon_url: iconUrl ?? null,
+      _description: description || undefined,
+      _icon_url: iconUrl || undefined,
     });
     if (error) throw error;
     return data as string;

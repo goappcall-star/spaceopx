@@ -31,7 +31,7 @@ export const invitesService = {
   async create(serverId: string, maxUses?: number | null, expiresInHours?: number | null) {
     const { data, error } = await supabase.rpc("create_server_invite", {
       _server_id: serverId,
-      _max_uses: maxUses ?? null,
+      _max_uses: maxUses ?? undefined,
       _expires_in_hours: expiresInHours ?? 168,
     });
     if (error) throw error;

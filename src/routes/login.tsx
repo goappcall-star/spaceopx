@@ -38,7 +38,7 @@ function LoginPage() {
   const destination = safeRedirect(search.redirect, "/app");
 
   useEffect(() => {
-    if (!loading && isAuthenticated) void navigate({ to: destination, replace: true });
+    if (!loading && isAuthenticated) void navigate({ href: destination, replace: true });
   }, [loading, isAuthenticated, destination, navigate]);
 
   async function handleSubmit(event: React.FormEvent) {
@@ -47,7 +47,7 @@ function LoginPage() {
     try {
       await authService.signIn(email.trim(), password);
       toast.success("Bem-vindo de volta!");
-      await navigate({ to: destination, replace: true });
+      await navigate({ href: destination, replace: true });
     } catch (error) {
       toast.error(
         error instanceof Error && error.message.includes("Invalid login")

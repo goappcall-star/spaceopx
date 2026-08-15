@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      channel_read_states: {
+        Row: {
+          channel_id: string
+          id: string
+          last_read_at: string
+          last_read_message_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          id?: string
+          last_read_at?: string
+          last_read_message_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          id?: string
+          last_read_at?: string
+          last_read_message_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_read_states_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_read_states_last_read_message_id_fkey"
+            columns: ["last_read_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       channels: {
         Row: {
           created_at: string
@@ -87,6 +129,92 @@ export type Database = {
             columns: ["role_id"]
             isOneToOne: false
             referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          attachments: Json
+          author_id: string
+          channel_id: string
+          content: string
+          created_at: string
+          edited_at: string | null
+          id: string
+          mentions: string[]
+          reply_to_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          attachments?: Json
+          author_id: string
+          channel_id: string
+          content?: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          mentions?: string[]
+          reply_to_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attachments?: Json
+          author_id?: string
+          channel_id?: string
+          content?: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          mentions?: string[]
+          reply_to_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
         ]
@@ -274,6 +402,7 @@ export type Database = {
         Args: { _server_id: string; _user_id: string }
         Returns: boolean
       }
+      channel_server_id: { Args: { _channel_id: string }; Returns: string }
       create_server: {
         Args: { _description?: string; _icon_url?: string; _name: string }
         Returns: string
@@ -299,6 +428,10 @@ export type Database = {
           valid: boolean
         }[]
       }
+      has_channel_permission: {
+        Args: { _channel_id: string; _perm: string; _user_id: string }
+        Returns: boolean
+      }
       has_server_role: {
         Args: { _roles: string[]; _server_id: string; _user_id: string }
         Returns: boolean
@@ -311,8 +444,10 @@ export type Database = {
         Args: { _server_id: string; _user_id: string }
         Returns: boolean
       }
+      is_text_channel: { Args: { _channel_id: string }; Returns: boolean }
       join_server_by_invite: { Args: { _code: string }; Returns: string }
       member_server_id: { Args: { _member_id: string }; Returns: string }
+      message_channel_id: { Args: { _message_id: string }; Returns: string }
       shares_server_with: {
         Args: { _other_user: string; _user_id: string }
         Returns: boolean

@@ -1,0 +1,23 @@
+REVOKE ALL ON FUNCTION public.is_server_member(UUID, UUID) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.has_server_role(UUID, UUID, TEXT[]) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.can_manage_server(UUID, UUID) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.is_server_owner(UUID, UUID) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.member_server_id(UUID) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.shares_server_with(UUID, UUID) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.create_server(TEXT, TEXT, TEXT) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.create_server_invite(UUID, INTEGER, INTEGER) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.get_invite_preview(TEXT) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.join_server_by_invite(TEXT) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.set_updated_at() FROM PUBLIC, anon, authenticated;
+
+GRANT EXECUTE ON FUNCTION public.is_server_member(UUID, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.has_server_role(UUID, UUID, TEXT[]) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.can_manage_server(UUID, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_server_owner(UUID, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.member_server_id(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.shares_server_with(UUID, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.create_server(TEXT, TEXT, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.create_server_invite(UUID, INTEGER, INTEGER) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_invite_preview(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.join_server_by_invite(TEXT) TO authenticated;

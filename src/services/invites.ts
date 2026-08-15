@@ -13,7 +13,7 @@ export const INVITE_ERRORS: Record<string, string> = {
 export function inviteErrorMessage(error: unknown) {
   const raw = error instanceof Error ? error.message : String(error ?? "");
   const key = Object.keys(INVITE_ERRORS).find((k) => raw.includes(k));
-  return key ? INVITE_ERRORS[key] : "Não foi possível concluir a operação.";
+  return (key ? INVITE_ERRORS[key] : undefined) ?? "Não foi possível concluir a operação.";
 }
 
 export const invitesService = {

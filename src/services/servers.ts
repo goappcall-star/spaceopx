@@ -30,11 +30,10 @@ export const serversService = {
 
   /** Transactional: server + OWNER/ADMIN/MEMBER roles + membership + #geral. */
   async create({ name, description, iconUrl }: CreateServerInput): Promise<string> {
-    const { data, error } = await supabase.rpc("create_server", {
-      _name: name,
-      _description: description || undefined,
-      _icon_url: iconUrl || undefined,
-    });
+    const args: { _name: string; _description?: string; _icon_url?: string } = { _name: name };
+    if (description?.trim()) args._description = description.trim();
+    if (iconUrl?.trim()) args._icon_url = iconUrl.trim();
+    const { data, error } = await supabase.rpc("create_server", args);
     if (error) throw error;
     return data as string;
   },

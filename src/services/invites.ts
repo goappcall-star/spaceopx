@@ -29,11 +29,12 @@ export const invitesService = {
 
   /** Validated server-side: only OWNER/ADMIN can mint a code. */
   async create(serverId: string, maxUses?: number | null, expiresInHours?: number | null) {
-    const { data, error } = await supabase.rpc("create_server_invite", {
+    const args: { _server_id: string; _max_uses?: number; _expires_in_hours?: number } = {
       _server_id: serverId,
-      _max_uses: maxUses ?? undefined,
       _expires_in_hours: expiresInHours ?? 168,
-    });
+    };
+    if (maxUses && maxUses > 0) args._max_uses = maxUses;
+    const { data, error } = await supabase.rpc("create_server_invite", args);
     if (error) throw error;
     return data as string;
   },

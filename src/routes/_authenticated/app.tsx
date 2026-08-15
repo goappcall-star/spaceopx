@@ -1,23 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Hash, ShieldCheck, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ShieldCheck, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 import { ChannelSidebar } from "@/components/app/ChannelSidebar";
+import { CreateChannelDialog } from "@/components/app/CreateChannelDialog";
 import { CreateServerDialog } from "@/components/app/CreateServerDialog";
 import { InviteDialog } from "@/components/app/InviteDialog";
 import { JoinServerDialog } from "@/components/app/JoinServerDialog";
 import { MemberPanel } from "@/components/app/MemberPanel";
 import { ServerRail } from "@/components/app/ServerRail";
 import { UserBar } from "@/components/app/UserBar";
+import { ChatView } from "@/components/chat/ChatView";
+import { VoiceRoom } from "@/components/voice/VoiceRoom";
 import { Button } from "@/components/ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
+import { useServerPresence } from "@/hooks/use-presence";
 import {
   useMyServers,
   useServerChannels,
   useServerMembers,
   useServerPermissions,
 } from "@/hooks/use-servers";
+import { VoiceProviderRoot } from "@/hooks/use-voice";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
@@ -25,30 +31,42 @@ export const Route = createFileRoute("/_authenticated/app")({
       { title: "Seus servidores — SecureChat" },
       {
         name: "description",
-        content: "Navegue pelos seus servidores, canais e membros no SecureChat.",
+        content: "Converse por texto e voz em tempo real nos seus servidores do SecureChat.",
       },
       { property: "og:title", content: "Seus servidores — SecureChat" },
-      { property: "og:description", content: "Navegue pelos seus servidores, canais e membros." },
+      {
+        property: "og:description",
+        content: "Chat em tempo real, canais de voz e presença ao vivo.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AppPage,
 });
 
 function AppPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { data: servers = [], isLoading: loadingServers } = useMyServers();
   const [activeServerId, setActiveServerId] = useState<string | null>(null);
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [channelOpen, setChannelOpen] = useState(false);
+  const [unread, setUnread] = useState<Set<string>>(new Set());
 
   const activeServer = servers.find((s) => s.id === activeServerId) ?? null;
   const { data: channels = [] } = useServerChannels(activeServer?.id ?? null);
   const { data: members = [], isLoading: loadingMembers } = useServerMembers(
     activeServer?.id ?? null,
   );
-  const { canManage } = useServerPermissions(members, user?.id);
+  const { me, canManage } = useServerPermissions(members, user?.id);
+  const presence = useServerPresence(
+    activeServer?.id ?? null,
+    user?.id,
+    profile?.status ?? "online",
+  );
 
   useEffect(() => {
     if (activeServerId && !servers.some((s) => s.id === activeServerId)) {
@@ -62,115 +80,156 @@ function AppPage() {
       return;
     }
     if (!channels.some((c) => c.id === activeChannelId)) {
-      setActiveChannelId(channels[0]?.id ?? null);
+      setActiveChannelId(channels.find((c) => c.type !== "voice")?.id ?? channels[0]?.id ?? null);
     }
   }, [channels, activeChannelId]);
+
+  // Server-wide unread badges: any insert outside the open channel marks it.
+  useEffect(() => {
+    if (!activeServer || channels.length === 0 || !user?.id) return;
+    const ids = new Set(channels.map((c) => c.id));
+    const realtime = supabase
+      .channel(`unread:${activeServer.id}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
+        const row = payload.new as { channel_id: string; author_id: string };
+        if (!ids.has(row.channel_id)) return;
+        if (row.author_id === user.id || row.channel_id === activeChannelId) return;
+        setUnread((prev) => new Set(prev).add(row.channel_id));
+      })
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(realtime);
+    };
+  }, [activeServer, channels, activeChannelId, user?.id]);
+
+  const handleRead = useCallback((channelId: string) => {
+    setUnread((prev) => {
+      if (!prev.has(channelId)) return prev;
+      const next = new Set(prev);
+      next.delete(channelId);
+      return next;
+    });
+  }, []);
 
   const activeChannel = channels.find((c) => c.id === activeChannelId) ?? null;
 
   return (
-    <TooltipProvider delayDuration={200}>
-      <div className="bg-background flex h-screen overflow-hidden">
-        <ServerRail
-          servers={servers}
-          activeServerId={activeServerId}
-          onSelect={setActiveServerId}
-          onAdd={() => setCreateOpen(true)}
-        />
-
-        {activeServer ? (
-          <ChannelSidebar
-            server={activeServer}
-            channels={channels}
-            activeChannelId={activeChannelId}
-            onSelectChannel={setActiveChannelId}
-            canInvite={canManage}
-            onInvite={() => setInviteOpen(true)}
+    <VoiceProviderRoot serverId={activeServer?.id ?? null} userId={user?.id}>
+      <TooltipProvider delayDuration={200}>
+        <div className="bg-background flex h-screen overflow-hidden">
+          <ServerRail
+            servers={servers}
+            activeServerId={activeServerId}
+            onSelect={setActiveServerId}
+            onAdd={() => setCreateOpen(true)}
           />
-        ) : (
-          <aside className="bg-surface border-border flex w-60 shrink-0 flex-col border-r">
-            <div className="border-border border-b p-4">
-              <h2 className="text-sm font-semibold">Nenhum servidor aberto</h2>
-              <p className="text-muted-foreground mt-1 text-xs">
-                Selecione um servidor à esquerda.
-              </p>
-            </div>
-            <div className="flex-1" />
-            <UserBar />
-          </aside>
-        )}
 
-        <main className="flex min-w-0 flex-1 flex-col">
           {activeServer ? (
-            <>
-              <header className="border-border bg-background flex h-14 shrink-0 items-center gap-2 border-b px-5">
-                <Hash className="text-muted-foreground h-4 w-4" />
-                <h1 className="text-sm font-semibold">{activeChannel?.name ?? "geral"}</h1>
-                {activeChannel?.description && (
-                  <>
-                    <span className="bg-border h-4 w-px" />
-                    <p className="text-muted-foreground truncate text-xs">
-                      {activeChannel.description}
-                    </p>
-                  </>
-                )}
-              </header>
+            <ChannelSidebar
+              server={activeServer}
+              channels={channels}
+              activeChannelId={activeChannelId}
+              onSelectChannel={setActiveChannelId}
+              members={members}
+              unreadChannelIds={unread}
+              canInvite={canManage}
+              canManage={canManage}
+              onInvite={() => setInviteOpen(true)}
+              onCreateChannel={() => setChannelOpen(true)}
+            />
+          ) : (
+            <aside className="bg-surface border-border flex w-60 shrink-0 flex-col border-r">
+              <div className="border-border border-b p-4">
+                <h2 className="text-sm font-semibold">Nenhum servidor aberto</h2>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  Selecione um servidor à esquerda.
+                </p>
+              </div>
+              <div className="flex-1" />
+              <UserBar />
+            </aside>
+          )}
+
+          <main className="flex min-w-0 flex-1 flex-col">
+            {activeServer && activeChannel ? (
+              activeChannel.type === "voice" ? (
+                <VoiceRoom
+                  channel={activeChannel}
+                  members={members}
+                  me={me}
+                  userId={user?.id}
+                />
+              ) : (
+                <ChatView
+                  key={activeChannel.id}
+                  serverId={activeServer.id}
+                  channel={activeChannel}
+                  members={members}
+                  userId={user?.id}
+                  me={me}
+                  onRead={handleRead}
+                />
+              )
+            ) : (
               <div className="bg-hero-glow flex flex-1 items-center justify-center p-8">
                 <div className="max-w-md text-center">
-                  <span className="bg-surface border-border mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border">
-                    <Hash className="text-primary h-6 w-6" />
+                  <span className="bg-surface border-border mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border">
+                    <ShieldCheck className="text-primary h-7 w-7" />
                   </span>
-                  <h2 className="text-xl font-semibold">Canal #{activeChannel?.name ?? "geral"}</h2>
+                  <h1 className="text-2xl font-semibold">Bem-vindo ao SecureChat</h1>
                   <p className="text-muted-foreground mt-2 text-sm">
-                    A fundação do servidor está pronta. O envio de mensagens e o monitoramento
-                    inteligente chegam nas próximas etapas.
+                    Escolha um servidor ou crie seu primeiro servidor.
                   </p>
+                  <div className="mt-6 flex flex-wrap justify-center gap-3">
+                    <Button onClick={() => setCreateOpen(true)}>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Criar servidor
+                    </Button>
+                    <Button variant="secondary" onClick={() => setJoinOpen(true)}>
+                      Entrar com convite
+                    </Button>
+                  </div>
+                  {loadingServers && (
+                    <p className="text-muted-foreground mt-6 text-xs">
+                      Carregando seus servidores...
+                    </p>
+                  )}
                 </div>
               </div>
-            </>
-          ) : (
-            <div className="bg-hero-glow flex flex-1 items-center justify-center p-8">
-              <div className="max-w-md text-center">
-                <span className="bg-surface border-border mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border">
-                  <ShieldCheck className="text-primary h-7 w-7" />
-                </span>
-                <h1 className="text-2xl font-semibold">Bem-vindo ao SecureChat</h1>
-                <p className="text-muted-foreground mt-2 text-sm">
-                  Escolha um servidor ou crie seu primeiro servidor.
-                </p>
-                <div className="mt-6 flex flex-wrap justify-center gap-3">
-                  <Button onClick={() => setCreateOpen(true)}>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Criar servidor
-                  </Button>
-                  <Button variant="secondary" onClick={() => setJoinOpen(true)}>
-                    Entrar com convite
-                  </Button>
-                </div>
-                {loadingServers && (
-                  <p className="text-muted-foreground mt-6 text-xs">Carregando seus servidores...</p>
-                )}
-              </div>
-            </div>
+            )}
+          </main>
+
+          {activeServer && (
+            <MemberPanel members={members} loading={loadingMembers} presence={presence} />
           )}
-        </main>
+        </div>
 
-        {activeServer && <MemberPanel members={members} loading={loadingMembers} />}
-      </div>
-
-      <CreateServerDialog
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        onCreated={(serverId) => setActiveServerId(serverId)}
-      />
-      <JoinServerDialog
-        open={joinOpen}
-        onOpenChange={setJoinOpen}
-        onJoined={(serverId) => setActiveServerId(serverId)}
-      />
-      {activeServer && (
-        <InviteDialog serverId={activeServer.id} open={inviteOpen} onOpenChange={setInviteOpen} />
-      )}
-    </TooltipProvider>
+        <CreateServerDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          onCreated={(serverId) => setActiveServerId(serverId)}
+        />
+        <JoinServerDialog
+          open={joinOpen}
+          onOpenChange={setJoinOpen}
+          onJoined={(serverId) => setActiveServerId(serverId)}
+        />
+        {activeServer && (
+          <>
+            <InviteDialog
+              serverId={activeServer.id}
+              open={inviteOpen}
+              onOpenChange={setInviteOpen}
+            />
+            <CreateChannelDialog
+              serverId={activeServer.id}
+              open={channelOpen}
+              onOpenChange={setChannelOpen}
+              onCreated={(channelId) => setActiveChannelId(channelId)}
+            />
+          </>
+        )}
+      </TooltipProvider>
+    </VoiceProviderRoot>
   );
 }

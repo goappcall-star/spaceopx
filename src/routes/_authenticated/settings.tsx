@@ -106,6 +106,9 @@ function SettingsPage() {
         </Button>
 
         <h1 className="text-2xl font-semibold">Perfil e configurações</h1>
+        <Button asChild variant="secondary" size="sm" className="mt-3">
+          <Link to="/settings/profile">Abrir perfil gamer</Link>
+        </Button>
         <p className="text-muted-foreground mt-1 text-sm">
           Dados internos como identificador da conta não podem ser alterados.
         </p>

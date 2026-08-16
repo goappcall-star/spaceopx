@@ -105,6 +105,69 @@
   --gradient-brand: linear-gradient(135deg, oklch(0.82 0.13 192), oklch(0.68 0.15 270));
 }
 
+/* ------------------------------------------------------- Accent color themes
+ * Applied via data-accent on <html> (see AppearanceSync). Components must never
+ * hardcode neon colors — they consume --primary / --gradient-brand.
+ */
+[data-accent="neon_cyan"] {
+  --primary: oklch(0.79 0.135 195);
+  --ring: oklch(0.79 0.135 195);
+  --gradient-brand: linear-gradient(135deg, oklch(0.82 0.13 192), oklch(0.68 0.15 270));
+}
+[data-accent="neon_red"] {
+  --primary: oklch(0.68 0.21 22);
+  --ring: oklch(0.68 0.21 22);
+  --gradient-brand: linear-gradient(135deg, oklch(0.72 0.2 25), oklch(0.6 0.19 350));
+}
+[data-accent="neon_purple"] {
+  --primary: oklch(0.7 0.19 300);
+  --ring: oklch(0.7 0.19 300);
+  --gradient-brand: linear-gradient(135deg, oklch(0.74 0.18 305), oklch(0.62 0.19 268));
+}
+[data-accent="neon_blue"] {
+  --primary: oklch(0.7 0.17 258);
+  --ring: oklch(0.7 0.17 258);
+  --gradient-brand: linear-gradient(135deg, oklch(0.74 0.16 258), oklch(0.66 0.17 292));
+}
+[data-accent="neon_green"] {
+  --primary: oklch(0.79 0.19 145);
+  --ring: oklch(0.79 0.19 145);
+  --gradient-brand: linear-gradient(135deg, oklch(0.82 0.18 148), oklch(0.72 0.16 178));
+}
+[data-accent="neon_orange"] {
+  --primary: oklch(0.78 0.17 62);
+  --ring: oklch(0.78 0.17 62);
+  --gradient-brand: linear-gradient(135deg, oklch(0.82 0.16 66), oklch(0.7 0.19 32));
+}
+
+[data-glow="false"] .glow-ring,
+[data-glow="false"] .glow-soft {
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-animations="false"] *,
+  [data-animations="false"] *::before,
+  [data-animations="false"] *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+[data-transparency="none"] {
+  --glass-alpha: 1;
+}
+[data-transparency="low"] {
+  --glass-alpha: 0.94;
+}
+[data-transparency="medium"] {
+  --glass-alpha: 0.82;
+}
+[data-transparency="high"] {
+  --glass-alpha: 0.66;
+}
+
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -153,4 +216,25 @@
 @utility scrollbar-slim {
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
+}
+
+@utility glow-ring {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-primary) 40%, transparent),
+    0 0 28px -6px color-mix(in oklab, var(--color-primary) 55%, transparent);
+}
+
+@utility glow-soft {
+  box-shadow: 0 0 40px -18px color-mix(in oklab, var(--color-primary) 80%, transparent);
+}
+
+@utility glass-panel {
+  background-color: color-mix(
+    in oklab,
+    var(--color-surface) calc(var(--glass-alpha, 0.82) * 100%),
+    transparent
+  );
+  backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in oklab, var(--color-border) 90%, var(--color-primary) 10%);
+  border-radius: var(--radius-xl);
 }

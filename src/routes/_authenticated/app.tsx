@@ -23,6 +23,7 @@ import {
   useServerPermissions,
 } from "@/hooks/use-servers";
 import { VoiceProviderRoot } from "@/hooks/use-voice";
+import { ProfileDialogProvider } from "@/components/gamer/ProfileDialog";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -116,6 +117,7 @@ function AppPage() {
   return (
     <VoiceProviderRoot serverId={activeServer?.id ?? null} userId={user?.id}>
       <TooltipProvider delayDuration={200}>
+        <ProfileDialogProvider>
         <div className="bg-background flex h-screen overflow-hidden">
           <ServerRail
             servers={servers}
@@ -229,6 +231,7 @@ function AppPage() {
             />
           </>
         )}
+        </ProfileDialogProvider>
       </TooltipProvider>
     </VoiceProviderRoot>
   );

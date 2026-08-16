@@ -217,3 +217,24 @@
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 }
+
+@utility glow-ring {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-primary) 40%, transparent),
+    0 0 28px -6px color-mix(in oklab, var(--color-primary) 55%, transparent);
+}
+
+@utility glow-soft {
+  box-shadow: 0 0 40px -18px color-mix(in oklab, var(--color-primary) 80%, transparent);
+}
+
+@utility glass-panel {
+  background-color: color-mix(
+    in oklab,
+    var(--color-surface) calc(var(--glass-alpha, 0.82) * 100%),
+    transparent
+  );
+  backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in oklab, var(--color-border) 90%, var(--color-primary) 10%);
+  border-radius: var(--radius-xl);
+}

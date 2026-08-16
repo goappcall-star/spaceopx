@@ -5,6 +5,9 @@ export interface ProfileUpdate {
   username?: string;
   display_name?: string;
   avatar_url?: string | null;
+  banner_url?: string | null;
+  bio?: string | null;
+  custom_status?: string | null;
   status?: UserStatus;
 }
 
@@ -14,9 +17,14 @@ function sanitize(update: ProfileUpdate): ProfileUpdate {
   if (update.username !== undefined) clean.username = update.username.trim().toLowerCase();
   if (update.display_name !== undefined) clean.display_name = update.display_name.trim();
   if (update.avatar_url !== undefined) clean.avatar_url = update.avatar_url?.trim() || null;
+  if (update.banner_url !== undefined) clean.banner_url = update.banner_url?.trim() || null;
+  if (update.bio !== undefined) clean.bio = update.bio?.trim() || null;
+  if (update.custom_status !== undefined)
+    clean.custom_status = update.custom_status?.trim() || null;
   if (update.status !== undefined) clean.status = update.status;
   return clean;
 }
+
 
 export const profilesService = {
   async getById(userId: string): Promise<Profile | null> {

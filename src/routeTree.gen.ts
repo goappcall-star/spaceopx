@@ -18,6 +18,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as InviteCodeRouteImport } from './routes/invite.$code'
+import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings_.profile'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -63,6 +64,12 @@ const InviteCodeRoute = InviteCodeRouteImport.update({
   path: '/invite/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSettingsProfileRoute =
+  AuthenticatedSettingsProfileRouteImport.update({
+    id: '/settings_/profile',
+    path: '/settings/profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AuthenticatedAppRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/invite/$code': typeof InviteCodeRoute
+  '/settings/profile': typeof AuthenticatedSettingsProfileRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -83,6 +91,7 @@ export interface FileRoutesByTo {
   '/app': typeof AuthenticatedAppRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/invite/$code': typeof InviteCodeRoute
+  '/settings/profile': typeof AuthenticatedSettingsProfileRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -95,6 +104,7 @@ export interface FileRoutesById {
   '/_authenticated/app': typeof AuthenticatedAppRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/invite/$code': typeof InviteCodeRoute
+  '/_authenticated/settings_/profile': typeof AuthenticatedSettingsProfileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/settings'
     | '/invite/$code'
+    | '/settings/profile'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/settings'
     | '/invite/$code'
+    | '/settings/profile'
   id:
     | '__root__'
     | '/'
@@ -128,6 +140,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app'
     | '/_authenticated/settings'
     | '/invite/$code'
+    | '/_authenticated/settings_/profile'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -205,17 +218,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/settings_/profile': {
+      id: '/_authenticated/settings_/profile'
+      path: '/settings/profile'
+      fullPath: '/settings/profile'
+      preLoaderRoute: typeof AuthenticatedSettingsProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

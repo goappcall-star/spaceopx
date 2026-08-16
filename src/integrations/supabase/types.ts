@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon_url: string | null
+          id: string
+          name: string
+          rarity: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          name: string
+          rarity?: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          name?: string
+          rarity?: string
+          slug?: string
+        }
+        Relationships: []
+      }
       channel_read_states: {
         Row: {
           channel_id: string
@@ -96,6 +126,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      games: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          icon_url: string | null
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          icon_url?: string | null
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          icon_url?: string | null
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
       }
       member_roles: {
         Row: {
@@ -221,8 +278,12 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accent_color: string
           avatar_url: string | null
+          banner_url: string | null
+          bio: string | null
           created_at: string
+          custom_status: string | null
           display_name: string
           id: string
           status: string
@@ -230,8 +291,12 @@ export type Database = {
           username: string
         }
         Insert: {
+          accent_color?: string
           avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
           created_at?: string
+          custom_status?: string | null
           display_name: string
           id: string
           status?: string
@@ -239,8 +304,12 @@ export type Database = {
           username: string
         }
         Update: {
+          accent_color?: string
           avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
           created_at?: string
+          custom_status?: string | null
           display_name?: string
           id?: string
           status?: string
@@ -393,11 +462,176 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          awarded_at: string
+          badge_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          badge_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          badge_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_favorite_games: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: string
+          position: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: string
+          position?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: string
+          position?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_favorite_games_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_game_presence: {
+        Row: {
+          game_id: string | null
+          metadata: Json
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          game_id?: string | null
+          metadata?: Json
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          game_id?: string | null
+          metadata?: Json
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_game_presence_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_preferences: {
+        Row: {
+          accent_color: string
+          animations_enabled: boolean
+          created_at: string
+          glow_enabled: boolean
+          sounds_enabled: boolean
+          transparency_level: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accent_color?: string
+          animations_enabled?: boolean
+          created_at?: string
+          glow_enabled?: boolean
+          sounds_enabled?: boolean
+          transparency_level?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accent_color?: string
+          animations_enabled?: boolean
+          created_at?: string
+          glow_enabled?: boolean
+          sounds_enabled?: boolean
+          transparency_level?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_xp: {
+        Row: {
+          level: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          level?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          level?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      award_xp: {
+        Args: { _amount: number; _user_id: string }
+        Returns: {
+          level: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_xp"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       can_manage_server: {
         Args: { _server_id: string; _user_id: string }
         Returns: boolean
@@ -428,6 +662,10 @@ export type Database = {
           valid: boolean
         }[]
       }
+      grant_badge: {
+        Args: { _slug: string; _user_id: string }
+        Returns: boolean
+      }
       has_channel_permission: {
         Args: { _channel_id: string; _perm: string; _user_id: string }
         Returns: boolean
@@ -446,12 +684,14 @@ export type Database = {
       }
       is_text_channel: { Args: { _channel_id: string }; Returns: boolean }
       join_server_by_invite: { Args: { _code: string }; Returns: string }
+      level_from_xp: { Args: { _xp: number }; Returns: number }
       member_server_id: { Args: { _member_id: string }; Returns: string }
       message_channel_id: { Args: { _message_id: string }; Returns: string }
       shares_server_with: {
         Args: { _other_user: string; _user_id: string }
         Returns: boolean
       }
+      xp_for_level: { Args: { _level: number }; Returns: number }
     }
     Enums: {
       [_ in never]: never

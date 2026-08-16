@@ -1,4 +1,14 @@
-export type UserStatus = "online" | "idle" | "offline";
+export type UserStatus = "online" | "idle" | "dnd" | "offline";
+
+export type AccentColor =
+  | "neon_red"
+  | "neon_purple"
+  | "neon_blue"
+  | "neon_green"
+  | "neon_cyan"
+  | "neon_orange";
+
+export type TransparencyLevel = "none" | "low" | "medium" | "high";
 
 export type ChannelType = "text" | "voice" | "announcement" | "forum";
 
@@ -9,10 +19,80 @@ export interface Profile {
   username: string;
   display_name: string;
   avatar_url: string | null;
+  banner_url: string | null;
+  bio: string | null;
+  custom_status: string | null;
+  accent_color: AccentColor;
   status: UserStatus;
   created_at: string;
   updated_at: string;
 }
+
+export interface Game {
+  id: string;
+  name: string;
+  slug: string;
+  icon_url: string | null;
+  cover_url: string | null;
+  created_at: string;
+}
+
+export interface FavoriteGame {
+  id: string;
+  user_id: string;
+  game_id: string;
+  position: number;
+  created_at: string;
+  game: Game | null;
+}
+
+export type GamePresenceStatus = "playing" | "paused" | "stopped";
+
+export interface GamePresence {
+  user_id: string;
+  game_id: string | null;
+  status: GamePresenceStatus;
+  started_at: string | null;
+  metadata: Record<string, unknown>;
+  updated_at: string;
+  game: Game | null;
+}
+
+export interface UserXp {
+  user_id: string;
+  xp: number;
+  level: number;
+  updated_at: string;
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon_url: string | null;
+  rarity: "common" | "rare" | "epic" | "legendary";
+  created_at: string;
+}
+
+export interface UserBadge {
+  id: string;
+  user_id: string;
+  badge_id: string;
+  awarded_at: string;
+  badge: Badge | null;
+}
+
+export interface UserPreferences {
+  user_id: string;
+  accent_color: AccentColor;
+  glow_enabled: boolean;
+  animations_enabled: boolean;
+  sounds_enabled: boolean;
+  transparency_level: TransparencyLevel;
+  updated_at: string;
+}
+
 
 export interface Server {
   id: string;

@@ -153,7 +153,7 @@ export function MessageComposer({
 
       <div className="relative">
         {suggestions.length > 0 && (
-          <ul className="border-border bg-popover absolute bottom-full left-0 mb-2 w-64 overflow-hidden rounded-lg border shadow-lg">
+          <ul className="border-border bg-surface-elevated absolute bottom-full left-0 mb-2 w-64 overflow-hidden rounded-xl border shadow-[var(--shadow-overlay)]">
             {suggestions.map((member) => (
               <li key={member.id}>
                 <button

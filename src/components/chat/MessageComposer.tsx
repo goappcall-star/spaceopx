@@ -111,9 +111,10 @@ export function MessageComposer({
   }
 
   return (
-    <div className="border-border bg-background shrink-0 border-t p-4">
+    <div className="border-border bg-background shrink-0 border-t px-4 pt-2 pb-4">
       {replyTo && (
-        <div className="border-border bg-surface text-muted-foreground mb-2 flex items-center gap-2 rounded-t-lg border px-3 py-1.5 text-xs">
+        <div className="border-border bg-surface-elevated text-muted-foreground mb-2 flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs">
+
           <span>
             Respondendo a{" "}
             <span className="text-primary">{replyTo.author?.display_name ?? "Usuário"}</span>

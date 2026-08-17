@@ -33,12 +33,15 @@ export function MemberPanel({
         <button
           type="button"
           onClick={() => openProfile(member.user_id)}
-          className="hover:bg-accent/50 flex w-full items-center gap-2.5 rounded-md p-2 text-left transition-colors"
+          className={cn(
+            "hover:bg-surface-hover flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-all duration-150",
+            status === "offline" && "opacity-55 hover:opacity-100",
+          )}
         >
-          <div className="relative">
-            <Avatar className="h-8 w-8">
+          <div className="relative shrink-0">
+            <Avatar className="ring-border h-8 w-8 ring-1">
               <AvatarImage src={member.profile?.avatar_url ?? undefined} alt="" />
-              <AvatarFallback className="bg-secondary text-xs">
+              <AvatarFallback className="bg-surface-elevated text-xs">
                 {name.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -49,18 +52,21 @@ export function MemberPanel({
             />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{name}</p>
+            <p
+              className="truncate text-sm font-medium"
+              style={topRole?.color ? { color: topRole.color } : undefined}
+            >
+              {name}
+            </p>
             {game ? (
               <GamePresenceLine presence={game} />
             ) : (
               <p className="text-muted-foreground truncate text-xs">
-                {member.profile?.custom_status ? (
-                  member.profile.custom_status
-                ) : topRole ? (
-                  <span style={{ color: topRole.color }}>{roleLabel(topRole.name)}</span>
-                ) : (
-                  `@${member.profile?.username ?? ""}`
-                )}
+                {member.profile?.custom_status
+                  ? member.profile.custom_status
+                  : topRole
+                    ? roleLabel(topRole.name)
+                    : `@${member.profile?.username ?? ""}`}
               </p>
             )}
           </div>
@@ -71,25 +77,30 @@ export function MemberPanel({
 
   return (
     <aside className="bg-surface border-border hidden w-64 shrink-0 flex-col border-l lg:flex">
-      <div className="border-border border-b p-4">
-        <h3 className="text-sm font-semibold">Membros</h3>
-        <p className="text-muted-foreground text-xs">{members.length} no servidor</p>
+      <div className="border-border flex h-14 shrink-0 items-center justify-between border-b px-4">
+        <h3 className="text-sm font-semibold tracking-tight">Membros</h3>
+        <span className="bg-surface-elevated text-muted-foreground rounded-full px-2 py-0.5 text-[11px] font-semibold">
+          {members.length}
+        </span>
       </div>
-      <ul className="scrollbar-slim flex-1 space-y-1 overflow-y-auto p-2">
-        {loading && <li className="text-muted-foreground p-2 text-sm">Carregando...</li>}
+      <ul className="scrollbar-slim flex-1 space-y-0.5 overflow-y-auto p-2">
+        {loading &&
+          [0, 1, 2, 3].map((i) => (
+            <li key={i} className="flex items-center gap-2.5 p-1.5">
+              <span className="bg-surface-elevated shimmer h-8 w-8 rounded-full" />
+              <span className="bg-surface-elevated shimmer h-3 w-24 rounded" />
+            </li>
+          ))}
         {online.length > 0 && (
-          <li className="text-muted-foreground px-2 pt-1 text-[11px] font-semibold tracking-wider uppercase">
-            Online — {online.length}
-          </li>
+          <li className="text-caption px-2 pt-1 pb-1">Online — {online.length}</li>
         )}
         {online.map(renderMember)}
         {offline.length > 0 && (
-          <li className="text-muted-foreground px-2 pt-3 text-[11px] font-semibold tracking-wider uppercase">
-            Offline — {offline.length}
-          </li>
+          <li className="text-caption px-2 pt-4 pb-1">Offline — {offline.length}</li>
         )}
         {offline.map(renderMember)}
       </ul>
     </aside>
   );
 }
+

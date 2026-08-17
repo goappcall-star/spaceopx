@@ -4,6 +4,7 @@ import { useProfileDialog } from "@/components/gamer/ProfileDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGamePresenceMap } from "@/hooks/use-gamer";
 import type { PresenceStatus } from "@/hooks/use-presence";
+import { cn } from "@/lib/utils";
 import { roleLabel } from "@/services/roles";
 import type { MemberWithProfile, UserStatus } from "@/types";
 

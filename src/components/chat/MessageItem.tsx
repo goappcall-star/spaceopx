@@ -158,10 +158,10 @@ export const MessageItem = memo(function MessageItem({
                 type="button"
                 onClick={() => onReact(message.id, reaction.emoji)}
                 className={cn(
-                  "flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors",
+                  "flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-all duration-150 active:scale-95",
                   reaction.mine
-                    ? "border-primary/60 bg-primary/15 text-primary"
-                    : "border-border bg-surface text-muted-foreground hover:border-primary/40",
+                    ? "border-primary/60 bg-primary/15 text-primary shadow-[0_0_12px_-6px_color-mix(in_oklab,var(--color-primary)_90%,transparent)]"
+                    : "border-border bg-surface-elevated text-muted-foreground hover:border-primary/40 hover:text-foreground",
                 )}
               >
                 <span>{reaction.emoji}</span>

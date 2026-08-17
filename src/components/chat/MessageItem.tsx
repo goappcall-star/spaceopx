@@ -67,24 +67,30 @@ export const MessageItem = memo(function MessageItem({
   return (
     <div
       className={cn(
-        "group hover:bg-surface/60 relative flex gap-3 rounded-lg px-3 transition-colors",
+        "group hover:bg-surface/70 relative mx-2 flex gap-3 rounded-xl px-3 transition-colors",
         compact ? "py-0.5" : "mt-3 py-1.5",
+        editing && "bg-surface/80 ring-primary/25 ring-1",
       )}
     >
+      <span
+        aria-hidden
+        className="bg-primary/60 absolute inset-y-0 left-0 w-px rounded-full opacity-0 transition-opacity group-hover:opacity-100"
+      />
       <div className="w-9 shrink-0">
         {compact ? (
-          <span className="text-muted-foreground mt-1 hidden text-[10px] group-hover:block">
+          <span className="text-muted-foreground mt-1 hidden text-[10px] tabular-nums group-hover:block">
             {time(message.created_at)}
           </span>
         ) : (
           <Avatar className="ring-border h-9 w-9 ring-1">
             <AvatarImage src={message.author?.avatar_url ?? undefined} alt="" />
-            <AvatarFallback className="bg-secondary text-xs">
+            <AvatarFallback className="bg-surface-elevated text-xs">
               {name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         )}
       </div>
+
 
       <div className="min-w-0 flex-1">
         {message.replyTo && (

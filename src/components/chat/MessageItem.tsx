@@ -172,7 +172,7 @@ export const MessageItem = memo(function MessageItem({
         )}
       </div>
 
-      <div className="border-border bg-surface absolute -top-3 right-3 hidden items-center gap-0.5 rounded-lg border p-0.5 shadow-md group-hover:flex">
+      <div className="border-border bg-surface-elevated absolute -top-3.5 right-4 hidden items-center gap-0.5 rounded-xl border p-0.5 shadow-[var(--shadow-overlay)] group-hover:flex group-focus-within:flex">
         <Popover>
           <PopoverTrigger asChild>
             <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Reagir">

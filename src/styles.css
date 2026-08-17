@@ -22,8 +22,13 @@
   --radius-3xl: calc(var(--radius) + 12px);
 
   --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-background-tertiary: var(--background-tertiary);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-active: var(--surface-active);
   --color-surface-foreground: var(--surface-foreground);
   --color-rail: var(--rail);
   --color-card: var(--card);
@@ -31,6 +36,7 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -42,7 +48,10 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-danger: var(--destructive);
   --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+  --color-border-active: var(--border-active);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
@@ -55,9 +64,48 @@
   --color-sidebar-border: var(--border);
   --color-sidebar-ring: var(--ring);
 
-  --shadow-glow: 0 0 0 1px oklch(0.78 0.14 195 / 0.28), 0 12px 40px -12px oklch(0.78 0.14 195 / 0.35);
+  --shadow-glow: 0 0 0 1px color-mix(in oklab, var(--primary) 28%, transparent),
+    0 12px 40px -12px color-mix(in oklab, var(--primary) 35%, transparent);
   --shadow-panel: 0 24px 60px -30px oklch(0.05 0.02 250 / 0.9);
+  --shadow-elevated: 0 1px 0 0 color-mix(in oklab, white 5%, transparent) inset,
+    0 18px 40px -24px oklch(0.02 0.02 250 / 0.95);
+  --shadow-overlay: 0 32px 90px -30px oklch(0.02 0.02 250 / 0.95);
+
+  --animate-fade-up: fade-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-pulse-glow: pulse-glow 1.6s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.8s linear infinite;
 }
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-primary) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-primary) 0%, transparent);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
 
 :root,
 .dark {

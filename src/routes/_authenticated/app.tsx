@@ -140,10 +140,17 @@ function AppPage() {
               onCreateChannel={() => setChannelOpen(true)}
             />
           ) : (
-            <aside className="bg-surface border-border flex w-60 shrink-0 flex-col border-r">
-              <div className="border-border border-b p-4">
-                <h2 className="text-sm font-semibold">Nenhum servidor aberto</h2>
-                <p className="text-muted-foreground mt-1 text-xs">
+            <aside className="bg-surface border-border relative z-20 flex w-64 shrink-0 flex-col border-r">
+              <div className="border-border relative overflow-hidden border-b px-4 py-3.5">
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 opacity-70"
+                  style={{ backgroundImage: "var(--gradient-ambient)" }}
+                />
+                <h2 className="relative text-sm font-semibold tracking-tight">
+                  Nenhum servidor aberto
+                </h2>
+                <p className="text-muted-foreground relative mt-0.5 text-xs">
                   Selecione um servidor à esquerda.
                 </p>
               </div>
@@ -151,6 +158,7 @@ function AppPage() {
               <UserBar />
             </aside>
           )}
+
 
           <main className="flex min-w-0 flex-1 flex-col">
             {activeServer && activeChannel ? (

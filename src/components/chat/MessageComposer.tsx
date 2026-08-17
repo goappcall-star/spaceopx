@@ -136,7 +136,7 @@ export function MessageComposer({
           {attachments.map((attachment) => (
             <span
               key={attachment.path}
-              className="border-border bg-surface flex items-center gap-2 rounded-md border px-2 py-1 text-xs"
+              className="border-border bg-surface-elevated flex items-center gap-2 rounded-lg border px-2 py-1 text-xs"
             >
               {attachment.name} · {formatBytes(attachment.size)}
               <button

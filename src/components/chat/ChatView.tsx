@@ -140,14 +140,24 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
         <div ref={bottomRef} />
       </div>
 
-      <div className="text-muted-foreground h-5 px-6 text-xs">
+      <div className="text-muted-foreground flex h-5 items-center gap-1.5 px-6 text-xs">
         {typingNames.length > 0 && (
-          <span className="animate-pulse">
-            {typingNames.slice(0, 3).join(", ")}{" "}
-            {typingNames.length === 1 ? "está digitando..." : "estão digitando..."}
-          </span>
+          <>
+            <span className="flex gap-0.5" aria-hidden>
+              <span className="bg-primary h-1 w-1 animate-bounce rounded-full [animation-delay:0ms]" />
+              <span className="bg-primary h-1 w-1 animate-bounce rounded-full [animation-delay:120ms]" />
+              <span className="bg-primary h-1 w-1 animate-bounce rounded-full [animation-delay:240ms]" />
+            </span>
+            <span className="truncate">
+              <span className="text-foreground font-medium">
+                {typingNames.slice(0, 3).join(", ")}
+              </span>{" "}
+              {typingNames.length === 1 ? "está digitando..." : "estão digitando..."}
+            </span>
+          </>
         )}
       </div>
+
 
       <MessageComposer
         serverId={serverId}

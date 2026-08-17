@@ -171,7 +171,7 @@ export function MessageComposer({
           </ul>
         )}
 
-        <div className="border-border bg-surface focus-within:border-primary/60 focus-within:shadow-glow flex items-end gap-1 rounded-xl border px-2 py-1.5 transition-all">
+        <div className="border-border bg-surface-elevated focus-within:border-primary/60 focus-within:shadow-glow flex items-end gap-1 rounded-2xl border px-2 py-1.5 transition-all duration-200">
           <input
             ref={fileRef}
             type="file"

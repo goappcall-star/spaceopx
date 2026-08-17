@@ -203,7 +203,7 @@ export function MessageComposer({
                 void submit();
               }
             }}
-            className="max-h-40 min-h-9 resize-none border-0 bg-transparent px-1 py-2 text-sm shadow-none focus-visible:ring-0"
+            className="max-h-40 min-h-9 resize-none border-0 bg-transparent px-1 py-2 text-sm shadow-none hover:border-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0"
           />
 
           <Popover>

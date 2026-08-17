@@ -181,24 +181,58 @@ function AppPage() {
                 />
               )
             ) : (
-              <div className="bg-hero-glow flex flex-1 items-center justify-center p-8">
-                <div className="max-w-md text-center">
-                  <span className="bg-surface border-border mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border">
-                    <ShieldCheck className="text-primary h-7 w-7" />
+              <div className="bg-ambient relative flex flex-1 items-center justify-center overflow-hidden p-8">
+                <span
+                  aria-hidden
+                  className="bg-grid pointer-events-none absolute inset-0 opacity-[0.35] [mask-image:radial-gradient(70%_60%_at_50%_40%,black,transparent)]"
+                />
+                <span
+                  aria-hidden
+                  className="border-primary/15 pointer-events-none absolute top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[80px] border"
+                />
+                <span
+                  aria-hidden
+                  className="border-primary/10 pointer-events-none absolute top-1/2 left-1/2 h-[720px] w-[720px] -translate-x-1/2 -translate-y-1/2 rotate-12 rounded-[120px] border"
+                />
+
+                <div className="animate-fade-up relative max-w-lg text-center">
+                  <span className="surface-elevated glow-soft mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl">
+                    <ShieldCheck className="text-primary h-9 w-9" strokeWidth={1.9} />
                   </span>
-                  <h1 className="text-2xl font-semibold">Bem-vindo ao SecureChat</h1>
-                  <p className="text-muted-foreground mt-2 text-sm">
-                    Escolha um servidor ou crie seu primeiro servidor.
+                  <p className="text-caption mb-3">Plataforma de comunicação segura</p>
+                  <h1 className="text-3xl font-semibold tracking-tight">
+                    Bem-vindo ao <span className="text-brand-gradient">SecureChat</span>
+                  </h1>
+                  <p className="text-muted-foreground mx-auto mt-3 max-w-sm text-sm">
+                    Escolha um servidor na barra lateral, crie o seu próprio espaço ou entre com um
+                    convite.
                   </p>
-                  <div className="mt-6 flex flex-wrap justify-center gap-3">
-                    <Button onClick={() => setCreateOpen(true)}>
+                  <div className="mt-7 flex flex-wrap justify-center gap-3">
+                    <Button size="lg" onClick={() => setCreateOpen(true)}>
                       <Sparkles className="mr-2 h-4 w-4" />
                       Criar servidor
                     </Button>
-                    <Button variant="secondary" onClick={() => setJoinOpen(true)}>
+                    <Button size="lg" variant="outline" onClick={() => setJoinOpen(true)}>
                       Entrar com convite
                     </Button>
                   </div>
+
+                  <div className="text-muted-foreground mt-10 grid grid-cols-3 gap-3 text-xs">
+                    {[
+                      { label: "Servidores", value: servers.length },
+                      { label: "Texto + Voz", value: "Tempo real" },
+                      { label: "Isolamento", value: "RLS" },
+                    ].map((stat) => (
+                      <div
+                        key={stat.label}
+                        className="border-border/70 bg-surface/50 rounded-xl border px-3 py-2.5 backdrop-blur-sm"
+                      >
+                        <p className="text-foreground text-sm font-semibold">{stat.value}</p>
+                        <p className="mt-0.5 text-[11px]">{stat.label}</p>
+                      </div>
+                    ))}
+                  </div>
+
                   {loadingServers && (
                     <p className="text-muted-foreground mt-6 text-xs">
                       Carregando seus servidores...
@@ -207,6 +241,7 @@ function AppPage() {
                 </div>
               </div>
             )}
+
           </main>
 
           {activeServer && (

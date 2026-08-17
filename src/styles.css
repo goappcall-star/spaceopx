@@ -22,8 +22,13 @@
   --radius-3xl: calc(var(--radius) + 12px);
 
   --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-background-tertiary: var(--background-tertiary);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-active: var(--surface-active);
   --color-surface-foreground: var(--surface-foreground);
   --color-rail: var(--rail);
   --color-card: var(--card);
@@ -31,6 +36,7 @@
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -42,7 +48,10 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-danger: var(--destructive);
   --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+  --color-border-active: var(--border-active);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
@@ -55,36 +64,82 @@
   --color-sidebar-border: var(--border);
   --color-sidebar-ring: var(--ring);
 
-  --shadow-glow: 0 0 0 1px oklch(0.78 0.14 195 / 0.28), 0 12px 40px -12px oklch(0.78 0.14 195 / 0.35);
+  --shadow-glow: 0 0 0 1px color-mix(in oklab, var(--primary) 28%, transparent),
+    0 12px 40px -12px color-mix(in oklab, var(--primary) 35%, transparent);
   --shadow-panel: 0 24px 60px -30px oklch(0.05 0.02 250 / 0.9);
+  --shadow-elevated: 0 1px 0 0 color-mix(in oklab, white 5%, transparent) inset,
+    0 18px 40px -24px oklch(0.02 0.02 250 / 0.95);
+  --shadow-overlay: 0 32px 90px -30px oklch(0.02 0.02 250 / 0.95);
+
+  --animate-fade-up: fade-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-pulse-glow: pulse-glow 1.6s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.8s linear infinite;
 }
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-primary) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-primary) 0%, transparent);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
 
 :root,
 .dark {
   --radius: 0.75rem;
 
-  --background: oklch(0.19 0.021 262);
-  --foreground: oklch(0.95 0.008 250);
+  /* Depth ladder: background -> surface -> elevated -> overlay */
+  --background: oklch(0.155 0.019 264);
+  --background-secondary: oklch(0.185 0.021 264);
+  --background-tertiary: oklch(0.21 0.022 264);
+  --foreground: oklch(0.96 0.008 250);
 
-  --surface: oklch(0.23 0.023 262);
-  --surface-foreground: oklch(0.78 0.017 254);
-  --rail: oklch(0.155 0.019 262);
+  --surface: oklch(0.198 0.021 264);
+  --surface-elevated: oklch(0.238 0.024 264);
+  --surface-hover: oklch(0.262 0.026 264);
+  --surface-active: oklch(0.3 0.03 264);
+  --surface-foreground: oklch(0.79 0.017 254);
+  --rail: oklch(0.128 0.018 264);
 
-  --card: oklch(0.245 0.024 262);
-  --card-foreground: oklch(0.95 0.008 250);
-  --popover: oklch(0.225 0.023 262);
-  --popover-foreground: oklch(0.95 0.008 250);
+  --card: oklch(0.222 0.023 264);
+  --card-foreground: oklch(0.96 0.008 250);
+  --popover: oklch(0.216 0.023 264);
+  --popover-foreground: oklch(0.96 0.008 250);
 
   --primary: oklch(0.79 0.135 195);
-  --primary-foreground: oklch(0.17 0.03 240);
+  --primary-hover: color-mix(in oklab, var(--primary) 86%, white);
+  --primary-foreground: oklch(0.16 0.03 240);
 
-  --secondary: oklch(0.29 0.026 262);
+  --secondary: oklch(0.268 0.025 264);
   --secondary-foreground: oklch(0.93 0.01 250);
 
-  --muted: oklch(0.27 0.024 262);
-  --muted-foreground: oklch(0.68 0.021 256);
+  --muted: oklch(0.245 0.023 264);
+  --muted-foreground: oklch(0.685 0.021 256);
 
-  --accent: oklch(0.31 0.03 262);
+  --accent: oklch(0.29 0.029 264);
   --accent-foreground: oklch(0.96 0.008 250);
 
   --destructive: oklch(0.62 0.2 22);
@@ -92,18 +147,27 @@
   --success: oklch(0.72 0.16 155);
   --warning: oklch(0.79 0.15 78);
 
-  --border: oklch(0.31 0.026 262);
-  --input: oklch(0.31 0.026 262);
+  --border: oklch(0.285 0.024 264);
+  --border-hover: oklch(0.35 0.028 264);
+  --border-active: color-mix(in oklab, var(--primary) 45%, var(--border));
+  --input: oklch(0.285 0.024 264);
   --ring: oklch(0.79 0.135 195);
 
   --gradient-hero: radial-gradient(
       1000px 520px at 12% -10%,
-      oklch(0.79 0.135 195 / 0.16),
+      color-mix(in oklab, var(--primary) 16%, transparent),
       transparent 60%
     ),
     radial-gradient(760px 420px at 92% 8%, oklch(0.62 0.16 292 / 0.14), transparent 62%);
   --gradient-brand: linear-gradient(135deg, oklch(0.82 0.13 192), oklch(0.68 0.15 270));
+  --gradient-ambient: radial-gradient(
+      900px 500px at 8% -12%,
+      color-mix(in oklab, var(--primary) 14%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(700px 460px at 100% 110%, oklch(0.62 0.16 292 / 0.12), transparent 60%);
 }
+
 
 /* ------------------------------------------------------- Accent color themes
  * Applied via data-accent on <html> (see AppearanceSync). Components must never
@@ -237,4 +301,99 @@
   backdrop-filter: blur(14px);
   border: 1px solid color-mix(in oklab, var(--color-border) 90%, var(--color-primary) 10%);
   border-radius: var(--radius-xl);
+}
+
+/* --------------------------------------------------------- Depth & ambience */
+
+@utility bg-ambient {
+  background-color: var(--color-background);
+  background-image: var(--gradient-ambient);
+}
+
+/* Extremely subtle technical grid, sits behind content. */
+@utility bg-grid {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--color-border) 45%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-border) 45%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 44px 44px;
+}
+
+@utility surface-elevated {
+  background-color: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-elevated);
+}
+
+@utility elevation-overlay {
+  box-shadow: var(--shadow-overlay);
+}
+
+@utility hairline-t {
+  border-top: 1px solid color-mix(in oklab, white 6%, transparent);
+}
+
+/* Left accent marker used by active channels / servers. */
+@utility accent-marker {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    height: 60%;
+    width: 3px;
+    translate: 0 -50%;
+    border-radius: 999px;
+    background: var(--color-primary);
+    box-shadow: 0 0 12px -2px color-mix(in oklab, var(--color-primary) 80%, transparent);
+  }
+}
+
+@utility speaking-ring {
+  box-shadow:
+    0 0 0 2px color-mix(in oklab, var(--color-success) 70%, transparent),
+    0 0 16px -2px color-mix(in oklab, var(--color-success) 60%, transparent);
+}
+
+@utility shimmer {
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, white 6%, transparent),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+@utility animate-fade-up {
+  animation: var(--animate-fade-up);
+}
+
+@utility text-caption {
+  font-size: 11px;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-muted-foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

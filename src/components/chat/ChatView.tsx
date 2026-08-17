@@ -64,9 +64,11 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
 
   return (
     <>
-      <header className="border-border bg-background/80 flex h-14 shrink-0 items-center gap-2 border-b px-5 backdrop-blur">
-        <Hash className="text-primary h-4 w-4" />
-        <h1 className="text-sm font-semibold">{channel.name}</h1>
+      <header className="border-border bg-background/70 relative z-10 flex h-14 shrink-0 items-center gap-2.5 border-b px-5 backdrop-blur-xl">
+        <span className="bg-surface-elevated border-border text-primary flex h-7 w-7 items-center justify-center rounded-lg border">
+          <Hash className="h-3.5 w-3.5" />
+        </span>
+        <h1 className="text-sm font-semibold tracking-tight">{channel.name}</h1>
         {channel.description && (
           <>
             <span className="bg-border h-4 w-px" />
@@ -75,15 +77,15 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
         )}
       </header>
 
-      <div ref={scrollRef} className="scrollbar-slim flex-1 overflow-y-auto py-4">
+      <div ref={scrollRef} className="scrollbar-slim bg-ambient flex-1 overflow-y-auto py-4">
         {loading && (
-          <div className="space-y-4 px-5">
+          <div className="space-y-5 px-5">
             {[0, 1, 2, 3].map((index) => (
               <div key={index} className="flex gap-3">
-                <Skeleton className="h-9 w-9 rounded-full" />
+                <Skeleton className="bg-surface-elevated h-9 w-9 rounded-full" />
                 <div className="flex-1 space-y-2">
-                  <Skeleton className="h-3 w-40" />
-                  <Skeleton className="h-3 w-2/3" />
+                  <Skeleton className="bg-surface-elevated h-3 w-40" />
+                  <Skeleton className="bg-surface-elevated h-3 w-2/3" />
                 </div>
               </div>
             ))}
@@ -100,13 +102,18 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
 
         {!loading && messages.length === 0 && (
           <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-            <span className="bg-surface border-border flex h-14 w-14 items-center justify-center rounded-2xl border">
-              <MessagesSquare className="text-primary h-6 w-6" />
+            <span className="surface-elevated glow-soft flex h-16 w-16 items-center justify-center rounded-2xl">
+              <MessagesSquare className="text-primary h-7 w-7" />
             </span>
-            <p className="text-foreground text-lg font-semibold">Comece a conversa em #{channel.name}</p>
-            <p className="text-sm">Nenhuma mensagem ainda. Mande a primeira.</p>
+            <p className="text-foreground text-xl font-semibold tracking-tight">
+              Comece a conversa em #{channel.name}
+            </p>
+            <p className="max-w-sm text-sm">
+              Este é o início do canal. Mande a primeira mensagem e dê o tom.
+            </p>
           </div>
         )}
+
 
         {messages.map((message, index) => {
           const previous = messages[index - 1];
@@ -133,14 +140,24 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
         <div ref={bottomRef} />
       </div>
 
-      <div className="text-muted-foreground h-5 px-6 text-xs">
+      <div className="text-muted-foreground flex h-5 items-center gap-1.5 px-6 text-xs">
         {typingNames.length > 0 && (
-          <span className="animate-pulse">
-            {typingNames.slice(0, 3).join(", ")}{" "}
-            {typingNames.length === 1 ? "está digitando..." : "estão digitando..."}
-          </span>
+          <>
+            <span className="flex gap-0.5" aria-hidden>
+              <span className="bg-primary h-1 w-1 animate-bounce rounded-full [animation-delay:0ms]" />
+              <span className="bg-primary h-1 w-1 animate-bounce rounded-full [animation-delay:120ms]" />
+              <span className="bg-primary h-1 w-1 animate-bounce rounded-full [animation-delay:240ms]" />
+            </span>
+            <span className="truncate">
+              <span className="text-foreground font-medium">
+                {typingNames.slice(0, 3).join(", ")}
+              </span>{" "}
+              {typingNames.length === 1 ? "está digitando..." : "estão digitando..."}
+            </span>
+          </>
         )}
       </div>
+
 
       <MessageComposer
         serverId={serverId}

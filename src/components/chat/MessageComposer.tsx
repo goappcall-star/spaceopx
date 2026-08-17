@@ -111,9 +111,10 @@ export function MessageComposer({
   }
 
   return (
-    <div className="border-border bg-background shrink-0 border-t p-4">
+    <div className="border-border bg-background shrink-0 border-t px-4 pt-2 pb-4">
       {replyTo && (
-        <div className="border-border bg-surface text-muted-foreground mb-2 flex items-center gap-2 rounded-t-lg border px-3 py-1.5 text-xs">
+        <div className="border-border bg-surface-elevated text-muted-foreground mb-2 flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs">
+
           <span>
             Respondendo a{" "}
             <span className="text-primary">{replyTo.author?.display_name ?? "Usuário"}</span>
@@ -135,7 +136,7 @@ export function MessageComposer({
           {attachments.map((attachment) => (
             <span
               key={attachment.path}
-              className="border-border bg-surface flex items-center gap-2 rounded-md border px-2 py-1 text-xs"
+              className="border-border bg-surface-elevated flex items-center gap-2 rounded-lg border px-2 py-1 text-xs"
             >
               {attachment.name} · {formatBytes(attachment.size)}
               <button
@@ -152,7 +153,7 @@ export function MessageComposer({
 
       <div className="relative">
         {suggestions.length > 0 && (
-          <ul className="border-border bg-popover absolute bottom-full left-0 mb-2 w-64 overflow-hidden rounded-lg border shadow-lg">
+          <ul className="border-border bg-surface-elevated absolute bottom-full left-0 mb-2 w-64 overflow-hidden rounded-xl border shadow-[var(--shadow-overlay)]">
             {suggestions.map((member) => (
               <li key={member.id}>
                 <button
@@ -170,7 +171,7 @@ export function MessageComposer({
           </ul>
         )}
 
-        <div className="border-border bg-surface focus-within:border-primary/60 focus-within:shadow-glow flex items-end gap-1 rounded-xl border px-2 py-1.5 transition-all">
+        <div className="border-border bg-surface-elevated focus-within:border-primary/60 focus-within:shadow-glow flex items-end gap-1 rounded-2xl border px-2 py-1.5 transition-all duration-200">
           <input
             ref={fileRef}
             type="file"
@@ -202,7 +203,7 @@ export function MessageComposer({
                 void submit();
               }
             }}
-            className="max-h-40 min-h-9 resize-none border-0 bg-transparent px-1 py-2 text-sm shadow-none focus-visible:ring-0"
+            className="max-h-40 min-h-9 resize-none border-0 bg-transparent px-1 py-2 text-sm shadow-none hover:border-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0"
           />
 
           <Popover>

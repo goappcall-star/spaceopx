@@ -67,24 +67,30 @@ export const MessageItem = memo(function MessageItem({
   return (
     <div
       className={cn(
-        "group hover:bg-surface/60 relative flex gap-3 rounded-lg px-3 transition-colors",
+        "group hover:bg-surface/70 relative mx-2 flex gap-3 rounded-xl px-3 transition-colors",
         compact ? "py-0.5" : "mt-3 py-1.5",
+        editing && "bg-surface/80 ring-primary/25 ring-1",
       )}
     >
+      <span
+        aria-hidden
+        className="bg-primary/60 absolute inset-y-0 left-0 w-px rounded-full opacity-0 transition-opacity group-hover:opacity-100"
+      />
       <div className="w-9 shrink-0">
         {compact ? (
-          <span className="text-muted-foreground mt-1 hidden text-[10px] group-hover:block">
+          <span className="text-muted-foreground mt-1 hidden text-[10px] tabular-nums group-hover:block">
             {time(message.created_at)}
           </span>
         ) : (
           <Avatar className="ring-border h-9 w-9 ring-1">
             <AvatarImage src={message.author?.avatar_url ?? undefined} alt="" />
-            <AvatarFallback className="bg-secondary text-xs">
+            <AvatarFallback className="bg-surface-elevated text-xs">
               {name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         )}
       </div>
+
 
       <div className="min-w-0 flex-1">
         {message.replyTo && (
@@ -152,10 +158,10 @@ export const MessageItem = memo(function MessageItem({
                 type="button"
                 onClick={() => onReact(message.id, reaction.emoji)}
                 className={cn(
-                  "flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors",
+                  "flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-all duration-150 active:scale-95",
                   reaction.mine
-                    ? "border-primary/60 bg-primary/15 text-primary"
-                    : "border-border bg-surface text-muted-foreground hover:border-primary/40",
+                    ? "border-primary/60 bg-primary/15 text-primary shadow-[0_0_12px_-6px_color-mix(in_oklab,var(--color-primary)_90%,transparent)]"
+                    : "border-border bg-surface-elevated text-muted-foreground hover:border-primary/40 hover:text-foreground",
                 )}
               >
                 <span>{reaction.emoji}</span>
@@ -166,7 +172,7 @@ export const MessageItem = memo(function MessageItem({
         )}
       </div>
 
-      <div className="border-border bg-surface absolute -top-3 right-3 hidden items-center gap-0.5 rounded-lg border p-0.5 shadow-md group-hover:flex">
+      <div className="border-border bg-surface-elevated absolute -top-3.5 right-4 hidden items-center gap-0.5 rounded-xl border p-0.5 shadow-[var(--shadow-overlay)] group-hover:flex group-focus-within:flex">
         <Popover>
           <PopoverTrigger asChild>
             <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Reagir">

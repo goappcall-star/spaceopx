@@ -1,6 +1,7 @@
 import { Headphones, HeadphoneOff, Mic, MicOff, PhoneOff, Signal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useVoice } from "@/hooks/use-voice";
 import { cn } from "@/lib/utils";
 
@@ -17,26 +18,50 @@ export function VoiceBar({ channelName }: { channelName: string }) {
   const connected = connectionState === "connected";
 
   return (
-    <div className="border-border bg-surface/80 border-t px-3 py-2">
+    <div className="border-border bg-surface-elevated relative border-t px-3 py-2.5">
+      <span
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 h-px",
+          connected
+            ? "bg-[linear-gradient(90deg,transparent,color-mix(in_oklab,var(--color-success)_70%,transparent),transparent)]"
+            : "bg-[linear-gradient(90deg,transparent,color-mix(in_oklab,var(--color-warning)_70%,transparent),transparent)]",
+        )}
+      />
       <div className="flex items-center gap-2">
-        <Signal
-          className={cn("h-4 w-4 shrink-0", connected ? "text-success" : "text-warning animate-pulse")}
-        />
+        <span
+          className={cn(
+            "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
+            connected ? "bg-success/15 text-success" : "bg-warning/15 text-warning",
+          )}
+        >
+          <Signal className={cn("h-3.5 w-3.5", !connected && "animate-pulse")} />
+        </span>
         <div className="min-w-0 flex-1">
-          <p className={cn("truncate text-xs font-semibold", connected ? "text-success" : "text-warning")}>
+          <p
+            className={cn(
+              "truncate text-xs font-semibold tracking-tight",
+              connected ? "text-success" : "text-warning",
+            )}
+          >
             {STATE_LABEL[connectionState]}
           </p>
           <p className="text-muted-foreground truncate text-[11px]">🔊 {channelName}</p>
         </div>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="text-destructive h-8 w-8"
-          aria-label="Desconectar da voz"
-          onClick={() => void leave()}
-        >
-          <PhoneOff className="h-4 w-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="text-destructive hover:bg-destructive/15 hover:text-destructive h-8 w-8"
+              aria-label="Desconectar da voz"
+              onClick={() => void leave()}
+            >
+              <PhoneOff className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Desconectar</TooltipContent>
+        </Tooltip>
       </div>
 
       <div className="mt-2 grid grid-cols-2 gap-2">

@@ -283,8 +283,8 @@ export const conversationsService = {
   },
 
   async rename(conversationId: string, name: string, avatarUrl?: string | null) {
-    const patch: Record<string, unknown> = { name: name.trim() };
-    if (avatarUrl !== undefined) patch["avatar_url"] = avatarUrl;
+    const patch: { name: string; avatar_url?: string | null } = { name: name.trim() };
+    if (avatarUrl !== undefined) patch.avatar_url = avatarUrl;
     const { error } = await supabase.from("conversations").update(patch).eq("id", conversationId);
     if (error) throw error;
   },

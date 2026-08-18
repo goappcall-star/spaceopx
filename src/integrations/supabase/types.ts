@@ -896,6 +896,10 @@ export type Database = {
         Args: { _channel_id: string; _perm: string; _user_id: string }
         Returns: boolean
       }
+      has_friendship_link: {
+        Args: { _other: string; _user_id: string }
+        Returns: boolean
+      }
       has_server_role: {
         Args: { _roles: string[]; _server_id: string; _user_id: string }
         Returns: boolean
@@ -920,6 +924,24 @@ export type Database = {
         Returns: boolean
       }
       level_from_xp: { Args: { _xp: number }; Returns: number }
+      list_conversation_overviews: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          id: string
+          last_message_at: string
+          last_message_content: string
+          last_message_sender: string
+          last_read_at: string
+          member_count: number
+          name: string
+          other_user_id: string
+          owner_id: string
+          type: string
+          unread_count: number
+          updated_at: string
+        }[]
+      }
       mark_conversation_read: {
         Args: { _conversation_id: string }
         Returns: boolean
@@ -934,7 +956,21 @@ export type Database = {
         Args: { _action: string; _friendship_id: string }
         Returns: boolean
       }
+      search_profiles: {
+        Args: { _q: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          status: string
+          username: string
+        }[]
+      }
       send_friend_request: { Args: { _addressee: string }; Returns: string }
+      shares_conversation_with: {
+        Args: { _other: string; _user_id: string }
+        Returns: boolean
+      }
       shares_server_with: {
         Args: { _other_user: string; _user_id: string }
         Returns: boolean

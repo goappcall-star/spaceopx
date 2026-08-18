@@ -127,6 +127,196 @@ export type Database = {
           },
         ]
       }
+      conversation_members: {
+        Row: {
+          conversation_id: string
+          id: string
+          joined_at: string
+          last_read_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_members_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          created_by: string
+          dm_high: string | null
+          dm_low: string | null
+          id: string
+          name: string | null
+          owner_id: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by: string
+          dm_high?: string | null
+          dm_low?: string | null
+          id?: string
+          name?: string | null
+          owner_id?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by?: string
+          dm_high?: string | null
+          dm_low?: string | null
+          id?: string
+          name?: string | null
+          owner_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      direct_message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "direct_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      direct_messages: {
+        Row: {
+          attachments: Json
+          content: string
+          conversation_id: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          reply_to_id: string | null
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          attachments?: Json
+          content?: string
+          conversation_id: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          reply_to_id?: string | null
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          attachments?: Json
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          reply_to_id?: string | null
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "direct_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: string
+          updated_at: string
+          user_high: string | null
+          user_low: string | null
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+          user_high?: string | null
+          user_low?: string | null
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+          user_high?: string | null
+          user_low?: string | null
+        }
+        Relationships: []
+      }
       games: {
         Row: {
           cover_url: string | null
@@ -491,6 +681,27 @@ export type Database = {
           },
         ]
       }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       user_favorite_games: {
         Row: {
           created_at: string
@@ -617,6 +828,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_group_member: {
+        Args: { _conversation_id: string; _user_id: string }
+        Returns: boolean
+      }
+      are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
       award_xp: {
         Args: { _amount: number; _user_id: string }
         Returns: {
@@ -632,11 +848,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      block_user: { Args: { _target: string }; Returns: boolean }
       can_manage_server: {
         Args: { _server_id: string; _user_id: string }
         Returns: boolean
       }
       channel_server_id: { Args: { _channel_id: string }; Returns: string }
+      create_group_conversation: {
+        Args: { _member_ids: string[]; _name: string }
+        Returns: string
+      }
       create_server: {
         Args: { _description?: string; _icon_url?: string; _name: string }
         Returns: string
@@ -649,6 +870,7 @@ export type Database = {
         }
         Returns: string
       }
+      dm_conversation_id: { Args: { _message_id: string }; Returns: string }
       get_invite_preview: {
         Args: { _code: string }
         Returns: {
@@ -662,6 +884,10 @@ export type Database = {
           valid: boolean
         }[]
       }
+      get_or_create_direct_conversation: {
+        Args: { _other: string }
+        Returns: string
+      }
       grant_badge: {
         Args: { _slug: string; _user_id: string }
         Returns: boolean
@@ -674,6 +900,11 @@ export type Database = {
         Args: { _roles: string[]; _server_id: string; _user_id: string }
         Returns: boolean
       }
+      is_blocked_between: { Args: { _a: string; _b: string }; Returns: boolean }
+      is_conversation_member: {
+        Args: { _conversation_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_server_member: {
         Args: { _server_id: string; _user_id: string }
         Returns: boolean
@@ -684,9 +915,26 @@ export type Database = {
       }
       is_text_channel: { Args: { _channel_id: string }; Returns: boolean }
       join_server_by_invite: { Args: { _code: string }; Returns: string }
+      leave_group_conversation: {
+        Args: { _conversation_id: string }
+        Returns: boolean
+      }
       level_from_xp: { Args: { _xp: number }; Returns: number }
+      mark_conversation_read: {
+        Args: { _conversation_id: string }
+        Returns: boolean
+      }
       member_server_id: { Args: { _member_id: string }; Returns: string }
       message_channel_id: { Args: { _message_id: string }; Returns: string }
+      remove_group_member: {
+        Args: { _conversation_id: string; _user_id: string }
+        Returns: boolean
+      }
+      respond_friend_request: {
+        Args: { _action: string; _friendship_id: string }
+        Returns: boolean
+      }
+      send_friend_request: { Args: { _addressee: string }; Returns: string }
       shares_server_with: {
         Args: { _other_user: string; _user_id: string }
         Returns: boolean

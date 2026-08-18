@@ -257,3 +257,107 @@ export interface VoiceParticipant {
   deafened: boolean;
   speaking: boolean;
 }
+
+/* ------------------------------------------------------------------ Fase 5 */
+
+export type FriendshipStatus = "pending" | "accepted" | "declined" | "cancelled";
+
+export interface Friendship {
+  id: string;
+  requester_id: string;
+  addressee_id: string;
+  status: FriendshipStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FriendEntry {
+  friendshipId: string;
+  profile: Profile;
+  presence: GamePresence | null;
+}
+
+export interface FriendRequestEntry {
+  friendshipId: string;
+  profile: Profile;
+  direction: "incoming" | "outgoing";
+  created_at: string;
+}
+
+export interface UserBlock {
+  id: string;
+  blocker_id: string;
+  blocked_id: string;
+  created_at: string;
+}
+
+export type RelationshipState =
+  | "self"
+  | "none"
+  | "friends"
+  | "request_sent"
+  | "request_received"
+  | "blocked_by_me"
+  | "blocked_me";
+
+export interface Relationship {
+  state: RelationshipState;
+  friendshipId: string | null;
+}
+
+export type ConversationType = "direct" | "group";
+
+export interface Conversation {
+  id: string;
+  type: ConversationType;
+  name: string | null;
+  avatar_url: string | null;
+  created_by: string;
+  owner_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConversationMember {
+  id: string;
+  conversation_id: string;
+  user_id: string;
+  joined_at: string;
+  last_read_at: string;
+}
+
+export interface ConversationOverview {
+  id: string;
+  type: ConversationType;
+  name: string | null;
+  avatar_url: string | null;
+  owner_id: string | null;
+  updated_at: string;
+  last_read_at: string;
+  other_user_id: string | null;
+  member_count: number;
+  last_message_content: string | null;
+  last_message_at: string | null;
+  last_message_sender: string | null;
+  unread_count: number;
+  otherProfile?: Profile | null;
+}
+
+export interface DirectMessage {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  reply_to_id: string | null;
+  attachments: Attachment[];
+  edited_at: string | null;
+  deleted_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DirectMessageWithMeta extends DirectMessage {
+  author: Profile | null;
+  reactions: ReactionGroup[];
+  replyTo: { id: string; content: string; author: Profile | null } | null;
+}

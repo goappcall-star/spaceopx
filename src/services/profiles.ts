@@ -2,7 +2,6 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Profile, UserStatus } from "@/types";
 
 export interface ProfileUpdate {
-  username?: string;
   display_name?: string;
   avatar_url?: string | null;
   banner_url?: string | null;
@@ -11,10 +10,9 @@ export interface ProfileUpdate {
   status?: UserStatus;
 }
 
-/** Only these columns can ever be written from the client. */
+/** Only these columns can ever be written from the client. Username is permanent. */
 function sanitize(update: ProfileUpdate): ProfileUpdate {
   const clean: ProfileUpdate = {};
-  if (update.username !== undefined) clean.username = update.username.trim().toLowerCase();
   if (update.display_name !== undefined) clean.display_name = update.display_name.trim();
   if (update.avatar_url !== undefined) clean.avatar_url = update.avatar_url?.trim() || null;
   if (update.banner_url !== undefined) clean.banner_url = update.banner_url?.trim() || null;

@@ -256,6 +256,10 @@ export interface VoiceParticipant {
   muted: boolean;
   deafened: boolean;
   speaking: boolean;
+  /** Camera track published (Fase 6). */
+  camera?: boolean;
+  /** Screen share track published (Fase 6). */
+  screen?: boolean;
 }
 
 /* ------------------------------------------------------------------ Fase 5 */

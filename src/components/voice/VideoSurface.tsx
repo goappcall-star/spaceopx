@@ -4,10 +4,10 @@ import { cn } from "@/lib/utils";
 
 interface Props {
   stream: MediaStream | null;
-  muted?: boolean;
-  mirrored?: boolean;
-  className?: string;
-  objectFit?: "cover" | "contain";
+  muted?: boolean | undefined;
+  mirrored?: boolean | undefined;
+  className?: string | undefined;
+  objectFit?: "cover" | "contain" | undefined;
 }
 
 /** Thin <video> wrapper that binds a MediaStream imperatively (never via src). */

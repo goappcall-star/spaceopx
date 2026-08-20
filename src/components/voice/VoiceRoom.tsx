@@ -123,7 +123,6 @@ export function VoiceRoom({ channel, members, me, userId }: Props) {
 
   return (
     <div className="bg-hero-glow flex flex-1 flex-col overflow-hidden">
-      <RemoteAudio />
 
       <header className="border-border flex items-center justify-between gap-3 border-b px-4 py-2.5">
         <div className="min-w-0">

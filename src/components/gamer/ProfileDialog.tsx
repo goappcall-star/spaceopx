@@ -32,7 +32,7 @@ export function ProfileDialogProvider({
   onStartDirect,
 }: {
   children: ReactNode;
-  onStartDirect?: (conversationId: string) => void;
+  onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {
   const [userId, setUserId] = useState<string | null>(null);
   const value = useMemo(() => ({ openProfile: (id: string) => setUserId(id) }), []);
@@ -60,7 +60,7 @@ function ProfileDialogBody({
   onStartDirect,
 }: {
   userId: string | null;
-  onStartDirect?: (conversationId: string) => void;
+  onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {
   const { data, isLoading } = usePublicProfile(userId);
 
@@ -177,7 +177,7 @@ function SocialActions({
   onStartDirect,
 }: {
   userId: string;
-  onStartDirect?: (conversationId: string) => void;
+  onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();

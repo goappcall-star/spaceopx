@@ -10,6 +10,8 @@ import { JoinServerDialog } from "@/components/app/JoinServerDialog";
 import { MemberPanel } from "@/components/app/MemberPanel";
 import { ServerRail } from "@/components/app/ServerRail";
 import { UserBar } from "@/components/app/UserBar";
+import { CallOverlay } from "@/components/call/CallOverlay";
+import { IncomingCallDialog } from "@/components/call/IncomingCallDialog";
 import { ChatView } from "@/components/chat/ChatView";
 import { RemoteAudio } from "@/components/voice/RemoteAudio";
 import { VoiceRoom } from "@/components/voice/VoiceRoom";
@@ -23,6 +25,7 @@ import {
   useServerMembers,
   useServerPermissions,
 } from "@/hooks/use-servers";
+import { CallProviderRoot } from "@/hooks/use-call";
 import { VoiceProviderRoot } from "@/hooks/use-voice";
 import { ProfileDialogProvider, useProfileDialog } from "@/components/gamer/ProfileDialog";
 import { DirectChatView } from "@/components/social/DirectChatView";
@@ -138,6 +141,9 @@ function AppPage() {
     <VoiceProviderRoot serverId={activeServer?.id ?? null} userId={user?.id}>
       <RemoteAudio />
       <TooltipProvider delayDuration={200}>
+        <CallProviderRoot userId={user?.id} profile={profile}>
+        <IncomingCallDialog />
+        <CallOverlay />
         <ProfileDialogProvider onStartDirect={openConversation}>
         <div className="bg-background flex h-screen overflow-hidden">
           <ServerRail
@@ -326,6 +332,7 @@ function AppPage() {
           </>
         )}
         </ProfileDialogProvider>
+        </CallProviderRoot>
       </TooltipProvider>
     </VoiceProviderRoot>
   );

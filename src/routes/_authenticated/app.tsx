@@ -11,6 +11,7 @@ import { MemberPanel } from "@/components/app/MemberPanel";
 import { ServerRail } from "@/components/app/ServerRail";
 import { UserBar } from "@/components/app/UserBar";
 import { ChatView } from "@/components/chat/ChatView";
+import { RemoteAudio } from "@/components/voice/RemoteAudio";
 import { VoiceRoom } from "@/components/voice/VoiceRoom";
 import { Button } from "@/components/ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -135,6 +136,7 @@ function AppPage() {
 
   return (
     <VoiceProviderRoot serverId={activeServer?.id ?? null} userId={user?.id}>
+      <RemoteAudio />
       <TooltipProvider delayDuration={200}>
         <ProfileDialogProvider onStartDirect={openConversation}>
         <div className="bg-background flex h-screen overflow-hidden">

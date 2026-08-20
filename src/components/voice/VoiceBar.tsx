@@ -1,9 +1,21 @@
-import { Headphones, HeadphoneOff, Mic, MicOff, PhoneOff, Signal } from "lucide-react";
+import {
+  Headphones,
+  HeadphoneOff,
+  Mic,
+  MicOff,
+  Monitor,
+  MonitorOff,
+  PhoneOff,
+  Signal,
+  Video,
+  VideoOff,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useVoice } from "@/hooks/use-voice";
 import { cn } from "@/lib/utils";
+import { supportsCamera, supportsScreenShare } from "@/services/voice";
 
 const STATE_LABEL: Record<string, string> = {
   connecting: "Conectando...",
@@ -14,7 +26,18 @@ const STATE_LABEL: Record<string, string> = {
 };
 
 export function VoiceBar({ channelName }: { channelName: string }) {
-  const { connectionState, muted, deafened, toggleMute, toggleDeafen, leave } = useVoice();
+  const {
+    connectionState,
+    muted,
+    deafened,
+    cameraOn,
+    screenOn,
+    toggleMute,
+    toggleDeafen,
+    toggleCamera,
+    toggleScreenShare,
+    leave,
+  } = useVoice();
   const connected = connectionState === "connected";
 
   return (
@@ -88,6 +111,41 @@ export function VoiceBar({ channelName }: { channelName: string }) {
           {deafened ? "Silenciado" : "Áudio"}
         </Button>
       </div>
+
+      {(supportsCamera() || supportsScreenShare()) && (
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          {supportsCamera() && (
+            <Button
+              size="sm"
+              variant={cameraOn ? "default" : "secondary"}
+              onClick={() => void toggleCamera()}
+              aria-pressed={cameraOn}
+            >
+              {cameraOn ? (
+                <Video className="mr-1.5 h-4 w-4" />
+              ) : (
+                <VideoOff className="mr-1.5 h-4 w-4" />
+              )}
+              Câmera
+            </Button>
+          )}
+          {supportsScreenShare() && (
+            <Button
+              size="sm"
+              variant={screenOn ? "default" : "secondary"}
+              onClick={() => void toggleScreenShare()}
+              aria-pressed={screenOn}
+            >
+              {screenOn ? (
+                <MonitorOff className="mr-1.5 h-4 w-4" />
+              ) : (
+                <Monitor className="mr-1.5 h-4 w-4" />
+              )}
+              Tela
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -60,6 +60,8 @@ export interface VoiceProvider {
   startScreenShare(): Promise<void>;
   stopScreenShare(): void;
   setDevices(devices: DeviceIds): Promise<void>;
+  /** Input gain in percent (0-200) applied to the outgoing microphone. */
+  setInputGain(percent: number): void;
 }
 
 const ICE_SERVERS: RTCIceServer[] = [
@@ -95,6 +97,9 @@ class MeshVoiceProvider implements VoiceProvider {
 
   private audioContext: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
+  private gainNode: GainNode | null = null;
+  private processedStream: MediaStream | null = null;
+  private inputGain = 1;
   private raf: number | null = null;
 
   private muted = false;
@@ -156,6 +161,8 @@ class MeshVoiceProvider implements VoiceProvider {
     if (this.raf !== null) cancelAnimationFrame(this.raf);
     this.raf = null;
     this.analyser = null;
+    this.gainNode = null;
+    this.processedStream = null;
     await this.audioContext?.close().catch(() => undefined);
     this.audioContext = null;
 
@@ -219,7 +226,7 @@ class MeshVoiceProvider implements VoiceProvider {
     };
     this.peers.set(remoteId, peer);
 
-    void transceivers.mic.sender.replaceTrack(this.micStream?.getAudioTracks()[0] ?? null);
+    void transceivers.mic.sender.replaceTrack(this.outgoingAudioTrack());
     void transceivers.camera.sender.replaceTrack(this.cameraStream?.getVideoTracks()[0] ?? null);
     void transceivers.screen.sender.replaceTrack(this.screenStream?.getVideoTracks()[0] ?? null);
 
@@ -336,6 +343,18 @@ class MeshVoiceProvider implements VoiceProvider {
     this.applyMuteToTracks();
   }
 
+  /** Processed (gain-adjusted) mic track when the audio graph is up, raw track otherwise. */
+  private outgoingAudioTrack(): MediaStreamTrack | null {
+    return (
+      this.processedStream?.getAudioTracks()[0] ?? this.micStream?.getAudioTracks()[0] ?? null
+    );
+  }
+
+  setInputGain(percent: number) {
+    this.inputGain = Math.max(0, Math.min(200, percent)) / 100;
+    if (this.gainNode) this.gainNode.gain.value = this.inputGain;
+  }
+
   private applyMuteToTracks() {
     this.micStream?.getAudioTracks().forEach((track) => {
       track.enabled = !this.muted;
@@ -411,9 +430,9 @@ class MeshVoiceProvider implements VoiceProvider {
       stopStream(this.micStream);
       this.micStream = stream;
       this.applyMuteToTracks();
-      const track = stream.getAudioTracks()[0] ?? null;
-      for (const peer of this.peers.values()) void peer.transceivers.mic.sender.replaceTrack(track);
       this.startSpeakingDetection();
+      const track = this.outgoingAudioTrack();
+      for (const peer of this.peers.values()) void peer.transceivers.mic.sender.replaceTrack(track);
     }
 
     if (devices.cameraId && devices.cameraId !== previous.cameraId && this.cameraStream) {
@@ -434,9 +453,17 @@ class MeshVoiceProvider implements VoiceProvider {
 
     this.audioContext = new AudioCtx();
     const source = this.audioContext.createMediaStreamSource(this.micStream);
+    this.gainNode = this.audioContext.createGain();
+    this.gainNode.gain.value = this.inputGain;
     this.analyser = this.audioContext.createAnalyser();
     this.analyser.fftSize = 512;
-    source.connect(this.analyser);
+    source.connect(this.gainNode);
+    this.gainNode.connect(this.analyser);
+
+    // Peers receive the gain-adjusted signal, never the raw device track.
+    const destination = this.audioContext.createMediaStreamDestination();
+    this.gainNode.connect(destination);
+    this.processedStream = destination.stream;
 
     const buffer = new Uint8Array(this.analyser.frequencyBinCount);
     const tick = () => {

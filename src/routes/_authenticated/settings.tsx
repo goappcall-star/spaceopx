@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
       { title: "Configurações do perfil — LobbyX" },
       {
         name: "description",
-        content: "Atualize seu nome de exibição, username, avatar e status no LobbyX.",
+        content: "Atualize seu nome de exibição, avatar e status no LobbyX.",
       },
       { property: "og:title", content: "Configurações do perfil — LobbyX" },
       { property: "og:description", content: "Atualize seu perfil no LobbyX." },
@@ -35,7 +35,6 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
 });
 
-const USERNAME_RE = /^[a-z0-9_.]{3,32}$/;
 const STATUSES: UserStatus[] = ["online", "idle", "offline"];
 
 function SettingsPage() {
@@ -43,7 +42,6 @@ function SettingsPage() {
   const queryClient = useQueryClient();
   const [form, setForm] = useState({
     display_name: "",
-    username: "",
     avatar_url: "",
     status: "online" as UserStatus,
   });
@@ -52,7 +50,6 @@ function SettingsPage() {
     if (profile) {
       setForm({
         display_name: profile.display_name,
-        username: profile.username,
         avatar_url: profile.avatar_url ?? "",
         status: profile.status,
       });
@@ -63,7 +60,6 @@ function SettingsPage() {
     mutationFn: () =>
       profilesService.update(user!.id, {
         display_name: form.display_name,
-        username: form.username,
         avatar_url: form.avatar_url,
         status: form.status,
       }),
@@ -75,8 +71,8 @@ function SettingsPage() {
     onError: (error) => {
       const message = error instanceof Error ? error.message : "";
       toast.error(
-        message.includes("profiles_username_key")
-          ? "Este username já está em uso."
+        message.includes("username_is_permanent")
+          ? "Seu username é permanente e não pode ser alterado."
           : "Não foi possível salvar o perfil.",
       );
     },
@@ -84,10 +80,6 @@ function SettingsPage() {
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!USERNAME_RE.test(form.username.trim().toLowerCase())) {
-      toast.error("Username inválido: 3-32 caracteres, minúsculas, números, _ ou .");
-      return;
-    }
     if (!form.display_name.trim()) {
       toast.error("Informe um nome de exibição.");
       return;
@@ -150,13 +142,11 @@ function SettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                className="font-mono"
-                value={form.username}
-                onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-              />
+              <Label>Username</Label>
+              <div className="border-border bg-surface-elevated rounded-md border px-3 py-2">
+                <p className="font-mono text-sm">@{profile?.username}</p>
+              </div>
+              <p className="text-muted-foreground text-xs">Seu username é permanente.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="avatar_url">Avatar (URL)</Label>

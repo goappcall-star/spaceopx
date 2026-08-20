@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ShieldCheck, Sparkles } from "lucide-react";
+import { Gamepad2, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { ChannelSidebar } from "@/components/app/ChannelSidebar";
@@ -35,15 +35,15 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
     meta: [
-      { title: "Seus servidores — LobbyX" },
+      { title: "Seus lobbies — LobbyX" },
       {
         name: "description",
-        content: "Converse por texto e voz em tempo real nos seus servidores do LobbyX.",
+        content: "Converse por texto, voz e vídeo em tempo real nas suas comunidades do LobbyX.",
       },
-      { property: "og:title", content: "Seus servidores — LobbyX" },
+      { property: "og:title", content: "Seus lobbies — LobbyX" },
       {
         property: "og:description",
-        content: "Chat em tempo real, canais de voz e presença ao vivo.",
+        content: "Chat em tempo real, voz, vídeo, screen share e presença ao vivo.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -248,15 +248,15 @@ function AppPage() {
 
                 <div className="animate-fade-up relative max-w-lg text-center">
                   <span className="surface-elevated glow-soft mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl">
-                    <ShieldCheck className="text-primary h-9 w-9" strokeWidth={1.9} />
+                    <Gamepad2 className="text-primary h-9 w-9" strokeWidth={1.9} />
                   </span>
-                  <p className="text-caption mb-3">Plataforma de comunicação segura</p>
+                  <p className="text-caption mb-3">Plataforma social gamer</p>
                   <h1 className="text-3xl font-semibold tracking-tight">
                     Bem-vindo ao <span className="text-brand-gradient">LobbyX</span>
                   </h1>
                   <p className="text-muted-foreground mx-auto mt-3 max-w-sm text-sm">
-                    Escolha um servidor na barra lateral, crie o seu próprio espaço ou entre com um
-                    convite.
+                    Escolha um lobby na barra lateral, crie a sua própria comunidade ou entre com
+                    um convite.
                   </p>
                   <div className="mt-7 flex flex-wrap justify-center gap-3">
                     <Button size="lg" onClick={() => setCreateOpen(true)}>
@@ -270,9 +270,9 @@ function AppPage() {
 
                   <div className="text-muted-foreground mt-10 grid grid-cols-3 gap-3 text-xs">
                     {[
-                      { label: "Servidores", value: servers.length },
-                      { label: "Texto + Voz", value: "Tempo real" },
-                      { label: "Isolamento", value: "RLS" },
+                      { label: "Lobbies", value: servers.length },
+                      { label: "Texto, voz e vídeo", value: "Tempo real" },
+                      { label: "Progressão", value: "XP e badges" },
                     ].map((stat) => (
                       <div
                         key={stat.label}
@@ -286,7 +286,7 @@ function AppPage() {
 
                   {loadingServers && (
                     <p className="text-muted-foreground mt-6 text-xs">
-                      Carregando seus servidores...
+                      Carregando seus lobbies...
                     </p>
                   )}
                 </div>

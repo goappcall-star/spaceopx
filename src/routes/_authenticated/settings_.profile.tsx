@@ -42,13 +42,13 @@ import type { AccentColor, TransparencyLevel, UserStatus } from "@/types";
 export const Route = createFileRoute("/_authenticated/settings_/profile")({
   head: () => ({
     meta: [
-      { title: "Perfil gamer — LobbyX" },
+      { title: "Seu perfil — LobbyX" },
       {
         name: "description",
         content:
           "Personalize seu perfil gamer no LobbyX: avatar, banner, bio, status, jogos favoritos e tema neon.",
       },
-      { property: "og:title", content: "Perfil gamer — LobbyX" },
+      { property: "og:title", content: "Seu perfil — LobbyX" },
       {
         property: "og:description",
         content: "Avatar, banner, bio, jogos favoritos, XP, badges e personalização visual.",
@@ -93,7 +93,6 @@ function ProfileSettingsPage() {
 
   const [form, setForm] = useState({
     display_name: "",
-    username: "",
     bio: "",
     custom_status: "",
     avatar_url: "",
@@ -106,7 +105,6 @@ function ProfileSettingsPage() {
     if (!profile) return;
     setForm({
       display_name: profile.display_name,
-      username: profile.username,
       bio: profile.bio ?? "",
       custom_status: profile.custom_status ?? "",
       avatar_url: profile.avatar_url ?? "",
@@ -119,7 +117,6 @@ function ProfileSettingsPage() {
     mutationFn: () =>
       profilesService.update(userId!, {
         display_name: form.display_name,
-        username: form.username,
         bio: form.bio,
         custom_status: form.custom_status,
         avatar_url: form.avatar_url,
@@ -134,8 +131,8 @@ function ProfileSettingsPage() {
     onError: (error) => {
       const message = error instanceof Error ? error.message : "";
       toast.error(
-        message.includes("profiles_username_key")
-          ? "Este username já está em uso."
+        message.includes("username_is_permanent")
+          ? "Seu username é permanente e não pode ser alterado."
           : "Não foi possível salvar o perfil.",
       );
     },
@@ -176,10 +173,6 @@ function ProfileSettingsPage() {
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (!USERNAME_RE.test(form.username.trim().toLowerCase())) {
-      toast.error("Username inválido: 3-32 caracteres, minúsculas, números, _ ou .");
-      return;
-    }
     if (!form.display_name.trim()) {
       toast.error("Informe um nome de exibição.");
       return;
@@ -213,7 +206,7 @@ function ProfileSettingsPage() {
 
         <h1 className="text-2xl font-semibold">Perfil gamer</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Sua identidade no LobbyX. XP, níveis e badges são concedidos pelo sistema.
+          Seu perfil único no LobbyX. XP, níveis e badges são concedidos pelo sistema.
         </p>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
@@ -275,13 +268,11 @@ function ProfileSettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      className="font-mono"
-                      value={form.username}
-                      onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-                    />
+                    <Label>Username</Label>
+                    <div className="border-border bg-surface-elevated flex h-9 items-center rounded-md border px-3">
+                      <p className="truncate font-mono text-sm">@{profile?.username}</p>
+                    </div>
+                    <p className="text-muted-foreground text-xs">Seu username é permanente.</p>
                   </div>
                 </div>
 
@@ -564,7 +555,7 @@ function ProfileSettingsPage() {
                 </div>
                 <p className="mt-3 text-lg font-semibold">{form.display_name || "Seu nome"}</p>
                 <p className="text-muted-foreground font-mono text-sm">
-                  @{form.username || "username"}
+                  @{profile?.username ?? "username"}
                 </p>
                 {presence?.status === "playing" && presence.game ? (
                   <p className="text-primary mt-2 flex items-center gap-1.5 text-xs">

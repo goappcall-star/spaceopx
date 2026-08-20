@@ -47,8 +47,10 @@ export function useGamePresenceMap(userIds: string[]) {
 
   useEffect(() => {
     if (userIds.length === 0) return;
+    // Unique suffix: two mounted consumers must not share one channel instance,
+    // otherwise supabase-js reuses a channel that is already subscribed.
     const channel = supabase
-      .channel(`game-presence:${key.slice(0, 40)}`)
+      .channel(`game-presence:${key.slice(0, 40)}:${Math.random().toString(36).slice(2, 8)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "user_game_presence" },

@@ -12,8 +12,17 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { createVoiceProvider, type VoiceProvider } from "@/services/voice";
+import {
+  createVoiceProvider,
+  listMediaDevices,
+  type DeviceIds,
+  type MediaDeviceList,
+  type RemoteMedia,
+  type VoiceProvider,
+} from "@/services/voice";
 import type { VoiceConnectionState, VoiceParticipant } from "@/types";
+
+export type MediaPermission = "unknown" | "granted" | "denied" | "unavailable";
 
 interface VoiceContextValue {
   connectionState: VoiceConnectionState;
@@ -22,17 +31,31 @@ interface VoiceContextValue {
   participantsByChannel: Record<string, VoiceParticipant[]>;
   muted: boolean;
   deafened: boolean;
+  cameraOn: boolean;
+  screenOn: boolean;
   transmitsAudio: boolean;
   volumes: Record<string, number>;
+  remoteMedia: Record<string, RemoteMedia>;
+  localCamera: MediaStream | null;
+  localScreen: MediaStream | null;
+  cameraPermission: MediaPermission;
+  micPermission: MediaPermission;
+  devices: MediaDeviceList;
+  selectedDevices: DeviceIds & { outputId?: string };
   join: (channelId: string) => Promise<void>;
   leave: () => Promise<void>;
   toggleMute: () => void;
   toggleDeafen: () => void;
+  toggleCamera: () => Promise<void>;
+  toggleScreenShare: () => Promise<void>;
+  refreshDevices: () => Promise<void>;
+  selectDevice: (kind: "microphoneId" | "cameraId" | "outputId", deviceId: string) => Promise<void>;
   setUserVolume: (userId: string, volume: number) => void;
 }
 
 const VoiceContext = createContext<VoiceContextValue | undefined>(undefined);
 const VOLUME_KEY = "securechat:voice-volumes";
+const DEVICE_KEY = "securechat:voice-devices";
 
 export function VoiceProviderRoot({
   serverId,
@@ -49,21 +72,51 @@ export function VoiceProviderRoot({
   const [muted, setMuted] = useState(false);
   const [deafened, setDeafened] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [cameraOn, setCameraOn] = useState(false);
+  const [screenOn, setScreenOn] = useState(false);
   const [volumes, setVolumes] = useState<Record<string, number>>({});
+  const [remoteMedia, setRemoteMedia] = useState<Record<string, RemoteMedia>>({});
+  const [localCamera, setLocalCamera] = useState<MediaStream | null>(null);
+  const [localScreen, setLocalScreen] = useState<MediaStream | null>(null);
+  const [cameraPermission, setCameraPermission] = useState<MediaPermission>("unknown");
+  const [micPermission, setMicPermission] = useState<MediaPermission>("unknown");
+  const [devices, setDevices] = useState<MediaDeviceList>({
+    microphones: [],
+    cameras: [],
+    outputs: [],
+  });
+  const [selectedDevices, setSelectedDevices] = useState<DeviceIds & { outputId?: string }>({});
 
   const providerRef = useRef<VoiceProvider | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const stateRef = useRef({ activeChannelId, muted, deafened, speaking });
-  stateRef.current = { activeChannelId, muted, deafened, speaking };
+  const stateRef = useRef({ activeChannelId, muted, deafened, speaking, cameraOn, screenOn });
+  stateRef.current = { activeChannelId, muted, deafened, speaking, cameraOn, screenOn };
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(VOLUME_KEY);
       if (raw) setVolumes(JSON.parse(raw) as Record<string, number>);
+      const rawDevices = localStorage.getItem(DEVICE_KEY);
+      if (rawDevices) setSelectedDevices(JSON.parse(rawDevices) as DeviceIds & { outputId?: string });
     } catch {
       /* ignore corrupted local settings */
     }
   }, []);
+
+  const refreshDevices = useCallback(async () => {
+    try {
+      setDevices(await listMediaDevices());
+    } catch {
+      /* enumeration unsupported */
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshDevices();
+    const handler = () => void refreshDevices();
+    navigator.mediaDevices?.addEventListener?.("devicechange", handler);
+    return () => navigator.mediaDevices?.removeEventListener?.("devicechange", handler);
+  }, [refreshDevices]);
 
   // One presence channel per server carries every voice room's occupancy.
   useEffect(() => {
@@ -89,6 +142,8 @@ export function VoiceProviderRoot({
             muted: entry.muted,
             deafened: entry.deafened,
             speaking: entry.speaking,
+            camera: entry.camera ?? false,
+            screen: entry.screen ?? false,
           },
         ];
       }
@@ -106,24 +161,45 @@ export function VoiceProviderRoot({
 
   const publish = useCallback(async () => {
     const channel = channelRef.current;
-    const { activeChannelId: id, muted: m, deafened: d, speaking: s } = stateRef.current;
+    const s = stateRef.current;
     if (!channel || !userId) return;
-    if (!id) {
+    if (!s.activeChannelId) {
       await channel.untrack();
       return;
     }
-    await channel.track({ user_id: userId, channel_id: id, muted: m, deafened: d, speaking: s });
+    await channel.track({
+      user_id: userId,
+      channel_id: s.activeChannelId,
+      muted: s.muted,
+      deafened: s.deafened,
+      speaking: s.speaking,
+      camera: s.cameraOn,
+      screen: s.screenOn,
+    });
   }, [userId]);
 
   useEffect(() => {
     void publish();
-  }, [publish, activeChannelId, muted, deafened, speaking]);
+  }, [publish, activeChannelId, muted, deafened, speaking, cameraOn, screenOn]);
+
+  // Keep the WebRTC mesh in sync with who is present in the active room.
+  const roomPeers = activeChannelId ? (participantsByChannel[activeChannelId] ?? []) : [];
+  const peerKey = roomPeers.map((p) => p.user_id).sort().join(",");
+  useEffect(() => {
+    if (!activeChannelId) return;
+    providerRef.current?.syncPeers(peerKey ? peerKey.split(",") : []);
+  }, [peerKey, activeChannelId]);
 
   const leave = useCallback(async () => {
     await providerRef.current?.disconnect();
     providerRef.current = null;
     setActiveChannelId(null);
     setSpeaking(false);
+    setCameraOn(false);
+    setScreenOn(false);
+    setLocalCamera(null);
+    setLocalScreen(null);
+    setRemoteMedia({});
     setConnectionState("disconnected");
     await channelRef.current?.untrack();
   }, []);
@@ -131,25 +207,39 @@ export function VoiceProviderRoot({
   const join = useCallback(
     async (channelId: string) => {
       if (stateRef.current.activeChannelId === channelId) return;
+      if (!userId) return;
       await leave();
       const provider = createVoiceProvider();
       providerRef.current = provider;
       setConnectionState("connecting");
       setActiveChannelId(channelId);
       try {
-        await provider.connect(channelId, {
+        await provider.connect(channelId, userId, {
           onStateChange: (state) => setConnectionState(state),
           onSpeakingChange: (value) => setSpeaking(value),
-          onError: () => toast.error("Não foi possível acessar o microfone."),
+          onRemoteMedia: (media) => setRemoteMedia(media),
+          onLocalMedia: ({ camera, screen }) => {
+            setLocalCamera(camera);
+            setLocalScreen(screen);
+            setCameraOn(!!camera);
+            setScreenOn(!!screen);
+          },
+          onScreenShareEnded: () => setScreenOn(false),
+          onError: () => {
+            setMicPermission("denied");
+            toast.error("Não foi possível acessar o microfone.");
+          },
         });
+        setMicPermission("granted");
         provider.setMuted(stateRef.current.muted);
+        void refreshDevices();
       } catch {
         providerRef.current = null;
         setActiveChannelId(null);
         setConnectionState("error");
       }
     },
-    [leave],
+    [leave, userId, refreshDevices],
   );
 
   const toggleMute = useCallback(() => {
@@ -173,6 +263,73 @@ export function VoiceProviderRoot({
     });
   }, []);
 
+  const toggleCamera = useCallback(async () => {
+    const provider = providerRef.current;
+    if (!provider) return;
+    if (stateRef.current.cameraOn) {
+      provider.disableCamera();
+      setCameraOn(false);
+      return;
+    }
+    try {
+      await provider.enableCamera();
+      setCameraPermission("granted");
+      setCameraOn(true);
+      void refreshDevices();
+    } catch (error) {
+      const name = (error as DOMException)?.name;
+      if (name === "NotAllowedError" || name === "SecurityError") {
+        setCameraPermission("denied");
+        toast.error("Permissão de câmera negada.");
+      } else if (name === "NotFoundError" || name === "OverconstrainedError") {
+        setCameraPermission("unavailable");
+        toast.error("Nenhuma câmera disponível.");
+      } else {
+        toast.error("Não foi possível iniciar a câmera.");
+      }
+    }
+  }, [refreshDevices]);
+
+  const toggleScreenShare = useCallback(async () => {
+    const provider = providerRef.current;
+    if (!provider) return;
+    if (stateRef.current.screenOn) {
+      provider.stopScreenShare();
+      setScreenOn(false);
+      return;
+    }
+    try {
+      await provider.startScreenShare();
+      setScreenOn(true);
+    } catch (error) {
+      const name = (error as DOMException)?.name;
+      if (name === "NotAllowedError") toast.info("Compartilhamento de tela cancelado.");
+      else toast.error("Compartilhamento de tela indisponível neste dispositivo.");
+    }
+  }, []);
+
+  const selectDevice = useCallback(
+    async (kind: "microphoneId" | "cameraId" | "outputId", deviceId: string) => {
+      setSelectedDevices((prev) => {
+        const next = { ...prev, [kind]: deviceId };
+        try {
+          localStorage.setItem(DEVICE_KEY, JSON.stringify(next));
+        } catch {
+          /* storage unavailable */
+        }
+        return next;
+      });
+      if (kind !== "outputId") {
+        try {
+          await providerRef.current?.setDevices({ [kind]: deviceId } as DeviceIds);
+        } catch {
+          toast.error("Não foi possível trocar o dispositivo.");
+        }
+      }
+    },
+    [],
+  );
+
   const setUserVolume = useCallback((targetId: string, volume: number) => {
     setVolumes((prev) => {
       const next = { ...prev, [targetId]: volume };
@@ -195,12 +352,25 @@ export function VoiceProviderRoot({
       participantsByChannel,
       muted,
       deafened,
-      transmitsAudio: providerRef.current?.transmitsAudio ?? false,
+      cameraOn,
+      screenOn,
+      transmitsAudio: true,
       volumes,
+      remoteMedia,
+      localCamera,
+      localScreen,
+      cameraPermission,
+      micPermission,
+      devices,
+      selectedDevices,
       join,
       leave,
       toggleMute,
       toggleDeafen,
+      toggleCamera,
+      toggleScreenShare,
+      refreshDevices,
+      selectDevice,
       setUserVolume,
     }),
     [
@@ -209,11 +379,24 @@ export function VoiceProviderRoot({
       participantsByChannel,
       muted,
       deafened,
+      cameraOn,
+      screenOn,
       volumes,
+      remoteMedia,
+      localCamera,
+      localScreen,
+      cameraPermission,
+      micPermission,
+      devices,
+      selectedDevices,
       join,
       leave,
       toggleMute,
       toggleDeafen,
+      toggleCamera,
+      toggleScreenShare,
+      refreshDevices,
+      selectDevice,
       setUserVolume,
     ],
   );

@@ -230,7 +230,11 @@ export function ChannelSidebar({
                             )}
                           />
                           <span className="truncate">{memberName(participant.user_id)}</span>
-                          {participant.muted && <span className="ml-auto text-[10px]">🔇</span>}
+                          <span className="ml-auto flex shrink-0 items-center gap-1 text-[10px]">
+                            {participant.screen && <span title="Compartilhando tela">🖥️</span>}
+                            {participant.camera && <span title="Câmera ligada">🎥</span>}
+                            {participant.muted && <span title="Mudo">🔇</span>}
+                          </span>
                         </li>
                       ))}
                     </ul>

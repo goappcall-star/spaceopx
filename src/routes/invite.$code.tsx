@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-r
 import { toast } from "sonner";
 
 import { AuthShell } from "@/components/auth/AuthShell";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { inviteErrorMessage, invitesService } from "@/services/invites";
@@ -107,6 +108,20 @@ function InvitePage() {
         </Link>
       }
     >
+      <div className="border-border bg-surface mb-5 flex items-center gap-3 rounded-xl border p-3">
+        <Avatar className="ring-border h-12 w-12 rounded-2xl ring-1">
+          <AvatarImage src={preview.server_icon_url ?? undefined} alt="" />
+          <AvatarFallback className="bg-surface-elevated rounded-2xl text-sm">
+            {(preview.server_name ?? "?").slice(0, 2).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">{preview.server_name}</p>
+          <p className="text-muted-foreground truncate text-xs">
+            {preview.member_count} membro(s) online na comunidade
+          </p>
+        </div>
+      </div>
       {preview.server_description && (
         <p className="text-muted-foreground mb-5 text-sm">{preview.server_description}</p>
       )}

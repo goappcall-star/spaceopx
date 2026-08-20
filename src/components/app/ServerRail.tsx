@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Compass, Plus } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -11,6 +11,9 @@ interface Props {
   activeServerId: string | null;
   onSelect: (serverId: string) => void;
   onAdd: () => void;
+  socialActive: boolean;
+  onSelectSocial: () => void;
+  socialBadge?: number;
 }
 
 function initials(name: string) {
@@ -22,7 +25,15 @@ function initials(name: string) {
     .join("");
 }
 
-export function ServerRail({ servers, activeServerId, onSelect, onAdd }: Props) {
+export function ServerRail({
+  servers,
+  activeServerId,
+  onSelect,
+  onAdd,
+  socialActive,
+  onSelectSocial,
+  socialBadge = 0,
+}: Props) {
   return (
     <nav
       aria-label="Servidores"
@@ -113,9 +124,45 @@ export function ServerRail({ servers, activeServerId, onSelect, onAdd }: Props) 
         <TooltipContent side="right">Criar ou entrar em servidor</TooltipContent>
       </Tooltip>
 
-      <span className="text-muted-foreground/50 mt-1">
-        <Compass className="h-4 w-4" aria-hidden />
-      </span>
+      <span className="bg-border/80 mt-1 h-px w-8 rounded-full" />
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={onSelectSocial}
+            aria-label="Social"
+            aria-current={socialActive ? "true" : undefined}
+            className="group relative mt-1 mb-1 flex h-12 w-12 items-center justify-center"
+          >
+            <span
+              aria-hidden
+              className={cn(
+                "absolute -left-3 w-1 rounded-r-full transition-all duration-200",
+                socialActive
+                  ? "bg-primary h-7 shadow-[0_0_12px_-1px_color-mix(in_oklab,var(--color-primary)_85%,transparent)]"
+                  : "bg-foreground/45 h-0 group-hover:h-3.5",
+              )}
+            />
+            <span
+              className={cn(
+                "flex h-12 w-12 items-center justify-center transition-all duration-200",
+                socialActive
+                  ? "border-primary/50 text-primary bg-primary/10 rounded-xl border shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-primary)_35%,transparent)]"
+                  : "bg-surface-elevated text-surface-foreground hover:bg-surface-hover hover:text-foreground rounded-2xl hover:rounded-xl",
+              )}
+            >
+              <Users className="h-5 w-5" />
+            </span>
+            {socialBadge > 0 && (
+              <span className="bg-primary text-primary-foreground glow-soft absolute -right-0.5 -bottom-0.5 min-w-[18px] rounded-full px-1 text-[10px] leading-[18px] font-semibold">
+                {socialBadge > 99 ? "99+" : socialBadge}
+              </span>
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right">Social</TooltipContent>
+      </Tooltip>
     </nav>
   );
 }

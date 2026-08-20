@@ -23,7 +23,12 @@ import {
   useServerPermissions,
 } from "@/hooks/use-servers";
 import { VoiceProviderRoot } from "@/hooks/use-voice";
-import { ProfileDialogProvider } from "@/components/gamer/ProfileDialog";
+import { ProfileDialogProvider, useProfileDialog } from "@/components/gamer/ProfileDialog";
+import { DirectChatView } from "@/components/social/DirectChatView";
+import { SocialHome } from "@/components/social/SocialHome";
+import { SocialSidebar, type SocialTab } from "@/components/social/SocialSidebar";
+import { useConversations, useFriends } from "@/hooks/use-social";
+import type { ConversationOverview, FriendEntry, FriendRequestEntry } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -56,6 +61,20 @@ function AppPage() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [channelOpen, setChannelOpen] = useState(false);
   const [unread, setUnread] = useState<Set<string>>(new Set());
+  const [view, setView] = useState<"servers" | "social">("servers");
+  const [socialTab, setSocialTab] = useState<SocialTab>("friends");
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+
+  const { friends, requests } = useFriends(user?.id);
+  const { conversations, totalUnread } = useConversations(user?.id);
+  const pendingRequests = requests.filter((r) => r.direction === "incoming").length;
+  const activeConversation =
+    conversations.find((c) => c.id === activeConversationId) ?? null;
+
+  function openConversation(conversationId: string) {
+    setView("social");
+    setActiveConversationId(conversationId);
+  }
 
   const activeServer = servers.find((s) => s.id === activeServerId) ?? null;
   const { data: channels = [] } = useServerChannels(activeServer?.id ?? null);
@@ -117,16 +136,34 @@ function AppPage() {
   return (
     <VoiceProviderRoot serverId={activeServer?.id ?? null} userId={user?.id}>
       <TooltipProvider delayDuration={200}>
-        <ProfileDialogProvider>
+        <ProfileDialogProvider onStartDirect={openConversation}>
         <div className="bg-background flex h-screen overflow-hidden">
           <ServerRail
             servers={servers}
             activeServerId={activeServerId}
-            onSelect={setActiveServerId}
+            onSelect={(id) => {
+              setView("servers");
+              setActiveServerId(id);
+            }}
             onAdd={() => setCreateOpen(true)}
+            socialActive={view === "social"}
+            onSelectSocial={() => setView("social")}
+            socialBadge={totalUnread + pendingRequests}
           />
 
-          {activeServer ? (
+          {view === "social" ? (
+            <SocialSidebar
+              tab={socialTab}
+              onTabChange={(tab) => {
+                setSocialTab(tab);
+                setActiveConversationId(null);
+              }}
+              conversations={conversations}
+              activeConversationId={activeConversationId}
+              onSelectConversation={openConversation}
+              pendingRequests={pendingRequests}
+            />
+          ) : activeServer ? (
             <ChannelSidebar
               server={activeServer}
               channels={channels}
@@ -161,7 +198,19 @@ function AppPage() {
 
 
           <main className="flex min-w-0 flex-1 flex-col">
-            {activeServer && activeChannel ? (
+            {view === "social" ? (
+              <SocialMain
+                conversation={activeConversation}
+                userId={user?.id}
+                displayName={profile?.display_name ?? "Alguém"}
+                tab={socialTab}
+                friends={friends}
+                requests={requests}
+                conversations={conversations}
+                onOpenConversation={openConversation}
+                onCloseConversation={() => setActiveConversationId(null)}
+              />
+            ) : activeServer && activeChannel ? (
               activeChannel.type === "voice" ? (
                 <VoiceRoom
                   channel={activeChannel}
@@ -244,7 +293,7 @@ function AppPage() {
 
           </main>
 
-          {activeServer && (
+          {view === "servers" && activeServer && (
             <MemberPanel members={members} loading={loadingMembers} presence={presence} />
           )}
         </div>
@@ -277,5 +326,54 @@ function AppPage() {
         </ProfileDialogProvider>
       </TooltipProvider>
     </VoiceProviderRoot>
+  );
+}
+
+function SocialMain({
+  conversation,
+  userId,
+  displayName,
+  tab,
+  friends,
+  requests,
+  conversations,
+  onOpenConversation,
+  onCloseConversation,
+}: {
+  conversation: ConversationOverview | null;
+  userId: string | undefined;
+  displayName: string;
+  tab: SocialTab;
+  friends: FriendEntry[];
+  requests: FriendRequestEntry[];
+  conversations: ConversationOverview[];
+  onOpenConversation: (id: string) => void;
+  onCloseConversation: () => void;
+}) {
+  const { openProfile } = useProfileDialog();
+
+  if (conversation) {
+    return (
+      <DirectChatView
+        key={conversation.id}
+        conversation={conversation}
+        userId={userId}
+        displayName={displayName}
+        onOpenProfile={openProfile}
+        onLeft={onCloseConversation}
+      />
+    );
+  }
+
+  return (
+    <SocialHome
+      userId={userId}
+      tab={tab}
+      friends={friends}
+      requests={requests}
+      conversations={conversations}
+      onOpenConversation={onOpenConversation}
+      onOpenProfile={openProfile}
+    />
   );
 }

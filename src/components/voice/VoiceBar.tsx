@@ -111,6 +111,41 @@ export function VoiceBar({ channelName }: { channelName: string }) {
           {deafened ? "Silenciado" : "Áudio"}
         </Button>
       </div>
+
+      {(supportsCamera() || supportsScreenShare()) && (
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          {supportsCamera() && (
+            <Button
+              size="sm"
+              variant={cameraOn ? "default" : "secondary"}
+              onClick={() => void toggleCamera()}
+              aria-pressed={cameraOn}
+            >
+              {cameraOn ? (
+                <Video className="mr-1.5 h-4 w-4" />
+              ) : (
+                <VideoOff className="mr-1.5 h-4 w-4" />
+              )}
+              Câmera
+            </Button>
+          )}
+          {supportsScreenShare() && (
+            <Button
+              size="sm"
+              variant={screenOn ? "default" : "secondary"}
+              onClick={() => void toggleScreenShare()}
+              aria-pressed={screenOn}
+            >
+              {screenOn ? (
+                <MonitorOff className="mr-1.5 h-4 w-4" />
+              ) : (
+                <Monitor className="mr-1.5 h-4 w-4" />
+              )}
+              Tela
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

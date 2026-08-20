@@ -23,11 +23,12 @@ import {
   useServerPermissions,
 } from "@/hooks/use-servers";
 import { VoiceProviderRoot } from "@/hooks/use-voice";
-import { ProfileDialogProvider } from "@/components/gamer/ProfileDialog";
+import { ProfileDialogProvider, useProfileDialog } from "@/components/gamer/ProfileDialog";
 import { DirectChatView } from "@/components/social/DirectChatView";
 import { SocialHome } from "@/components/social/SocialHome";
 import { SocialSidebar, type SocialTab } from "@/components/social/SocialSidebar";
 import { useConversations, useFriends } from "@/hooks/use-social";
+import type { ConversationOverview, FriendEntry, FriendRequestEntry } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/app")({
@@ -198,26 +199,17 @@ function AppPage() {
 
           <main className="flex min-w-0 flex-1 flex-col">
             {view === "social" ? (
-              activeConversation ? (
-                <DirectChatView
-                  key={activeConversation.id}
-                  conversation={activeConversation}
-                  userId={user?.id}
-                  displayName={profile?.display_name ?? "Alguém"}
-                  onOpenProfile={openProfileRef.current}
-                  onLeft={() => setActiveConversationId(null)}
-                />
-              ) : (
-                <SocialHome
-                  userId={user?.id}
-                  tab={socialTab}
-                  friends={friends}
-                  requests={requests}
-                  conversations={conversations}
-                  onOpenConversation={openConversation}
-                  onOpenProfile={openProfileRef.current}
-                />
-              )
+              <SocialMain
+                conversation={activeConversation}
+                userId={user?.id}
+                displayName={profile?.display_name ?? "Alguém"}
+                tab={socialTab}
+                friends={friends}
+                requests={requests}
+                conversations={conversations}
+                onOpenConversation={openConversation}
+                onCloseConversation={() => setActiveConversationId(null)}
+              />
             ) : activeServer && activeChannel ? (
               activeChannel.type === "voice" ? (
                 <VoiceRoom
@@ -334,5 +326,54 @@ function AppPage() {
         </ProfileDialogProvider>
       </TooltipProvider>
     </VoiceProviderRoot>
+  );
+}
+
+function SocialMain({
+  conversation,
+  userId,
+  displayName,
+  tab,
+  friends,
+  requests,
+  conversations,
+  onOpenConversation,
+  onCloseConversation,
+}: {
+  conversation: ConversationOverview | null;
+  userId: string | undefined;
+  displayName: string;
+  tab: SocialTab;
+  friends: FriendEntry[];
+  requests: FriendRequestEntry[];
+  conversations: ConversationOverview[];
+  onOpenConversation: (id: string) => void;
+  onCloseConversation: () => void;
+}) {
+  const { openProfile } = useProfileDialog();
+
+  if (conversation) {
+    return (
+      <DirectChatView
+        key={conversation.id}
+        conversation={conversation}
+        userId={userId}
+        displayName={displayName}
+        onOpenProfile={openProfile}
+        onLeft={onCloseConversation}
+      />
+    );
+  }
+
+  return (
+    <SocialHome
+      userId={userId}
+      tab={tab}
+      friends={friends}
+      requests={requests}
+      conversations={conversations}
+      onOpenConversation={onOpenConversation}
+      onOpenProfile={openProfile}
+    />
   );
 }

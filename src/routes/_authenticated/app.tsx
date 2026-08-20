@@ -135,6 +135,7 @@ function AppPage() {
 
   return (
     <VoiceProviderRoot serverId={activeServer?.id ?? null} userId={user?.id}>
+      <RemoteAudio />
       <TooltipProvider delayDuration={200}>
         <ProfileDialogProvider onStartDirect={openConversation}>
         <div className="bg-background flex h-screen overflow-hidden">

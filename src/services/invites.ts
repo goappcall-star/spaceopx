@@ -31,7 +31,8 @@ export const invitesService = {
   async create(serverId: string, maxUses?: number | null, expiresInHours?: number | null) {
     const args: { _server_id: string; _max_uses?: number; _expires_in_hours?: number } = {
       _server_id: serverId,
-      _expires_in_hours: expiresInHours ?? 168,
+      // null = never expires (the SQL function treats <= 0 as "no expiry").
+      _expires_in_hours: expiresInHours === null ? 0 : (expiresInHours ?? 168),
     };
     if (maxUses && maxUses > 0) args._max_uses = maxUses;
     const { data, error } = await supabase.rpc("create_server_invite", args);

@@ -12,9 +12,9 @@ export const Route = createFileRoute("/forgot-password")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Recuperar senha — SecureChat" },
+      { title: "Recuperar senha — LobbyX" },
       { name: "description", content: "Receba um link para redefinir a senha da sua conta." },
-      { property: "og:title", content: "Recuperar senha — SecureChat" },
+      { property: "og:title", content: "Recuperar senha — LobbyX" },
       { property: "og:description", content: "Receba um link para redefinir sua senha." },
     ],
   }),

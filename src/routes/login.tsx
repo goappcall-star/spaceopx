@@ -18,10 +18,10 @@ export const Route = createFileRoute("/login")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Entrar — SecureChat" },
-      { name: "description", content: "Acesse sua conta SecureChat e volte aos seus servidores." },
-      { property: "og:title", content: "Entrar — SecureChat" },
-      { property: "og:description", content: "Acesse sua conta SecureChat." },
+      { title: "Entrar — LobbyX" },
+      { name: "description", content: "Acesse sua conta LobbyX e volte aos seus servidores." },
+      { property: "og:title", content: "Entrar — LobbyX" },
+      { property: "og:description", content: "Acesse sua conta LobbyX." },
     ],
   }),
   component: LoginPage,

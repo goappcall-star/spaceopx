@@ -82,16 +82,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SecureChat — comunidades em canais com segurança em primeiro lugar" },
+      { title: "LobbyX — plataforma social gamer" },
       {
         name: "description",
         content:
-          "SecureChat organiza sua comunidade em servidores, canais e cargos, com isolamento de dados garantido no banco de dados.",
+          "LobbyX reúne sua comunidade gamer: chat em tempo real, voz, vídeo, screen share, amizades e progressão.",
       },
-      { property: "og:title", content: "SecureChat" },
+      { property: "og:title", content: "LobbyX" },
       {
         property: "og:description",
-        content: "Servidores, canais e cargos com isolamento de dados garantido no banco.",
+        content: "Comunidades gamer com chat, voz, vídeo, screen share e progressão.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

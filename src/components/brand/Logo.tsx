@@ -1,4 +1,4 @@
-import { ShieldCheck } from "lucide-react";
+import { Gamepad2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -10,11 +10,11 @@ export function Logo({ className, compact = false }: { className?: string; compa
           aria-hidden
           className="absolute inset-0 rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,0.28),transparent_55%)]"
         />
-        <ShieldCheck className="text-primary-foreground relative h-5 w-5" strokeWidth={2.5} />
+        <Gamepad2 className="text-primary-foreground relative h-5 w-5" strokeWidth={2.4} />
       </span>
       {!compact && (
         <span className="font-display text-lg font-semibold tracking-tight">
-          Secure<span className="text-brand-gradient">Chat</span>
+          Lobby<span className="text-brand-gradient">X</span>
         </span>
       )}
     </div>

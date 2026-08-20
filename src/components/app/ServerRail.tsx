@@ -43,13 +43,13 @@ export function ServerRail({
         <TooltipTrigger asChild>
           <Link
             to="/app"
-            aria-label="SecureChat"
+            aria-label="LobbyX"
             className="group relative mb-1 flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-200 hover:rounded-xl"
           >
             <Logo compact />
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="right">SecureChat</TooltipContent>
+        <TooltipContent side="right">LobbyX</TooltipContent>
       </Tooltip>
 
       <span className="bg-border/80 mb-1 h-px w-8 rounded-full" />

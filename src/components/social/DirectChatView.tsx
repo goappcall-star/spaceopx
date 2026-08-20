@@ -1,4 +1,4 @@
-import { Gamepad2, LogOut, Users } from "lucide-react";
+import { Gamepad2, LogOut, Phone, Users, Video } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -9,8 +9,10 @@ import { GroupMembersDialog } from "@/components/social/GroupMembersDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useDirectMessages } from "@/hooks/use-dm-messages";
 import { useConversationMembers } from "@/hooks/use-social";
+import { useCall } from "@/hooks/use-call";
 import { useTyping } from "@/hooks/use-typing";
 import { conversationsService } from "@/services/social";
 import type { ConversationOverview, DirectMessageWithMeta, Profile, UserStatus } from "@/types";
@@ -44,6 +46,9 @@ export function DirectChatView({ conversation, userId, displayName, onOpenProfil
   const { typingNames, notifyTyping } = useTyping(conversation.id, userId, displayName);
 
   const other = conversation.otherProfile ?? null;
+  const { startCall, status: callStatus, busyUsers } = useCall();
+  const callBusy = callStatus !== "idle" && callStatus !== "ended";
+  const peerBusy = other ? !!busyUsers[other.id] : false;
   const isGroup = conversation.type === "group";
   const title = isGroup ? (conversation.name ?? "Grupo") : (other?.display_name ?? "Conversa");
 
@@ -100,6 +105,62 @@ export function DirectChatView({ conversation, userId, displayName, onOpenProfil
         )}
 
         <div className="ml-auto flex items-center gap-1">
+          {!isGroup && other && (
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    disabled={callBusy || peerBusy}
+                    aria-label="Chamada de voz"
+                    onClick={() =>
+                      void startCall(
+                        {
+                          id: other.id,
+                          display_name: other.display_name,
+                          username: other.username,
+                          avatar_url: other.avatar_url ?? null,
+                        },
+                        false,
+                      )
+                    }
+                  >
+                    <Phone className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {peerBusy ? "Em chamada" : "Chamada de voz"}
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    disabled={callBusy || peerBusy}
+                    aria-label="Chamada de vídeo"
+                    onClick={() =>
+                      void startCall(
+                        {
+                          id: other.id,
+                          display_name: other.display_name,
+                          username: other.username,
+                          avatar_url: other.avatar_url ?? null,
+                        },
+                        true,
+                      )
+                    }
+                  >
+                    <Video className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {peerBusy ? "Em chamada" : "Chamada de vídeo"}
+                </TooltipContent>
+              </Tooltip>
+            </>
+          )}
           {isGroup && (
             <>
               <Button size="sm" variant="ghost" onClick={() => setMembersOpen(true)}>

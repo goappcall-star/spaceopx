@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { KeyRound, Layers, Lock, ShieldCheck } from "lucide-react";
+import { Gamepad2, Trophy, Users, Video } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
@@ -9,16 +9,16 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "SecureChat — servidores e canais com segurança em primeiro lugar" },
+      { title: "LobbyX — a plataforma social gamer de comunidades" },
       {
         name: "description",
         content:
-          "Crie servidores, canais e cargos com isolamento de dados garantido no banco. A base para uma plataforma de comunicação segura.",
+          "Comunidades, chat em tempo real, voz, vídeo, screen share e progressão gamer com XP, níveis e badges.",
       },
-      { property: "og:title", content: "SecureChat" },
+      { property: "og:title", content: "LobbyX" },
       {
         property: "og:description",
-        content: "Servidores, canais e cargos com isolamento de dados garantido no banco.",
+        content: "Comunidades gamer com chat, voz, vídeo, screen share e progressão.",
       },
     ],
   }),
@@ -27,19 +27,19 @@ export const Route = createFileRoute("/")({
 
 const PILLARS = [
   {
-    icon: Lock,
-    title: "Isolamento por servidor",
-    text: "Cada servidor é um tenant. As regras de acesso vivem no banco de dados, não no navegador.",
+    icon: Users,
+    title: "Comunidades reais",
+    text: "Crie lobbies com canais, cargos e convites. Cada comunidade tem o seu próprio espaço.",
   },
   {
-    icon: Layers,
-    title: "Cargos desde o início",
-    text: "Proprietário, administrador e membro são criados junto com o servidor, de forma transacional.",
+    icon: Video,
+    title: "Voz, vídeo e tela",
+    text: "Entre em canais de voz, ligue a câmera ou compartilhe a gameplay direto no navegador.",
   },
   {
-    icon: KeyRound,
-    title: "Convites controlados",
-    text: "Códigos únicos com validade e limite de usos, validados no servidor a cada entrada.",
+    icon: Trophy,
+    title: "Progressão gamer",
+    text: "XP, níveis, badges, jogos favoritos e status de partida no seu único perfil.",
   },
 ];
 
@@ -71,18 +71,18 @@ function Landing() {
       <main className="mx-auto max-w-6xl px-6 pt-14 pb-24">
         <section className="max-w-2xl">
           <span className="border-border bg-surface text-muted-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs">
-            <ShieldCheck className="text-primary h-3.5 w-3.5" />
-            Fundação segura · etapa 1
+            <Gamepad2 className="text-primary h-3.5 w-3.5" />
+            Plataforma social gamer
           </span>
           <h1 className="mt-6 text-5xl leading-[1.05] font-semibold">
-            Comunidades em canais,
+            Seu lobby, sua galera,
             <br />
-            <span className="text-brand-gradient">com segurança na base</span>
+            <span className="text-brand-gradient">sua próxima partida</span>
           </h1>
           <p className="text-muted-foreground mt-5 max-w-xl text-lg">
-            SecureChat organiza pessoas em servidores, canais e cargos. O isolamento entre
-            servidores é garantido pelo próprio banco de dados — pronto para receber monitoramento
-            inteligente no futuro.
+            LobbyX reúne sua comunidade em lobbies com chat em tempo real, canais de voz, vídeo,
+            compartilhamento de tela, amizades, mensagens privadas e um perfil gamer com XP,
+            níveis e badges.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">

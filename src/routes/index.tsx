@@ -9,13 +9,13 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "SecureChat — servidores e canais com segurança em primeiro lugar" },
+      { title: "LobbyX — servidores e canais com segurança em primeiro lugar" },
       {
         name: "description",
         content:
           "Crie servidores, canais e cargos com isolamento de dados garantido no banco. A base para uma plataforma de comunicação segura.",
       },
-      { property: "og:title", content: "SecureChat" },
+      { property: "og:title", content: "LobbyX" },
       {
         property: "og:description",
         content: "Servidores, canais e cargos com isolamento de dados garantido no banco.",
@@ -80,7 +80,7 @@ function Landing() {
             <span className="text-brand-gradient">com segurança na base</span>
           </h1>
           <p className="text-muted-foreground mt-5 max-w-xl text-lg">
-            SecureChat organiza pessoas em servidores, canais e cargos. O isolamento entre
+            LobbyX organiza pessoas em servidores, canais e cargos. O isolamento entre
             servidores é garantido pelo próprio banco de dados — pronto para receber monitoramento
             inteligente no futuro.
           </p>

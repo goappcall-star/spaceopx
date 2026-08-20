@@ -23,13 +23,13 @@ import type { UserStatus } from "@/types";
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
-      { title: "Configurações do perfil — SecureChat" },
+      { title: "Configurações do perfil — LobbyX" },
       {
         name: "description",
-        content: "Atualize seu nome de exibição, username, avatar e status no SecureChat.",
+        content: "Atualize seu nome de exibição, username, avatar e status no LobbyX.",
       },
-      { property: "og:title", content: "Configurações do perfil — SecureChat" },
-      { property: "og:description", content: "Atualize seu perfil no SecureChat." },
+      { property: "og:title", content: "Configurações do perfil — LobbyX" },
+      { property: "og:description", content: "Atualize seu perfil no LobbyX." },
     ],
   }),
   component: SettingsPage,

@@ -13,12 +13,12 @@ export const Route = createFileRoute("/register")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Criar conta — SecureChat" },
+      { title: "Criar conta — LobbyX" },
       {
         name: "description",
-        content: "Crie sua conta SecureChat e monte seu primeiro servidor de comunicação.",
+        content: "Crie sua conta LobbyX e monte seu primeiro servidor de comunicação.",
       },
-      { property: "og:title", content: "Criar conta — SecureChat" },
+      { property: "og:title", content: "Criar conta — LobbyX" },
       { property: "og:description", content: "Crie sua conta e monte seu primeiro servidor." },
     ],
   }),

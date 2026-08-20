@@ -13,9 +13,9 @@ export const Route = createFileRoute("/reset-password")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Definir nova senha — SecureChat" },
-      { name: "description", content: "Escolha uma nova senha para sua conta SecureChat." },
-      { property: "og:title", content: "Definir nova senha — SecureChat" },
+      { title: "Definir nova senha — LobbyX" },
+      { name: "description", content: "Escolha uma nova senha para sua conta LobbyX." },
+      { property: "og:title", content: "Definir nova senha — LobbyX" },
       { property: "og:description", content: "Escolha uma nova senha para sua conta." },
     ],
   }),

@@ -42,13 +42,13 @@ import type { AccentColor, TransparencyLevel, UserStatus } from "@/types";
 export const Route = createFileRoute("/_authenticated/settings_/profile")({
   head: () => ({
     meta: [
-      { title: "Perfil gamer — SecureChat" },
+      { title: "Perfil gamer — LobbyX" },
       {
         name: "description",
         content:
-          "Personalize seu perfil gamer no SecureChat: avatar, banner, bio, status, jogos favoritos e tema neon.",
+          "Personalize seu perfil gamer no LobbyX: avatar, banner, bio, status, jogos favoritos e tema neon.",
       },
-      { property: "og:title", content: "Perfil gamer — SecureChat" },
+      { property: "og:title", content: "Perfil gamer — LobbyX" },
       {
         property: "og:description",
         content: "Avatar, banner, bio, jogos favoritos, XP, badges e personalização visual.",
@@ -213,7 +213,7 @@ function ProfileSettingsPage() {
 
         <h1 className="text-2xl font-semibold">Perfil gamer</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Sua identidade no SecureChat. XP, níveis e badges são concedidos pelo sistema.
+          Sua identidade no LobbyX. XP, níveis e badges são concedidos pelo sistema.
         </p>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">

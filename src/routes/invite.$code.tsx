@@ -11,10 +11,10 @@ export const Route = createFileRoute("/invite/$code")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Convite — SecureChat" },
-      { name: "description", content: "Você foi convidado para um servidor no SecureChat." },
-      { property: "og:title", content: "Convite — SecureChat" },
-      { property: "og:description", content: "Você foi convidado para um servidor no SecureChat." },
+      { title: "Convite — LobbyX" },
+      { name: "description", content: "Você foi convidado para um servidor no LobbyX." },
+      { property: "og:title", content: "Convite — LobbyX" },
+      { property: "og:description", content: "Você foi convidado para um servidor no LobbyX." },
     ],
   }),
   component: InvitePage,

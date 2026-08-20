@@ -35,12 +35,12 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/app")({
   head: () => ({
     meta: [
-      { title: "Seus servidores — SecureChat" },
+      { title: "Seus servidores — LobbyX" },
       {
         name: "description",
-        content: "Converse por texto e voz em tempo real nos seus servidores do SecureChat.",
+        content: "Converse por texto e voz em tempo real nos seus servidores do LobbyX.",
       },
-      { property: "og:title", content: "Seus servidores — SecureChat" },
+      { property: "og:title", content: "Seus servidores — LobbyX" },
       {
         property: "og:description",
         content: "Chat em tempo real, canais de voz e presença ao vivo.",
@@ -252,7 +252,7 @@ function AppPage() {
                   </span>
                   <p className="text-caption mb-3">Plataforma de comunicação segura</p>
                   <h1 className="text-3xl font-semibold tracking-tight">
-                    Bem-vindo ao <span className="text-brand-gradient">SecureChat</span>
+                    Bem-vindo ao <span className="text-brand-gradient">LobbyX</span>
                   </h1>
                   <p className="text-muted-foreground mx-auto mt-3 max-w-sm text-sm">
                     Escolha um servidor na barra lateral, crie o seu próprio espaço ou entre com um

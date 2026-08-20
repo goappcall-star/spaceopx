@@ -82,13 +82,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SecureChat — comunidades em canais com segurança em primeiro lugar" },
+      { title: "LobbyX — comunidades em canais com segurança em primeiro lugar" },
       {
         name: "description",
         content:
-          "SecureChat organiza sua comunidade em servidores, canais e cargos, com isolamento de dados garantido no banco de dados.",
+          "LobbyX organiza sua comunidade em servidores, canais e cargos, com isolamento de dados garantido no banco de dados.",
       },
-      { property: "og:title", content: "SecureChat" },
+      { property: "og:title", content: "LobbyX" },
       {
         property: "og:description",
         content: "Servidores, canais e cargos com isolamento de dados garantido no banco.",

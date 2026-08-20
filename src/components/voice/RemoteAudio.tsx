@@ -11,7 +11,7 @@ function AudioSink({
   stream: MediaStream;
   volume: number;
   deafened: boolean;
-  outputId?: string;
+  outputId?: string | undefined;
 }) {
   const ref = useRef<HTMLAudioElement>(null);
 

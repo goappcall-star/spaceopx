@@ -58,7 +58,6 @@ export const Route = createFileRoute("/_authenticated/settings_/profile")({
   component: ProfileSettingsPage,
 });
 
-const USERNAME_RE = /^[a-z0-9_.]{3,32}$/;
 const STATUSES: UserStatus[] = ["online", "idle", "dnd", "offline"];
 const ACCENTS: { value: AccentColor; label: string }[] = [
   { value: "neon_cyan", label: "Ciano" },

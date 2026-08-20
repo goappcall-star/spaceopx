@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { AlertTriangle, Loader2, MonitorUp, Video } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { RemoteAudio } from "@/components/voice/RemoteAudio";
 import { VideoTile, type TileData } from "@/components/voice/VideoTile";
 import { VoiceControlBar } from "@/components/voice/VoiceControlBar";
 import { useGamePresenceMap } from "@/hooks/use-gamer";

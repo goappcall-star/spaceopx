@@ -775,6 +775,12 @@ export type Database = {
           animations_enabled: boolean
           created_at: string
           glow_enabled: boolean
+          input_device_id: string | null
+          input_mode: string
+          input_volume: number
+          output_device_id: string | null
+          output_volume: number
+          ptt_key: string
           sounds_enabled: boolean
           transparency_level: string
           updated_at: string
@@ -785,6 +791,12 @@ export type Database = {
           animations_enabled?: boolean
           created_at?: string
           glow_enabled?: boolean
+          input_device_id?: string | null
+          input_mode?: string
+          input_volume?: number
+          output_device_id?: string | null
+          output_volume?: number
+          ptt_key?: string
           sounds_enabled?: boolean
           transparency_level?: string
           updated_at?: string
@@ -795,6 +807,12 @@ export type Database = {
           animations_enabled?: boolean
           created_at?: string
           glow_enabled?: boolean
+          input_device_id?: string | null
+          input_mode?: string
+          input_volume?: number
+          output_device_id?: string | null
+          output_volume?: number
+          ptt_key?: string
           sounds_enabled?: boolean
           transparency_level?: string
           updated_at?: string

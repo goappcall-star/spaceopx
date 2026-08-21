@@ -182,6 +182,12 @@ const DEFAULT_PREFERENCES: Omit<UserPreferences, "user_id" | "updated_at"> = {
   animations_enabled: true,
   sounds_enabled: false,
   transparency_level: "medium",
+  input_device_id: null,
+  output_device_id: null,
+  input_volume: 100,
+  output_volume: 100,
+  input_mode: "open",
+  ptt_key: "KeyV",
 };
 
 export const preferencesService = {
@@ -203,9 +209,15 @@ export const preferencesService = {
 
   /** Only whitelisted, enum-checked values reach the database — never raw CSS. */
   async save(userId: string, update: Partial<Omit<UserPreferences, "user_id" | "updated_at">>) {
+    // Merge onto the stored row so unrelated sections (visual vs audio) are never wiped.
+    const current = await this.get(userId);
+    const { user_id: _ignored, updated_at: _updated, ...stored } = current;
     const { error } = await supabase
       .from("user_preferences")
-      .upsert({ user_id: userId, ...DEFAULT_PREFERENCES, ...update }, { onConflict: "user_id" });
+      .upsert(
+        { user_id: userId, ...DEFAULT_PREFERENCES, ...stored, ...update },
+        { onConflict: "user_id" },
+      );
     if (error) throw error;
   },
 };

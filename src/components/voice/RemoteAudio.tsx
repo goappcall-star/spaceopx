@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 
+import { useAudioSettings } from "@/hooks/use-audio-settings";
 import { useVoice } from "@/hooks/use-voice";
 
 function AudioSink({
@@ -39,7 +40,8 @@ function AudioSink({
 
 /** Plays every remote participant's audio, honouring deafen and per-user volume. */
 export function RemoteAudio() {
-  const { remoteMedia, volumes, deafened, selectedDevices } = useVoice();
+  const { remoteMedia, volumes, deafened } = useVoice();
+  const { settings } = useAudioSettings();
 
   return (
     <div className="sr-only" aria-hidden>
@@ -48,9 +50,9 @@ export function RemoteAudio() {
           <AudioSink
             key={userId}
             stream={media.audio}
-            volume={volumes[userId] ?? 100}
+            volume={((volumes[userId] ?? 100) * settings.outputVolume) / 100}
             deafened={deafened}
-            outputId={selectedDevices.outputId}
+            outputId={settings.outputDeviceId ?? undefined}
           />
         ) : null,
       )}

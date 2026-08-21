@@ -11,10 +11,10 @@ import {
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
+import { useAudioSettings } from "@/hooks/use-audio-settings";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createVoiceProvider,
-  listMediaDevices,
   type DeviceIds,
   type MediaDeviceList,
   type RemoteMedia,
@@ -41,7 +41,11 @@ interface VoiceContextValue {
   cameraPermission: MediaPermission;
   micPermission: MediaPermission;
   devices: MediaDeviceList;
-  selectedDevices: DeviceIds & { outputId?: string };
+  selectedDevices: {
+    microphoneId?: string | undefined;
+    cameraId?: string | undefined;
+    outputId?: string | undefined;
+  };
   join: (channelId: string) => Promise<void>;
   leave: () => Promise<void>;
   toggleMute: () => void;
@@ -49,6 +53,8 @@ interface VoiceContextValue {
   toggleCamera: () => Promise<void>;
   toggleScreenShare: () => Promise<void>;
   refreshDevices: () => Promise<void>;
+  /** True while a push-to-talk key is held (always true in open-mic mode). */
+  pttActive: boolean;
   selectDevice: (kind: "microphoneId" | "cameraId" | "outputId", deviceId: string) => Promise<void>;
   setUserVolume: (userId: string, volume: number) => void;
 }
@@ -80,12 +86,14 @@ export function VoiceProviderRoot({
   const [localScreen, setLocalScreen] = useState<MediaStream | null>(null);
   const [cameraPermission, setCameraPermission] = useState<MediaPermission>("unknown");
   const [micPermission, setMicPermission] = useState<MediaPermission>("unknown");
-  const [devices, setDevices] = useState<MediaDeviceList>({
-    microphones: [],
-    cameras: [],
-    outputs: [],
-  });
-  const [selectedDevices, setSelectedDevices] = useState<DeviceIds & { outputId?: string }>({});
+  const [cameraDeviceId, setCameraDeviceId] = useState<string | undefined>(undefined);
+  const {
+    settings: audioSettings,
+    update: updateAudioSettings,
+    devices,
+    refreshDevices: refreshSharedDevices,
+  } = useAudioSettings();
+  const [pttHeld, setPttHeld] = useState(false);
 
   const providerRef = useRef<VoiceProvider | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
@@ -97,26 +105,14 @@ export function VoiceProviderRoot({
       const raw = localStorage.getItem(VOLUME_KEY);
       if (raw) setVolumes(JSON.parse(raw) as Record<string, number>);
       const rawDevices = localStorage.getItem(DEVICE_KEY);
-      if (rawDevices) setSelectedDevices(JSON.parse(rawDevices) as DeviceIds & { outputId?: string });
+      if (rawDevices)
+        setCameraDeviceId((JSON.parse(rawDevices) as { cameraId?: string }).cameraId);
     } catch {
       /* ignore corrupted local settings */
     }
   }, []);
 
-  const refreshDevices = useCallback(async () => {
-    try {
-      setDevices(await listMediaDevices());
-    } catch {
-      /* enumeration unsupported */
-    }
-  }, []);
-
-  useEffect(() => {
-    void refreshDevices();
-    const handler = () => void refreshDevices();
-    navigator.mediaDevices?.addEventListener?.("devicechange", handler);
-    return () => navigator.mediaDevices?.removeEventListener?.("devicechange", handler);
-  }, [refreshDevices]);
+  const refreshDevices = refreshSharedDevices;
 
   // One presence channel per server carries every voice room's occupancy.
   useEffect(() => {
@@ -231,6 +227,9 @@ export function VoiceProviderRoot({
           },
         });
         setMicPermission("granted");
+        if (audioSettings.inputDeviceId)
+          await provider.setDevices({ microphoneId: audioSettings.inputDeviceId }).catch(() => undefined);
+        provider.setInputGain(audioSettings.inputVolume);
         provider.setMuted(stateRef.current.muted);
         void refreshDevices();
       } catch {
@@ -239,7 +238,7 @@ export function VoiceProviderRoot({
         setConnectionState("error");
       }
     },
-    [leave, userId, refreshDevices],
+    [leave, userId, refreshDevices, audioSettings.inputDeviceId, audioSettings.inputVolume],
   );
 
   const toggleMute = useCallback(() => {
@@ -272,7 +271,7 @@ export function VoiceProviderRoot({
       return;
     }
     try {
-      await provider.enableCamera();
+      await provider.enableCamera(cameraDeviceId);
       setCameraPermission("granted");
       setCameraOn(true);
       void refreshDevices();
@@ -288,7 +287,7 @@ export function VoiceProviderRoot({
         toast.error("Não foi possível iniciar a câmera.");
       }
     }
-  }, [refreshDevices]);
+  }, [refreshDevices, cameraDeviceId]);
 
   const toggleScreenShare = useCallback(async () => {
     const provider = providerRef.current;
@@ -310,24 +309,26 @@ export function VoiceProviderRoot({
 
   const selectDevice = useCallback(
     async (kind: "microphoneId" | "cameraId" | "outputId", deviceId: string) => {
-      setSelectedDevices((prev) => {
-        const next = { ...prev, [kind]: deviceId };
+      if (kind === "outputId") {
+        updateAudioSettings({ outputDeviceId: deviceId });
+        return;
+      }
+      if (kind === "microphoneId") updateAudioSettings({ inputDeviceId: deviceId });
+      else {
+        setCameraDeviceId(deviceId);
         try {
-          localStorage.setItem(DEVICE_KEY, JSON.stringify(next));
+          localStorage.setItem(DEVICE_KEY, JSON.stringify({ cameraId: deviceId }));
         } catch {
           /* storage unavailable */
         }
-        return next;
-      });
-      if (kind !== "outputId") {
-        try {
-          await providerRef.current?.setDevices({ [kind]: deviceId } as DeviceIds);
-        } catch {
-          toast.error("Não foi possível trocar o dispositivo.");
-        }
+      }
+      try {
+        await providerRef.current?.setDevices({ [kind]: deviceId } as DeviceIds);
+      } catch {
+        toast.error("Não foi possível trocar o dispositivo.");
       }
     },
-    [],
+    [updateAudioSettings],
   );
 
   const setUserVolume = useCallback((targetId: string, volume: number) => {
@@ -342,6 +343,51 @@ export function VoiceProviderRoot({
     });
     providerRef.current?.setUserVolume(targetId, volume);
   }, []);
+
+  // Live-apply persisted audio preferences to an active connection.
+  useEffect(() => {
+    providerRef.current?.setInputGain(audioSettings.inputVolume);
+  }, [audioSettings.inputVolume, activeChannelId]);
+
+  useEffect(() => {
+    if (!activeChannelId || !audioSettings.inputDeviceId) return;
+    void providerRef.current
+      ?.setDevices({ microphoneId: audioSettings.inputDeviceId })
+      .catch(() => undefined);
+  }, [audioSettings.inputDeviceId, activeChannelId]);
+
+  // Push-to-talk: the key gates transmission without touching the manual mute.
+  useEffect(() => {
+    if (audioSettings.inputMode !== "ptt") {
+      setPttHeld(false);
+      return;
+    }
+    const down = (event: KeyboardEvent) => {
+      if (event.code !== audioSettings.pttKey || event.repeat) return;
+      const target = event.target as HTMLElement | null;
+      if (target && /^(INPUT|TEXTAREA)$/.test(target.tagName)) return;
+      if (target?.isContentEditable) return;
+      setPttHeld(true);
+    };
+    const up = (event: KeyboardEvent) => {
+      if (event.code === audioSettings.pttKey) setPttHeld(false);
+    };
+    const blur = () => setPttHeld(false);
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    window.addEventListener("blur", blur);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+      window.removeEventListener("blur", blur);
+    };
+  }, [audioSettings.inputMode, audioSettings.pttKey]);
+
+  const pttActive = audioSettings.inputMode === "open" || pttHeld;
+
+  useEffect(() => {
+    providerRef.current?.setMuted(muted || !pttActive);
+  }, [muted, pttActive, activeChannelId]);
 
   useEffect(() => () => void providerRef.current?.disconnect(), []);
 
@@ -362,7 +408,12 @@ export function VoiceProviderRoot({
       cameraPermission,
       micPermission,
       devices,
-      selectedDevices,
+      selectedDevices: {
+        microphoneId: audioSettings.inputDeviceId ?? undefined,
+        cameraId: cameraDeviceId,
+        outputId: audioSettings.outputDeviceId ?? undefined,
+      },
+      pttActive,
       join,
       leave,
       toggleMute,
@@ -388,7 +439,11 @@ export function VoiceProviderRoot({
       cameraPermission,
       micPermission,
       devices,
-      selectedDevices,
+      audioSettings.inputDeviceId,
+      audioSettings.outputDeviceId,
+      cameraDeviceId,
+
+      pttActive,
       join,
       leave,
       toggleMute,

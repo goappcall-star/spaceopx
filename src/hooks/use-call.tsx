@@ -11,6 +11,7 @@ import {
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
+import { useAudioSettings } from "@/hooks/use-audio-settings";
 import { supabase } from "@/integrations/supabase/client";
 import { createVoiceProvider, type RemoteMedia, type VoiceProvider } from "@/services/voice";
 import type { Profile } from "@/types";
@@ -95,6 +96,9 @@ export function CallProviderRoot({
   profile: Profile | null | undefined;
   children: ReactNode;
 }) {
+  const { settings: audioSettings } = useAudioSettings();
+  const audioRef = useRef(audioSettings);
+  audioRef.current = audioSettings;
   const [status, setStatus] = useState<CallStatus>("idle");
   const [endReason, setEndReason] = useState<CallEndReason>(null);
   const [peer, setPeer] = useState<CallPeer | null>(null);
@@ -220,6 +224,11 @@ export function CallProviderRoot({
           onScreenShareEnded: () => setScreenOn(false),
           onError: () => toast.error("Não foi possível acessar o microfone."),
         });
+        if (audioRef.current.inputDeviceId)
+          await provider
+            .setDevices({ microphoneId: audioRef.current.inputDeviceId })
+            .catch(() => undefined);
+        provider.setInputGain(audioRef.current.inputVolume);
         provider.syncPeers([remoteId]);
         setStatus("active");
         if (withVideo) {

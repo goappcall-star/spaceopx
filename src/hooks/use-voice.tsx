@@ -433,11 +433,10 @@ export function VoiceProviderRoot({
       cameraPermission,
       micPermission,
       devices,
-      selectedDevices: {
-        microphoneId: audioSettings.inputDeviceId ?? undefined,
-        cameraId: cameraDeviceId,
-        outputId: audioSettings.outputDeviceId ?? undefined,
-      },
+      audioSettings.inputDeviceId,
+      audioSettings.outputDeviceId,
+      cameraDeviceId,
+
       pttActive,
       join,
       leave,

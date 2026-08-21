@@ -15,7 +15,6 @@ import { useAudioSettings } from "@/hooks/use-audio-settings";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createVoiceProvider,
-  listMediaDevices,
   type DeviceIds,
   type MediaDeviceList,
   type RemoteMedia,
@@ -42,7 +41,11 @@ interface VoiceContextValue {
   cameraPermission: MediaPermission;
   micPermission: MediaPermission;
   devices: MediaDeviceList;
-  selectedDevices: DeviceIds & { outputId?: string };
+  selectedDevices: {
+    microphoneId?: string | undefined;
+    cameraId?: string | undefined;
+    outputId?: string | undefined;
+  };
   join: (channelId: string) => Promise<void>;
   leave: () => Promise<void>;
   toggleMute: () => void;
@@ -83,10 +86,13 @@ export function VoiceProviderRoot({
   const [localScreen, setLocalScreen] = useState<MediaStream | null>(null);
   const [cameraPermission, setCameraPermission] = useState<MediaPermission>("unknown");
   const [micPermission, setMicPermission] = useState<MediaPermission>("unknown");
-  const devices: MediaDeviceList = sharedDevices;
   const [cameraDeviceId, setCameraDeviceId] = useState<string | undefined>(undefined);
-  const { settings: audioSettings, update: updateAudioSettings, devices: sharedDevices, refreshDevices: refreshSharedDevices } =
-    useAudioSettings();
+  const {
+    settings: audioSettings,
+    update: updateAudioSettings,
+    devices,
+    refreshDevices: refreshSharedDevices,
+  } = useAudioSettings();
   const [pttHeld, setPttHeld] = useState(false);
 
   const providerRef = useRef<VoiceProvider | null>(null);

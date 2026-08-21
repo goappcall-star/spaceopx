@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+import { AudioSettingsPanel } from "@/components/settings/AudioSettingsPanel";
 import {
   Dialog,
   DialogContent,
@@ -24,53 +25,26 @@ interface Props {
 }
 
 export function DeviceSettingsDialog({ open, onOpenChange }: Props) {
-  const { devices, selectedDevices, selectDevice, refreshDevices, localCamera, micPermission } =
-    useVoice();
+  const { devices, selectedDevices, selectDevice, refreshDevices, localCamera } = useVoice();
 
   useEffect(() => {
     if (open) void refreshDevices();
   }, [open, refreshDevices]);
 
-  const supportsOutput =
-    typeof window !== "undefined" && "setSinkId" in HTMLMediaElement.prototype;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Configurações de áudio e vídeo</DialogTitle>
+          <DialogTitle>Voz e vídeo</DialogTitle>
           <DialogDescription>
-            Escolha os dispositivos usados nas chamadas deste navegador.
+            Dispositivos, volumes e modo de entrada — salvos na sua conta.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Microfone</Label>
-            <Select
-              value={selectedDevices.microphoneId ?? ""}
-              onValueChange={(value) => void selectDevice("microphoneId", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Padrão do sistema" />
-              </SelectTrigger>
-              <SelectContent>
-                {devices.microphones.map((device) => (
-                  <SelectItem key={device.deviceId} value={device.deviceId}>
-                    {device.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-muted-foreground text-[11px]">
-              {micPermission === "denied"
-                ? "Permissão de microfone negada pelo navegador."
-                : devices.microphones.length === 0
-                  ? "Conecte-se a um canal de voz para liberar a lista de dispositivos."
-                  : "Ativo enquanto você estiver conectado."}
-            </p>
-          </div>
+        <AudioSettingsPanel compact />
 
+        <div className="border-border space-y-3 border-t pt-6">
+          <h3 className="text-sm font-semibold tracking-wide uppercase">Vídeo</h3>
           <div className="space-y-1.5">
             <Label>Câmera</Label>
             <Select
@@ -89,31 +63,9 @@ export function DeviceSettingsDialog({ open, onOpenChange }: Props) {
               </SelectContent>
             </Select>
           </div>
-
-          {supportsOutput && (
-            <div className="space-y-1.5">
-              <Label>Saída de áudio</Label>
-              <Select
-                value={selectedDevices.outputId ?? ""}
-                onValueChange={(value) => void selectDevice("outputId", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Padrão do sistema" />
-                </SelectTrigger>
-                <SelectContent>
-                  {devices.outputs.map((device) => (
-                    <SelectItem key={device.deviceId} value={device.deviceId}>
-                      {device.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
           {localCamera && (
-            <div className="border-border aspect-video overflow-hidden rounded-xl border">
-              <VideoSurface stream={localCamera} mirrored />
+            <div className="overflow-hidden rounded-xl">
+              <VideoSurface stream={localCamera} muted mirrored />
             </div>
           )}
         </div>

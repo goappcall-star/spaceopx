@@ -83,6 +83,8 @@ export interface UserBadge {
   badge: Badge | null;
 }
 
+export type AudioInputMode = "open" | "ptt";
+
 export interface UserPreferences {
   user_id: string;
   accent_color: AccentColor;
@@ -90,6 +92,12 @@ export interface UserPreferences {
   animations_enabled: boolean;
   sounds_enabled: boolean;
   transparency_level: TransparencyLevel;
+  input_device_id: string | null;
+  output_device_id: string | null;
+  input_volume: number;
+  output_volume: number;
+  input_mode: AudioInputMode;
+  ptt_key: string;
   updated_at: string;
 }
 

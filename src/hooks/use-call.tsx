@@ -220,6 +220,11 @@ export function CallProviderRoot({
           onScreenShareEnded: () => setScreenOn(false),
           onError: () => toast.error("Não foi possível acessar o microfone."),
         });
+        if (audioRef.current.inputDeviceId)
+          await provider
+            .setDevices({ microphoneId: audioRef.current.inputDeviceId })
+            .catch(() => undefined);
+        provider.setInputGain(audioRef.current.inputVolume);
         provider.syncPeers([remoteId]);
         setStatus("active");
         if (withVideo) {

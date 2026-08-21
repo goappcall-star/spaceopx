@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { VideoTile, type TileData } from "@/components/voice/VideoTile";
 import { useAuth } from "@/hooks/use-auth";
+import { useAudioSettings } from "@/hooks/use-audio-settings";
 import { useCall } from "@/hooks/use-call";
 import { cn } from "@/lib/utils";
 
@@ -37,12 +38,22 @@ function useElapsed(active: boolean) {
 /** Plays the peer's microphone audio. */
 function CallAudio({ stream }: { stream: MediaStream | null }) {
   const ref = useRef<HTMLAudioElement>(null);
+  const { settings } = useAudioSettings();
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     if (el.srcObject !== stream) el.srcObject = stream;
     if (stream) void el.play().catch(() => undefined);
   }, [stream]);
+  useEffect(() => {
+    const el = ref.current as
+      | (HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> })
+      | null;
+    if (!el) return;
+    el.volume = Math.min(1, settings.outputVolume / 100);
+    if (settings.outputDeviceId && typeof el.setSinkId === "function")
+      void el.setSinkId(settings.outputDeviceId).catch(() => undefined);
+  }, [settings.outputVolume, settings.outputDeviceId, stream]);
   return <audio ref={ref} autoPlay className="hidden" />;
 }
 

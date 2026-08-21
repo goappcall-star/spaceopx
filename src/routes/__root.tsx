@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/hooks/use-auth";
 import { AppearanceSync } from "@/hooks/use-appearance";
+import { AudioSettingsProvider } from "@/hooks/use-audio-settings";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -134,10 +135,12 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AppearanceSync />
-        <TooltipProvider delayDuration={200}>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-        </TooltipProvider>
+        <AudioSettingsProvider>
+          <TooltipProvider delayDuration={200}>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </TooltipProvider>
+        </AudioSettingsProvider>
         <Toaster position="top-right" richColors />
       </AuthProvider>
     </QueryClientProvider>

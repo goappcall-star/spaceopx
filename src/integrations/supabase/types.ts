@@ -546,6 +546,41 @@ export type Database = {
           },
         ]
       }
+      server_bans: {
+        Row: {
+          banned_by: string | null
+          created_at: string
+          id: string
+          reason: string | null
+          server_id: string
+          user_id: string
+        }
+        Insert: {
+          banned_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          server_id: string
+          user_id: string
+        }
+        Update: {
+          banned_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          server_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_bans_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       server_invites: {
         Row: {
           code: string
@@ -925,6 +960,10 @@ export type Database = {
       is_blocked_between: { Args: { _a: string; _b: string }; Returns: boolean }
       is_conversation_member: {
         Args: { _conversation_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_server_banned: {
+        Args: { _server_id: string; _user_id: string }
         Returns: boolean
       }
       is_server_member: {

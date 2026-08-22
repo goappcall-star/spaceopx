@@ -203,10 +203,17 @@ function ProfileSettingsPage() {
           </Link>
         </Button>
 
-        <h1 className="text-2xl font-semibold">Perfil gamer</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Seu perfil único no LobbyX. XP, níveis e badges são concedidos pelo sistema.
-        </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold">Seu perfil</h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Seu perfil único no LobbyX. XP, níveis e badges são concedidos pelo sistema.
+            </p>
+          </div>
+          <Button asChild variant="secondary" size="sm">
+            <Link to="/settings/voice">Voz e áudio</Link>
+          </Button>
+        </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
           {/* ------------------------------------------------------- editor */}

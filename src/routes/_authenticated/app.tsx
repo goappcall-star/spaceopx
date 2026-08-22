@@ -1,4 +1,5 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { z } from "zod";
 import { Gamepad2, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -36,9 +37,7 @@ import type { ConversationOverview, FriendEntry, FriendRequestEntry } from "@/ty
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/app")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    server: typeof search['server'] === "string" ? (search['server'] as string) : undefined,
-  }),
+  validateSearch: z.object({ server: z.string().optional() }),
   head: () => ({
     meta: [
       { title: "Seus lobbies — LobbyX" },

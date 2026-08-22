@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Copy, Trash2 } from "lucide-react";
+import { Copy, Share2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -77,6 +77,21 @@ export function InviteDialog({ serverId, open, onOpenChange }: Props) {
     },
     onError: () => toast.error("Não foi possível revogar o convite."),
   });
+
+  async function share(code: string) {
+    const url = inviteUrl(code);
+    const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
+    if (typeof nav.share === "function") {
+      try {
+        await nav.share({ title: "Convite LobbyX", text: "Entre no meu servidor no LobbyX", url });
+        return;
+      } catch {
+        /* user cancelled or sharing unavailable */
+      }
+    }
+    await copy(url);
+    toast.success("Link copiado para compartilhar.");
+  }
 
   async function copy(text: string) {
     try {
@@ -160,6 +175,14 @@ export function InviteDialog({ serverId, open, onOpenChange }: Props) {
                 }}
               >
                 <Copy className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Compartilhar convite"
+                onClick={() => void share(invite.code)}
+              >
+                <Share2 className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"

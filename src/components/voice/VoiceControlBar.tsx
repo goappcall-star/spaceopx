@@ -15,6 +15,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DeviceSettingsDialog } from "@/components/voice/DeviceSettingsDialog";
+import { useAudioSettings, keyLabel } from "@/hooks/use-audio-settings";
 import { useVoice } from "@/hooks/use-voice";
 import { cn } from "@/lib/utils";
 import { supportsCamera, supportsScreenShare } from "@/services/voice";
@@ -73,8 +74,11 @@ export function VoiceControlBar() {
     toggleDeafen,
     toggleCamera,
     toggleScreenShare,
+    pttActive,
     leave,
   } = useVoice();
+  const { settings } = useAudioSettings();
+  const pttMode = settings.inputMode === "ptt";
   const [devicesOpen, setDevicesOpen] = useState(false);
 
   const cameraAvailable = supportsCamera() && cameraPermission !== "unavailable";
@@ -84,11 +88,22 @@ export function VoiceControlBar() {
     <>
       <div className="border-border bg-surface-elevated/80 mx-auto flex items-center gap-2 rounded-2xl border px-3 py-2 backdrop-blur">
         <ControlButton
-          label={muted ? "Ativar microfone" : "Desativar microfone"}
+          label={
+            pttMode
+              ? `Push to talk — segure ${keyLabel(settings.pttKey)}`
+              : muted
+                ? "Ativar microfone"
+                : "Desativar microfone"
+          }
           danger={muted}
+          active={!muted && pttMode && pttActive}
           onClick={toggleMute}
         >
-          {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+          {muted || (pttMode && !pttActive) ? (
+            <MicOff className="h-5 w-5" />
+          ) : (
+            <Mic className="h-5 w-5" />
+          )}
         </ControlButton>
 
         {cameraAvailable && (
@@ -125,7 +140,7 @@ export function VoiceControlBar() {
           {deafened ? <HeadphoneOff className="h-5 w-5" /> : <Headphones className="h-5 w-5" />}
         </ControlButton>
 
-        <ControlButton label="Dispositivos" onClick={() => setDevicesOpen(true)}>
+        <ControlButton label="Voz e áudio" onClick={() => setDevicesOpen(true)}>
           <Settings className="h-5 w-5" />
         </ControlButton>
 

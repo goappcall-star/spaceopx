@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { Gamepad2, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -36,6 +36,9 @@ import type { ConversationOverview, FriendEntry, FriendRequestEntry } from "@/ty
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/app")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    server: typeof search['server'] === "string" ? (search['server'] as string) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Seus lobbies — LobbyX" },
@@ -57,6 +60,7 @@ export const Route = createFileRoute("/_authenticated/app")({
 
 function AppPage() {
   const { user, profile } = useAuth();
+  const { server: serverParam } = useSearch({ from: "/_authenticated/app" });
   const { data: servers = [], isLoading: loadingServers } = useMyServers();
   const [activeServerId, setActiveServerId] = useState<string | null>(null);
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
@@ -91,6 +95,14 @@ function AppPage() {
     user?.id,
     profile?.status ?? "online",
   );
+
+  // Deep link (?server=...) — e.g. right after accepting an invite.
+  useEffect(() => {
+    if (!serverParam) return;
+    if (!servers.some((s) => s.id === serverParam)) return;
+    setView("servers");
+    setActiveServerId((current) => current ?? serverParam);
+  }, [serverParam, servers]);
 
   useEffect(() => {
     if (activeServerId && !servers.some((s) => s.id === activeServerId)) {

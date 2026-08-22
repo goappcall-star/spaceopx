@@ -3,6 +3,7 @@ import { memo, useState } from "react";
 
 import { QUICK_EMOJIS } from "@/components/chat/MessageItem";
 import { DmAttachmentView } from "@/components/social/DmAttachmentView";
+import { InviteEmbed, extractInviteCode } from "@/components/social/InviteEmbed";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,6 +52,7 @@ export const DmMessageItem = memo(function DmMessageItem({
 
   const name = message.author?.display_name ?? "Usuário";
   const deleted = Boolean(message.deleted_at);
+  const inviteCode = deleted ? null : extractInviteCode(message.content);
 
   return (
     <div
@@ -135,6 +137,8 @@ export const DmMessageItem = memo(function DmMessageItem({
             )}
           </p>
         )}
+
+        {inviteCode && !editing && <InviteEmbed code={inviteCode} />}
 
         {!deleted &&
           message.attachments.map((attachment) => (

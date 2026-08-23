@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
+import { Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { AuthShell } from "@/components/auth/AuthShell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { inviteErrorMessage, invitesService } from "@/services/invites";
+import { invitesService } from "@/services/invites";
 
 export const Route = createFileRoute("/invite/$code")({
   ssr: false,
@@ -21,114 +22,140 @@ export const Route = createFileRoute("/invite/$code")({
   component: InvitePage,
 });
 
+/** Human copy for every invalid-invite reason returned by the backend. */
+const INVALID_STATES: Record<string, { emoji: string; title: string; text: string }> = {
+  invite_not_found: {
+    emoji: "🔗",
+    title: "Convite inválido",
+    text: "Este convite não existe ou não está mais disponível.",
+  },
+  invite_expired: {
+    emoji: "⏰",
+    title: "Convite expirado",
+    text: "Este convite não está mais disponível.",
+  },
+  invite_exhausted: {
+    emoji: "🚫",
+    title: "Convite esgotado",
+    text: "Este convite atingiu o limite de usos.",
+  },
+  server_not_found: {
+    emoji: "👻",
+    title: "Servidor indisponível",
+    text: "Este servidor não está mais disponível.",
+  },
+  user_banned: {
+    emoji: "⛔",
+    title: "Acesso não permitido",
+    text: "Você não pode entrar neste servidor.",
+  },
+};
+
 function InvitePage() {
   const { code } = useParams({ from: "/invite/$code" });
   const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const destination = `/invite/${code}`;
 
-  const { data: preview, isLoading } = useQuery({
-    queryKey: ["invite-preview", code],
+  // Preview works signed-out too — the token lives in the URL, never in state.
+  const {
+    data: preview,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["invite-preview", code, isAuthenticated],
     queryFn: () => invitesService.preview(code),
-    enabled: isAuthenticated,
+    enabled: !loading,
     retry: false,
   });
 
   const joinMutation = useMutation({
     mutationFn: () => invitesService.join(code),
-    onSuccess: async () => {
+    onSuccess: async (serverId) => {
       await queryClient.invalidateQueries();
       toast.success("Você entrou no servidor.");
-      await navigate({ to: "/app", replace: true });
+      await navigate({ to: "/app", search: { server: serverId }, replace: true });
     },
-    onError: (error) => toast.error(inviteErrorMessage(error)),
+    onError: (error) => {
+      const raw = error instanceof Error ? error.message : "";
+      const key = Object.keys(INVALID_STATES).find((k) => raw.includes(k));
+      toast.error(
+        key ? INVALID_STATES[key]!.text : "Não foi possível entrar no servidor. Tente novamente.",
+      );
+      void queryClient.invalidateQueries({ queryKey: ["invite-preview", code] });
+    },
   });
 
-  if (loading) {
-    return (
-      <AuthShell title="Convite" subtitle="Verificando seu acesso...">
-        <p className="text-muted-foreground text-sm">Um instante.</p>
-      </AuthShell>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <AuthShell
-        title="Você foi convidado"
-        subtitle="Entre na sua conta para aceitar o convite."
-        footer={
-          <Link to="/register" className="text-primary font-medium hover:underline">
-            Criar uma conta
-          </Link>
-        }
-      >
-        <Button asChild className="w-full">
-          <Link to="/login" search={{ redirect: `/invite/${code}` }}>
-            Entrar para continuar
-          </Link>
-        </Button>
-      </AuthShell>
-    );
-  }
-
-  if (isLoading) {
+  if (loading || isLoading) {
     return (
       <AuthShell title="Convite" subtitle="Carregando informações do servidor...">
-        <p className="text-muted-foreground text-sm">Um instante.</p>
+        <div className="border-border bg-surface h-20 animate-pulse rounded-xl border" />
       </AuthShell>
     );
   }
 
-  if (!preview || !preview.valid) {
-    return (
-      <AuthShell
-        title="Convite indisponível"
-        subtitle={inviteErrorMessage(new Error(preview?.reason ?? "invite_not_found"))}
-        footer={
-          <Link to="/app" className="text-primary font-medium hover:underline">
-            Ir para o app
-          </Link>
-        }
-      >
-        <p className="text-muted-foreground text-sm">
-          Peça um novo link para quem administra o servidor.
-        </p>
-      </AuthShell>
-    );
+  if (isError || !preview) {
+    const state = INVALID_STATES['invite_not_found']!;
+    return <InvalidState {...state} />;
+  }
+
+  if (!preview.valid) {
+    const state = INVALID_STATES[preview.reason ?? "invite_not_found"] ?? INVALID_STATES['invite_not_found']!;
+    return <InvalidState {...state} />;
   }
 
   return (
     <AuthShell
-      title={preview.server_name ?? "Servidor"}
-      subtitle={`${preview.member_count} membro(s) · convite válido`}
+      title="Você foi convidado"
+      subtitle="Confira o servidor antes de entrar."
       footer={
-        <Link to="/app" className="text-primary font-medium hover:underline">
-          Voltar para o app
+        <Link to="/" className="text-muted-foreground hover:text-primary">
+          Voltar para a home
         </Link>
       }
     >
       <div className="border-border bg-surface mb-5 flex items-center gap-3 rounded-xl border p-3">
-        <Avatar className="ring-border h-12 w-12 rounded-2xl ring-1">
+        <Avatar className="ring-border h-14 w-14 rounded-2xl ring-1">
           <AvatarImage src={preview.server_icon_url ?? undefined} alt="" />
           <AvatarFallback className="bg-surface-elevated rounded-2xl text-sm">
             {(preview.server_name ?? "?").slice(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold">{preview.server_name}</p>
-          <p className="text-muted-foreground truncate text-xs">
-            {preview.member_count} membro(s) online na comunidade
+          <p className="truncate text-base font-semibold">{preview.server_name}</p>
+          {preview.server_description && (
+            <p className="text-muted-foreground truncate text-xs">{preview.server_description}</p>
+          )}
+          <p className="text-muted-foreground mt-1 flex items-center gap-1 text-xs">
+            <Users className="h-3 w-3" />
+            {Number(preview.member_count ?? 0).toLocaleString("pt-BR")} membros
           </p>
         </div>
       </div>
-      {preview.server_description && (
-        <p className="text-muted-foreground mb-5 text-sm">{preview.server_description}</p>
-      )}
-      {preview.already_member ? (
-        <Button asChild className="w-full">
-          <Link to="/app">Você já é membro — abrir app</Link>
-        </Button>
+
+      {!isAuthenticated ? (
+        <div className="space-y-2">
+          <Button asChild className="w-full">
+            <Link to="/login" search={{ redirect: destination }}>
+              Entrar para continuar
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full">
+            <Link to="/register" search={{ redirect: destination }}>
+              Criar uma conta
+            </Link>
+          </Button>
+        </div>
+      ) : preview.already_member ? (
+        <div className="space-y-3">
+          <p className="text-muted-foreground text-sm">Você já faz parte deste servidor.</p>
+          <Button asChild className="w-full">
+            <Link to="/app" search={{ server: preview.server_id ?? undefined }}>
+              Abrir servidor
+            </Link>
+          </Button>
+        </div>
       ) : (
         <Button
           className="w-full"
@@ -138,6 +165,16 @@ function InvitePage() {
           {joinMutation.isPending ? "Entrando..." : "Entrar no servidor"}
         </Button>
       )}
+    </AuthShell>
+  );
+}
+
+function InvalidState({ emoji, title, text }: { emoji: string; title: string; text: string }) {
+  return (
+    <AuthShell title={`${emoji} ${title}`} subtitle={text}>
+      <Button asChild variant="outline" className="w-full">
+        <Link to="/">Voltar</Link>
+      </Button>
     </AuthShell>
   );
 }

@@ -8,6 +8,7 @@ export const INVITE_ERRORS: Record<string, string> = {
   invite_exhausted: "Este convite atingiu o limite de usos.",
   not_authenticated: "Você precisa entrar na sua conta.",
   not_authorized: "Você não tem permissão para isso.",
+  user_banned: "Você não pode entrar neste servidor.",
 };
 
 export function inviteErrorMessage(error: unknown) {

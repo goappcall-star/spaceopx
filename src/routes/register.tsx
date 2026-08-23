@@ -1,6 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 
 import { AuthShell } from "@/components/auth/AuthShell";
 import { Button } from "@/components/ui/button";
@@ -8,8 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { authService } from "@/services/auth";
+import { safeRedirect } from "@/lib/redirect";
 
 export const Route = createFileRoute("/register")({
+  validateSearch: z.object({ redirect: z.string().optional() }),
   ssr: false,
   head: () => ({
     meta: [
@@ -29,14 +32,16 @@ const USERNAME_RE = /^[a-z0-9_.]{3,32}$/;
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const search = useSearch({ from: "/register" });
+  const destination = safeRedirect(search.redirect, "/app");
   const { isAuthenticated, loading } = useAuth();
   const [form, setForm] = useState({ email: "", password: "", username: "", displayName: "" });
   const [submitting, setSubmitting] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
   useEffect(() => {
-    if (!loading && isAuthenticated) void navigate({ to: "/app", replace: true });
-  }, [loading, isAuthenticated, navigate]);
+    if (!loading && isAuthenticated) void navigate({ href: destination, replace: true });
+  }, [loading, isAuthenticated, destination, navigate]);
 
   function update(key: keyof typeof form, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -65,7 +70,7 @@ function RegisterPage() {
 
       if (result.session) {
         toast.success("Conta criada!");
-        await navigate({ to: "/app", replace: true });
+        await navigate({ href: destination, replace: true });
       } else {
         setEmailSent(true);
       }

@@ -26,10 +26,10 @@ export function InviteEmbed({ code }: { code: string }) {
 
   const join = useMutation({
     mutationFn: () => invitesService.join(code),
-    onSuccess: async () => {
+    onSuccess: async (serverId) => {
       await queryClient.invalidateQueries({ queryKey: ["servers"] });
       toast.success("Você entrou no servidor.");
-      await navigate({ to: "/app" });
+      await navigate({ to: "/app", search: { server: serverId } });
     },
     onError: (error) => toast.error(inviteErrorMessage(error)),
   });
@@ -66,7 +66,7 @@ export function InviteEmbed({ code }: { code: string }) {
       {!data.valid ? (
         <p className="text-muted-foreground mt-3 text-xs">Convite indisponível.</p>
       ) : data.already_member ? (
-        <Button size="sm" variant="secondary" className="mt-3 w-full" onClick={() => void navigate({ to: "/app" })}>
+        <Button size="sm" variant="secondary" className="mt-3 w-full" onClick={() => void navigate({ to: "/app", search: { server: data.server_id ?? undefined } })}>
           Abrir servidor
         </Button>
       ) : (

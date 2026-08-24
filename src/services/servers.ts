@@ -68,7 +68,8 @@ export const serversService = {
   ): Promise<Server> {
     const { data, error } = await supabase
       .from("servers")
-      .update(patch)
+      .update(patch as Record<string, never>)
+
       .eq("id", serverId)
       .select("*")
       .single();

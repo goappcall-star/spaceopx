@@ -102,14 +102,28 @@ export interface UserPreferences {
 }
 
 
+export type ServerVisibility = "public" | "private";
+
+export interface ServerInteractions {
+  allow_messages: boolean;
+  allow_reactions: boolean;
+  allow_mentions: boolean;
+  allow_member_invites: boolean;
+  allow_member_dms: boolean;
+}
+
 export interface Server {
   id: string;
   owner_id: string;
   name: string;
   icon_url: string | null;
+  banner_url: string | null;
   description: string | null;
+  visibility: ServerVisibility;
+  interactions: ServerInteractions;
   created_at: string;
   updated_at: string;
+
 }
 
 export interface ServerMember {

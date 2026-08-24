@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          server_id: string
+          target_id: string | null
+          target_label: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          server_id: string
+          target_id?: string | null
+          target_label?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          server_id?: string
+          target_id?: string | null
+          target_label?: string | null
+          target_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       badges: {
         Row: {
           created_at: string
@@ -659,31 +703,40 @@ export type Database = {
       }
       servers: {
         Row: {
+          banner_url: string | null
           created_at: string
           description: string | null
           icon_url: string | null
           id: string
+          interactions: Json
           name: string
           owner_id: string
           updated_at: string
+          visibility: string
         }
         Insert: {
+          banner_url?: string | null
           created_at?: string
           description?: string | null
           icon_url?: string | null
           id?: string
+          interactions?: Json
           name: string
           owner_id: string
           updated_at?: string
+          visibility?: string
         }
         Update: {
+          banner_url?: string | null
           created_at?: string
           description?: string | null
           icon_url?: string | null
           id?: string
+          interactions?: Json
           name?: string
           owner_id?: string
           updated_at?: string
+          visibility?: string
         }
         Relationships: []
       }
@@ -930,6 +983,7 @@ export type Database = {
           already_member: boolean
           member_count: number
           reason: string
+          server_banner_url: string
           server_description: string
           server_icon_url: string
           server_id: string
@@ -951,6 +1005,10 @@ export type Database = {
       }
       has_friendship_link: {
         Args: { _other: string; _user_id: string }
+        Returns: boolean
+      }
+      has_server_permission: {
+        Args: { _perm: string; _server_id: string; _user_id: string }
         Returns: boolean
       }
       has_server_role: {
@@ -999,6 +1057,36 @@ export type Database = {
           updated_at: string
         }[]
       }
+      list_server_audit_logs: {
+        Args: { _limit?: number; _server_id: string }
+        Returns: {
+          action: string
+          actor_avatar_url: string
+          actor_display_name: string
+          actor_id: string
+          actor_username: string
+          created_at: string
+          id: string
+          metadata: Json
+          target_id: string
+          target_label: string
+          target_type: string
+        }[]
+      }
+      list_server_bans: {
+        Args: { _server_id: string }
+        Returns: {
+          avatar_url: string
+          banned_by: string
+          banned_by_username: string
+          created_at: string
+          display_name: string
+          id: string
+          reason: string
+          user_id: string
+          username: string
+        }[]
+      }
       mark_conversation_read: {
         Args: { _conversation_id: string }
         Returns: boolean
@@ -1031,6 +1119,17 @@ export type Database = {
       shares_server_with: {
         Args: { _other_user: string; _user_id: string }
         Returns: boolean
+      }
+      write_audit: {
+        Args: {
+          _action: string
+          _metadata?: Json
+          _server_id: string
+          _target_id?: string
+          _target_label?: string
+          _target_type?: string
+        }
+        Returns: undefined
       }
       xp_for_level: { Args: { _level: number }; Returns: number }
     }

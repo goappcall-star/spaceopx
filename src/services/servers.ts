@@ -1,10 +1,28 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Server } from "@/types";
+import type { Server, ServerInteractions, ServerVisibility } from "@/types";
 
 export interface CreateServerInput {
   name: string;
   description?: string;
   iconUrl?: string;
+}
+
+export const DEFAULT_INTERACTIONS: ServerInteractions = {
+  allow_messages: true,
+  allow_reactions: true,
+  allow_mentions: true,
+  allow_member_invites: false,
+  allow_member_dms: true,
+};
+
+/** The DB stores `interactions` as free-form JSONB; normalise it for the UI. */
+export function toServer(row: Record<string, unknown>): Server {
+  const raw = (row["interactions"] ?? {}) as Partial<ServerInteractions>;
+  return {
+    ...(row as unknown as Server),
+    visibility: (row["visibility"] as ServerVisibility) ?? "private",
+    interactions: { ...DEFAULT_INTERACTIONS, ...raw },
+  };
 }
 
 export const serversService = {
@@ -15,7 +33,7 @@ export const serversService = {
       .select("*")
       .order("created_at", { ascending: true });
     if (error) throw error;
-    return (data ?? []) as Server[];
+    return (data ?? []).map(toServer);
   },
 
   async getById(serverId: string): Promise<Server | null> {
@@ -25,7 +43,7 @@ export const serversService = {
       .eq("id", serverId)
       .maybeSingle();
     if (error) throw error;
-    return (data as Server) ?? null;
+    return data ? toServer(data) : null;
   },
 
   /** Transactional: server + OWNER/ADMIN/MEMBER roles + membership + #geral. */
@@ -38,7 +56,16 @@ export const serversService = {
     return data as string;
   },
 
-  async update(serverId: string, patch: Partial<Pick<Server, "name" | "description" | "icon_url">>) {
+  /**
+   * Writes go straight to the table: RLS (`manage_server` permission) is the
+   * authorization boundary and a DB trigger records the audit entry.
+   */
+  async update(
+    serverId: string,
+    patch: Partial<
+      Pick<Server, "name" | "description" | "icon_url" | "banner_url" | "visibility">
+    > & { interactions?: ServerInteractions },
+  ): Promise<Server> {
     const { data, error } = await supabase
       .from("servers")
       .update(patch)
@@ -46,7 +73,7 @@ export const serversService = {
       .select("*")
       .single();
     if (error) throw error;
-    return data as Server;
+    return toServer(data);
   },
 
   async remove(serverId: string) {

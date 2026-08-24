@@ -387,3 +387,31 @@ export interface DirectMessageWithMeta extends DirectMessage {
   reactions: ReactionGroup[];
   replyTo: { id: string; content: string; author: Profile | null } | null;
 }
+
+/* ------------------------------------------- Fase: gerenciamento de servidor */
+
+export interface ServerBanEntry {
+  id: string;
+  user_id: string;
+  username: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  reason: string | null;
+  created_at: string;
+  banned_by: string | null;
+  banned_by_username: string | null;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  action: string;
+  target_type: string | null;
+  target_id: string | null;
+  target_label: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  actor_id: string | null;
+  actor_username: string | null;
+  actor_display_name: string | null;
+  actor_avatar_url: string | null;
+}

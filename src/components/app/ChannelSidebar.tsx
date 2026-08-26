@@ -1,4 +1,4 @@
-import { ChevronDown, Hash, Plus, UserPlus, Volume2 } from "lucide-react";
+import { ChevronDown, Hash, Plus, Settings, UserPlus, Volume2 } from "lucide-react";
 import { useState } from "react";
 
 import { UserBar } from "@/components/app/UserBar";
@@ -18,6 +18,8 @@ interface Props {
   unreadChannelIds: Set<string>;
   canInvite: boolean;
   canManage: boolean;
+  canOpenSettings?: boolean;
+  onOpenSettings?: () => void;
   onInvite: () => void;
   onCreateChannel: () => void;
 }
@@ -77,6 +79,8 @@ export function ChannelSidebar({
   unreadChannelIds,
   canInvite,
   canManage,
+  canOpenSettings = false,
+  onOpenSettings,
   onInvite,
   onCreateChannel,
 }: Props) {

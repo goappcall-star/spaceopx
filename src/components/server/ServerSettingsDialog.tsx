@@ -44,20 +44,21 @@ export function ServerSettingsDialog({
   type SectionItem = { id: SectionId; label: string; icon: typeof Shield; group: string };
   const sections: SectionItem[] = (
     [
-
-    { id: "profile", label: "Perfil do servidor", icon: ImageIcon, group: "Geral" },
-    { id: "access", label: "Acesso e interações", icon: Settings2, group: "Geral" },
-    { id: "members", label: "Membros", icon: Users, group: "Comunidade" },
-    { id: "roles", label: "Cargos e permissões", icon: Shield, group: "Comunidade" },
-    { id: "invites", label: "Convites", icon: Link2, group: "Comunidade" },
-    { id: "bans", label: "Banimentos", icon: Ban, group: "Moderação" },
-    { id: "audit", label: "Registro de auditoria", icon: ScrollText, group: "Moderação" },
-  ].filter((item) => {
+      { id: "profile", label: "Perfil do servidor", icon: ImageIcon, group: "Geral" },
+      { id: "access", label: "Acesso e interações", icon: Settings2, group: "Geral" },
+      { id: "members", label: "Membros", icon: Users, group: "Comunidade" },
+      { id: "roles", label: "Cargos e permissões", icon: Shield, group: "Comunidade" },
+      { id: "invites", label: "Convites", icon: Link2, group: "Comunidade" },
+      { id: "bans", label: "Banimentos", icon: Ban, group: "Moderação" },
+      { id: "audit", label: "Registro de auditoria", icon: ScrollText, group: "Moderação" },
+    ] as SectionItem[]
+  ).filter((item) => {
     if (item.id === "bans") return can("ban_members");
     if (item.id === "audit") return can("view_audit_log");
     if (item.id === "invites") return can("create_invite") || can("manage_server");
     return true;
   });
+
 
   const groups = [...new Set(sections.map((s) => s.group))];
   const readOnlyServer = !can("manage_server");

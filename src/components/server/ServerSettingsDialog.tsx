@@ -41,7 +41,10 @@ export function ServerSettingsDialog({
   const { can } = useServerAbilities(server, members, currentUserId);
   const [section, setSection] = useState<SectionId>("profile");
 
-  const sections: { id: SectionId; label: string; icon: typeof Shield; group: string }[] = [
+  type SectionItem = { id: SectionId; label: string; icon: typeof Shield; group: string };
+  const sections: SectionItem[] = (
+    [
+
     { id: "profile", label: "Perfil do servidor", icon: ImageIcon, group: "Geral" },
     { id: "access", label: "Acesso e interações", icon: Settings2, group: "Geral" },
     { id: "members", label: "Membros", icon: Users, group: "Comunidade" },

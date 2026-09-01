@@ -10,6 +10,7 @@ import { InviteDialog } from "@/components/app/InviteDialog";
 import { JoinServerDialog } from "@/components/app/JoinServerDialog";
 import { MemberPanel } from "@/components/app/MemberPanel";
 import { ServerRail } from "@/components/app/ServerRail";
+import { ServerSettingsDialog } from "@/components/server/ServerSettingsDialog";
 import { UserBar } from "@/components/app/UserBar";
 import { CallOverlay } from "@/components/call/CallOverlay";
 import { IncomingCallDialog } from "@/components/call/IncomingCallDialog";
@@ -26,6 +27,7 @@ import {
   useServerMembers,
   useServerPermissions,
 } from "@/hooks/use-servers";
+import { useServerAbilities } from "@/hooks/use-server-admin";
 import { CallProviderRoot } from "@/hooks/use-call";
 import { VoiceProviderRoot } from "@/hooks/use-voice";
 import { ProfileDialogProvider, useProfileDialog } from "@/components/gamer/ProfileDialog";
@@ -67,6 +69,7 @@ function AppPage() {
   const [joinOpen, setJoinOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [channelOpen, setChannelOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [unread, setUnread] = useState<Set<string>>(new Set());
   const [view, setView] = useState<"servers" | "social">("servers");
   const [socialTab, setSocialTab] = useState<SocialTab>("friends");
@@ -89,6 +92,7 @@ function AppPage() {
     activeServer?.id ?? null,
   );
   const { me, canManage } = useServerPermissions(members, user?.id);
+  const abilities = useServerAbilities(activeServer, members, user?.id);
   const presence = useServerPresence(
     activeServer?.id ?? null,
     user?.id,
@@ -190,8 +194,10 @@ function AppPage() {
               onSelectChannel={setActiveChannelId}
               members={members}
               unreadChannelIds={unread}
-              canInvite={canManage}
+              canInvite={canManage || abilities.can("create_invite")}
               canManage={canManage}
+              canOpenSettings={abilities.canOpenSettings}
+              onOpenSettings={() => setSettingsOpen(true)}
               onInvite={() => setInviteOpen(true)}
               onCreateChannel={() => setChannelOpen(true)}
             />

@@ -115,7 +115,15 @@ function InvitePage() {
         </Link>
       }
     >
+      {preview.server_banner_url && (
+        <div
+          className="border-border mb-3 h-28 w-full overflow-hidden rounded-xl border bg-cover bg-center"
+          style={{ backgroundImage: `url(${preview.server_banner_url})` }}
+          aria-hidden
+        />
+      )}
       <div className="border-border bg-surface mb-5 flex items-center gap-3 rounded-xl border p-3">
+
         <Avatar className="ring-border h-14 w-14 rounded-2xl ring-1">
           <AvatarImage src={preview.server_icon_url ?? undefined} alt="" />
           <AvatarFallback className="bg-surface-elevated rounded-2xl text-sm">

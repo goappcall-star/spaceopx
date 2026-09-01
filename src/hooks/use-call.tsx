@@ -494,3 +494,8 @@ export function useCall() {
   if (!ctx) throw new Error("useCall must be used inside <CallProviderRoot>");
   return ctx;
 }
+
+/** Same as useCall but returns null outside the provider (safe in popovers). */
+export function useOptionalCall() {
+  return useContext(CallContext) ?? null;
+}

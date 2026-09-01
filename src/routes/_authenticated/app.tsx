@@ -346,7 +346,17 @@ function AppPage() {
               onOpenChange={setChannelOpen}
               onCreated={(channelId) => setActiveChannelId(channelId)}
             />
+            {user && (
+              <ServerSettingsDialog
+                server={activeServer}
+                members={members}
+                currentUserId={user.id}
+                open={settingsOpen}
+                onOpenChange={setSettingsOpen}
+              />
+            )}
           </>
+
         )}
         </ProfileDialogProvider>
         </CallProviderRoot>

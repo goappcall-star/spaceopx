@@ -197,6 +197,7 @@ export interface InvitePreview {
   server_id: string | null;
   server_name: string | null;
   server_icon_url: string | null;
+  server_banner_url: string | null;
   server_description: string | null;
   member_count: number;
   already_member: boolean;

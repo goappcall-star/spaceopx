@@ -10,7 +10,7 @@ import { InviteDialog } from "@/components/app/InviteDialog";
 import { JoinServerDialog } from "@/components/app/JoinServerDialog";
 import { MemberPanel } from "@/components/app/MemberPanel";
 import { ServerRail } from "@/components/app/ServerRail";
-import { ServerSettingsDialog } from "@/components/server/ServerSettingsDialog";
+import { ServerSettingsDialog } from "@/components/server-settings/ServerSettingsDialog";
 import { UserBar } from "@/components/app/UserBar";
 import { CallOverlay } from "@/components/call/CallOverlay";
 import { IncomingCallDialog } from "@/components/call/IncomingCallDialog";

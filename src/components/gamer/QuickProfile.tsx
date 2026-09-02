@@ -33,7 +33,7 @@ export function QuickProfile({
   onStartDirect,
 }: {
   userId: string;
-  roles?: Role[];
+  roles?: Role[] | undefined;
   children: ReactNode;
   side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "center" | "end";
@@ -93,7 +93,7 @@ function QuickProfileCard({
   onStartDirect,
 }: {
   userId: string;
-  roles?: Role[];
+  roles?: Role[] | undefined;
   onDone: () => void;
   onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {

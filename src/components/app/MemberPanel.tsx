@@ -1,9 +1,9 @@
 import { StatusDot } from "@/components/app/StatusDot";
 import { GamePresenceLine } from "@/components/gamer/GamePresenceLine";
-import { useProfileDialog } from "@/components/gamer/ProfileDialog";
+import { QuickProfile } from "@/components/gamer/QuickProfile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGamePresenceMap } from "@/hooks/use-gamer";
-import type { PresenceStatus } from "@/hooks/use-presence";
+import { useGlobalPresence } from "@/hooks/use-global-presence";
 import { cn } from "@/lib/utils";
 import { roleLabel } from "@/services/roles";
 import type { MemberWithProfile, UserStatus } from "@/types";
@@ -11,67 +11,73 @@ import type { MemberWithProfile, UserStatus } from "@/types";
 export function MemberPanel({
   members,
   loading,
-  presence = {},
+  onStartDirect,
 }: {
   members: MemberWithProfile[];
   loading: boolean;
-  presence?: Record<string, PresenceStatus>;
+  onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {
-  const { openProfile } = useProfileDialog();
+  const { statusOf } = useGlobalPresence();
   // Single batched query + realtime for the whole list — no per-member fetch.
   const gamePresence = useGamePresenceMap(members.map((m) => m.user_id));
 
-  const online = members.filter((m) => presence[m.user_id]);
-  const offline = members.filter((m) => !presence[m.user_id]);
+  const online = members.filter((m) => statusOf(m.user_id) !== "offline");
+  const offline = members.filter((m) => statusOf(m.user_id) === "offline");
 
   const renderMember = (member: MemberWithProfile) => {
     const topRole = member.roles[0];
     const name = member.nickname ?? member.profile?.display_name ?? "Usuário";
-    const status: UserStatus = (presence[member.user_id] as UserStatus) ?? "offline";
+    const status: UserStatus = statusOf(member.user_id);
     const game = gamePresence[member.user_id];
     return (
       <li key={member.id}>
-        <button
-          type="button"
-          onClick={() => openProfile(member.user_id)}
-          className={cn(
-            "hover:bg-surface-hover flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-all duration-150",
-            status === "offline" && "opacity-55 hover:opacity-100",
-          )}
+        <QuickProfile
+          userId={member.user_id}
+          roles={member.roles}
+          side="left"
+          onStartDirect={onStartDirect}
         >
-          <div className="relative shrink-0">
-            <Avatar className="ring-border h-8 w-8 ring-1">
-              <AvatarImage src={member.profile?.avatar_url ?? undefined} alt="" />
-              <AvatarFallback className="bg-surface-elevated text-xs">
-                {name.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <StatusDot
-              status={status}
-              playing={Boolean(game)}
-              className="border-surface absolute -right-0.5 -bottom-0.5 border-2"
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p
-              className="truncate text-sm font-medium"
-              style={topRole?.color ? { color: topRole.color } : undefined}
-            >
-              {name}
-            </p>
-            {game ? (
-              <GamePresenceLine presence={game} />
-            ) : (
-              <p className="text-muted-foreground truncate text-xs">
-                {member.profile?.custom_status
-                  ? member.profile.custom_status
-                  : topRole
-                    ? roleLabel(topRole.name)
-                    : `@${member.profile?.username ?? ""}`}
-              </p>
+          <button
+            type="button"
+            className={cn(
+              "hover:bg-surface-hover flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-all duration-150",
+              status === "offline" && "opacity-55 hover:opacity-100",
             )}
-          </div>
-        </button>
+          >
+            <div className="relative shrink-0">
+              <Avatar className="ring-border h-8 w-8 ring-1">
+                <AvatarImage src={member.profile?.avatar_url ?? undefined} alt="" />
+                <AvatarFallback className="bg-surface-elevated text-xs">
+                  {name.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <StatusDot
+                status={status}
+                playing={Boolean(game)}
+                className="border-surface absolute -right-0.5 -bottom-0.5 border-2"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p
+                className="truncate text-sm font-medium"
+                style={topRole?.color ? { color: topRole.color } : undefined}
+              >
+                {name}
+              </p>
+              {game ? (
+                <GamePresenceLine presence={game} />
+              ) : (
+                <p className="text-muted-foreground truncate text-xs">
+                  {member.profile?.custom_status
+                    ? member.profile.custom_status
+                    : topRole
+                      ? roleLabel(topRole.name)
+                      : `@${member.profile?.username ?? ""}`}
+                </p>
+              )}
+            </div>
+          </button>
+        </QuickProfile>
       </li>
     );
   };
@@ -104,4 +110,3 @@ export function MemberPanel({
     </aside>
   );
 }
-

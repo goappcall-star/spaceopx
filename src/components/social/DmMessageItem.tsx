@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { QuickProfile } from "@/components/gamer/QuickProfile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -68,6 +69,7 @@ export const DmMessageItem = memo(function DmMessageItem({
             {time(message.created_at)}
           </span>
         ) : (
+          <QuickProfile userId={message.sender_id} side="right">
           <button type="button" onClick={() => onOpenProfile(message.sender_id)} aria-label={name}>
             <Avatar className="ring-border hover:ring-primary/60 h-9 w-9 ring-1 transition">
               <AvatarImage src={message.author?.avatar_url ?? undefined} alt="" />
@@ -76,6 +78,7 @@ export const DmMessageItem = memo(function DmMessageItem({
               </AvatarFallback>
             </Avatar>
           </button>
+          </QuickProfile>
         )}
       </div>
 

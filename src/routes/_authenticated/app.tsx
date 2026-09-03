@@ -20,7 +20,7 @@ import { VoiceRoom } from "@/components/voice/VoiceRoom";
 import { Button } from "@/components/ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
-import { useServerPresence } from "@/hooks/use-presence";
+import { GlobalPresenceProvider } from "@/hooks/use-global-presence";
 import {
   useMyServers,
   useServerChannels,
@@ -93,11 +93,6 @@ function AppPage() {
   );
   const { me, canManage } = useServerPermissions(members, user?.id);
   const abilities = useServerAbilities(activeServer, members, user?.id);
-  const presence = useServerPresence(
-    activeServer?.id ?? null,
-    user?.id,
-    profile?.status ?? "online",
-  );
 
   // Deep link (?server=...) — e.g. right after accepting an invite.
   useEffect(() => {
@@ -153,6 +148,7 @@ function AppPage() {
   const activeChannel = channels.find((c) => c.id === activeChannelId) ?? null;
 
   return (
+    <GlobalPresenceProvider userId={user?.id} profileStatus={profile?.status}>
     <VoiceProviderRoot serverId={activeServer?.id ?? null} userId={user?.id}>
       <RemoteAudio />
       <TooltipProvider delayDuration={200}>
@@ -319,7 +315,7 @@ function AppPage() {
           </main>
 
           {view === "servers" && activeServer && (
-            <MemberPanel members={members} loading={loadingMembers} presence={presence} />
+            <MemberPanel members={members} loading={loadingMembers} onStartDirect={openConversation} />
           )}
         </div>
 
@@ -362,6 +358,7 @@ function AppPage() {
         </CallProviderRoot>
       </TooltipProvider>
     </VoiceProviderRoot>
+    </GlobalPresenceProvider>
   );
 }
 
@@ -409,7 +406,6 @@ function SocialMain({
       requests={requests}
       conversations={conversations}
       onOpenConversation={onOpenConversation}
-      onOpenProfile={openProfile}
     />
   );
 }

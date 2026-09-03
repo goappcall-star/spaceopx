@@ -2,6 +2,7 @@ import { Check, CornerUpLeft, Pencil, SmilePlus, Trash2, X } from "lucide-react"
 import { memo, useState } from "react";
 
 import { AttachmentView } from "@/components/chat/AttachmentView";
+import { QuickProfile } from "@/components/gamer/QuickProfile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -82,12 +83,14 @@ export const MessageItem = memo(function MessageItem({
             {time(message.created_at)}
           </span>
         ) : (
-          <Avatar className="ring-border h-9 w-9 ring-1">
-            <AvatarImage src={message.author?.avatar_url ?? undefined} alt="" />
-            <AvatarFallback className="bg-surface-elevated text-xs">
-              {name.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <QuickProfile userId={message.author_id} side="right">
+            <Avatar className="ring-border hover:ring-primary/60 h-9 w-9 cursor-pointer ring-1 transition">
+              <AvatarImage src={message.author?.avatar_url ?? undefined} alt="" />
+              <AvatarFallback className="bg-surface-elevated text-xs">
+                {name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </QuickProfile>
         )}
       </div>
 
@@ -105,7 +108,9 @@ export const MessageItem = memo(function MessageItem({
 
         {!compact && (
           <p className="flex items-baseline gap-2">
-            <span className="text-sm font-semibold">{name}</span>
+            <QuickProfile userId={message.author_id} side="bottom" className="inline-block">
+              <span className="cursor-pointer text-sm font-semibold hover:underline">{name}</span>
+            </QuickProfile>
             <span className="text-muted-foreground font-mono text-[11px]">
               @{message.author?.username ?? "?"}
             </span>

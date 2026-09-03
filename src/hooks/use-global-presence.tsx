@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import {
   createContext,
   useCallback,
@@ -23,6 +24,57 @@ export type ConnectionState = "connecting" | "online" | "reconnecting";
 const HEARTBEAT_MS = 25_000;
 /** Tolerance before a vanished client is painted offline (suspend, flaky net). */
 const GRACE_MS = 20_000;
+
+/* ------------------------------------------------------------------------ */
+/* Single shared realtime channel — supabase-js rejects a second subscribe on  */
+/* the same topic, so the channel lives at module scope and fans out events.   */
+
+type PresenceRow = { user_id: string; status: UserStatus };
+
+let shared: { channel: RealtimeChannel; userId: string } | null = null;
+const syncListeners = new Set<(present: Record<string, UserStatus>) => void>();
+const stateListeners = new Set<(state: ConnectionState) => void>();
+
+function readPresence(channel: RealtimeChannel) {
+  const state = channel.presenceState<PresenceRow>();
+  const present: Record<string, UserStatus> = {};
+  for (const entries of Object.values(state)) {
+    const first = entries[0];
+    if (first?.user_id) present[first.user_id] = first.status ?? "online";
+  }
+  return present;
+}
+
+function getPresenceChannel(userId: string) {
+  if (shared && shared.userId === userId) return shared.channel;
+  if (shared) {
+    const previous = shared.channel;
+    shared = null;
+    void previous.untrack().then(() => supabase.removeChannel(previous));
+  }
+
+  const channel = supabase.channel(`presence:global:${userId}`, {
+    config: { presence: { key: userId } },
+  });
+  const emit = () => {
+    const present = readPresence(channel);
+    for (const listener of syncListeners) listener(present);
+  };
+  channel
+    .on("presence", { event: "sync" }, emit)
+    .on("presence", { event: "join" }, emit)
+    .on("presence", { event: "leave" }, emit)
+    .subscribe((status) => {
+      const next: ConnectionState = status === "SUBSCRIBED" ? "online" : "reconnecting";
+      for (const listener of stateListeners) listener(next);
+      if (status === "SUBSCRIBED") emit();
+    });
+
+  shared = { channel, userId };
+  return channel;
+}
+
+/* ------------------------------------------------------------------------ */
 
 interface GlobalPresenceValue {
   statuses: Record<string, UserStatus>;
@@ -69,34 +121,19 @@ export function GlobalPresenceProvider({
       return;
     }
 
-    const channel = supabase.channel("presence:global", {
-      config: { presence: { key: userId } },
-    });
+    const channel = getPresenceChannel(userId);
 
     const track = () => {
       void channel.track({ user_id: userId, status: statusRef.current, at: Date.now() });
     };
     trackRef.current = track;
 
-    const sync = () => {
-      const state = channel.presenceState<{ user_id: string; status: UserStatus }>();
-      const present: Record<string, UserStatus> = {};
-      for (const entries of Object.values(state)) {
-        const first = entries[0];
-        if (first?.user_id) present[first.user_id] = first.status ?? "online";
-      }
-
+    const onSync = (present: Record<string, UserStatus>) => {
       setStatuses((prev) => {
         const next: Record<string, UserStatus> = { ...prev, ...present };
-        // Someone left: keep them visible during the tolerance window.
+        // Someone vanished: keep them visible during the tolerance window.
         for (const id of Object.keys(prev)) {
-          if (present[id]) {
-            const timer = timers[id];
-            if (timer) {
-              clearTimeout(timer);
-              delete timers[id];
-            }
-          } else if (!timers[id]) {
+          if (!present[id] && !timers[id]) {
             timers[id] = setTimeout(() => {
               delete timers[id];
               setStatuses((current) => {
@@ -118,18 +155,10 @@ export function GlobalPresenceProvider({
       });
     };
 
-    channel
-      .on("presence", { event: "sync" }, sync)
-      .on("presence", { event: "join" }, sync)
-      .on("presence", { event: "leave" }, sync)
-      .subscribe((state) => {
-        if (state === "SUBSCRIBED") {
-          setConnection("online");
-          track();
-        } else if (state === "CHANNEL_ERROR" || state === "TIMED_OUT" || state === "CLOSED") {
-          setConnection("reconnecting");
-        }
-      });
+    syncListeners.add(onSync);
+    stateListeners.add(setConnection);
+    onSync(readPresence(channel));
+    track();
 
     const heartbeat = setInterval(track, HEARTBEAT_MS);
 
@@ -152,6 +181,8 @@ export function GlobalPresenceProvider({
 
     return () => {
       clearInterval(heartbeat);
+      syncListeners.delete(onSync);
+      stateListeners.delete(setConnection);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("online", onOnline);
       window.removeEventListener("offline", onOffline);
@@ -159,8 +190,6 @@ export function GlobalPresenceProvider({
       for (const timer of Object.values(timers)) clearTimeout(timer);
       for (const id of Object.keys(timers)) delete timers[id];
       trackRef.current = null;
-      void channel.untrack().then(() => supabase.removeChannel(channel));
-      setStatuses({});
     };
   }, [userId]);
 
@@ -205,4 +234,14 @@ const FALLBACK: GlobalPresenceValue = {
 
 export function useGlobalPresence() {
   return useContext(GlobalPresenceContext) ?? FALLBACK;
+}
+
+/** Called on sign-out / account switch so no presence leaks between users. */
+export function teardownPresence() {
+  if (!shared) return;
+  const { channel } = shared;
+  shared = null;
+  syncListeners.clear();
+  stateListeners.clear();
+  void channel.untrack().then(() => supabase.removeChannel(channel));
 }

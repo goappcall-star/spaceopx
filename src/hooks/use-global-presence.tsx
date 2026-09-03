@@ -69,11 +69,19 @@ export function GlobalPresenceProvider({
       return;
     }
 
-    const channel = supabase.channel("presence:global", {
-      config: { presence: { key: userId } },
-    });
+    // One shared channel per client — supabase-js refuses new listeners on an
+    // already-subscribed topic, so the instance is reused across remounts.
+    let disposed = false;
+    const existing = supabase
+      .getChannels()
+      .find((c) => c.topic === "realtime:presence:global" && c.state !== "closed");
+    const channel =
+      existing ??
+      supabase.channel("presence:global", { config: { presence: { key: userId } } });
+    const fresh = !existing;
 
     const track = () => {
+      if (disposed) return;
       void channel.track({ user_id: userId, status: statusRef.current, at: Date.now() });
     };
     trackRef.current = track;
@@ -90,13 +98,7 @@ export function GlobalPresenceProvider({
         const next: Record<string, UserStatus> = { ...prev, ...present };
         // Someone left: keep them visible during the tolerance window.
         for (const id of Object.keys(prev)) {
-          if (present[id]) {
-            const timer = timers[id];
-            if (timer) {
-              clearTimeout(timer);
-              delete timers[id];
-            }
-          } else if (!timers[id]) {
+          if (!present[id] && !timers[id]) {
             timers[id] = setTimeout(() => {
               delete timers[id];
               setStatuses((current) => {
@@ -118,20 +120,27 @@ export function GlobalPresenceProvider({
       });
     };
 
-    channel
-      .on("presence", { event: "sync" }, sync)
-      .on("presence", { event: "join" }, sync)
-      .on("presence", { event: "leave" }, sync)
-      .subscribe((state) => {
-        if (state === "SUBSCRIBED") {
-          setConnection("online");
-          track();
-        } else if (state === "CHANNEL_ERROR" || state === "TIMED_OUT" || state === "CLOSED") {
-          setConnection("reconnecting");
-        }
-      });
+    if (fresh) {
+      channel
+        .on("presence", { event: "sync" }, sync)
+        .on("presence", { event: "join" }, sync)
+        .on("presence", { event: "leave" }, sync)
+        .subscribe((state) => {
+          if (state === "SUBSCRIBED") {
+            setConnection("online");
+            track();
+          } else if (state === "CHANNEL_ERROR" || state === "TIMED_OUT" || state === "CLOSED") {
+            setConnection("reconnecting");
+          }
+        });
+    } else {
+      setConnection("online");
+      sync();
+      track();
+    }
 
     const heartbeat = setInterval(track, HEARTBEAT_MS);
+    const resync = setInterval(sync, 5_000);
 
     const onVisible = () => {
       if (document.visibilityState === "visible") track();
@@ -151,7 +160,9 @@ export function GlobalPresenceProvider({
     window.addEventListener("pagehide", onUnload);
 
     return () => {
+      disposed = true;
       clearInterval(heartbeat);
+      clearInterval(resync);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("online", onOnline);
       window.removeEventListener("offline", onOffline);
@@ -160,9 +171,9 @@ export function GlobalPresenceProvider({
       for (const id of Object.keys(timers)) delete timers[id];
       trackRef.current = null;
       void channel.untrack().then(() => supabase.removeChannel(channel));
-      setStatuses({});
     };
   }, [userId]);
+
 
   const setStatus = useCallback(
     async (status: SelectableStatus) => {

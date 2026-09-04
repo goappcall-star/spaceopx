@@ -10,7 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
-import { useGlobalPresence, type SelectableStatus } from "@/hooks/use-global-presence";
+import {
+  teardownPresence,
+  useGlobalPresence,
+  type SelectableStatus,
+} from "@/hooks/use-global-presence";
+
 import { authService } from "@/services/auth";
 import { cn } from "@/lib/utils";
 
@@ -30,8 +35,10 @@ export function UserBar() {
   /** Full teardown so nothing leaks between accounts. */
   async function resetSession() {
     await queryClient.cancelQueries();
+    teardownPresence();
     try {
       await authService.signOut();
+
     } catch {
       toast.error("Não foi possível sair.");
       return false;

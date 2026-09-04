@@ -30,8 +30,10 @@ export function UserBar() {
   /** Full teardown so nothing leaks between accounts. */
   async function resetSession() {
     await queryClient.cancelQueries();
+    teardownPresence();
     try {
       await authService.signOut();
+
     } catch {
       toast.error("Não foi possível sair.");
       return false;

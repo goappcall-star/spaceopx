@@ -7,7 +7,7 @@ import {
   Video,
   VideoOff,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -35,26 +35,55 @@ function useElapsed(active: boolean) {
   return `${mm}:${ss}`;
 }
 
-/** Plays the peer's microphone audio. */
+/** Plays the peer's microphone audio, independently of the local mic state. */
 function CallAudio({ stream }: { stream: MediaStream | null }) {
   const ref = useRef<HTMLAudioElement>(null);
   const { settings } = useAudioSettings();
+  const [blocked, setBlocked] = useState(false);
+
+  const attemptPlay = useCallback(async () => {
+    const el = ref.current;
+    if (!el || !el.srcObject) return;
+    try {
+      await el.play();
+      setBlocked(false);
+    } catch (error) {
+      // Autoplay policy — surface it instead of silently losing remote voice.
+      if ((error as DOMException)?.name === "NotAllowedError") setBlocked(true);
+    }
+  }, []);
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     if (el.srcObject !== stream) el.srcObject = stream;
-    if (stream) void el.play().catch(() => undefined);
-  }, [stream]);
+    el.muted = false;
+    if (stream) void attemptPlay();
+  }, [stream, attemptPlay]);
+
   useEffect(() => {
     const el = ref.current as
       | (HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> })
       | null;
     if (!el) return;
-    el.volume = Math.min(1, settings.outputVolume / 100);
+    const volume = Number.isFinite(settings.outputVolume) ? settings.outputVolume : 100;
+    el.volume = Math.max(0, Math.min(1, volume / 100));
     if (settings.outputDeviceId && typeof el.setSinkId === "function")
       void el.setSinkId(settings.outputDeviceId).catch(() => undefined);
   }, [settings.outputVolume, settings.outputDeviceId, stream]);
-  return <audio ref={ref} autoPlay className="hidden" />;
+
+  return (
+    <>
+      <audio ref={ref} autoPlay playsInline className="hidden" />
+      {blocked && (
+        <div className="flex justify-center pt-3">
+          <Button size="sm" variant="outline" onClick={() => void attemptPlay()}>
+            Ativar áudio da chamada
+          </Button>
+        </div>
+      )}
+    </>
+  );
 }
 
 export function CallOverlay() {

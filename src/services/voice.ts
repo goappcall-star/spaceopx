@@ -206,7 +206,10 @@ class MeshVoiceProvider implements VoiceProvider {
     const wanted = new Set(userIds.filter((id) => id !== this.userId));
 
     for (const [id, peer] of this.peers) {
-      if (!wanted.has(id)) this.closePeer(id, peer);
+      // Grace period: a peer that just announced itself over the signaling
+      // channel is kept even if the presence list has not caught up yet,
+      // otherwise a fresh connection is torn down right after being built.
+      if (!wanted.has(id) && Date.now() - peer.createdAt > 10_000) this.closePeer(id, peer);
     }
     for (const id of wanted) {
       if (!this.peers.has(id)) this.createPeer(id);
@@ -255,6 +258,7 @@ class MeshVoiceProvider implements VoiceProvider {
       pendingCandidates: [],
       state: "new",
       restartTimer: null,
+      createdAt: Date.now(),
     };
     this.peers.set(remoteId, peer);
 

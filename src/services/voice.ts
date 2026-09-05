@@ -165,7 +165,8 @@ class MeshVoiceProvider implements VoiceProvider {
       });
     });
 
-    events.onStateChange?.("connected");
+    // Real state comes from the peer connections, not from the signaling socket.
+    this.emitAggregateState();
   }
 
   async disconnect() {

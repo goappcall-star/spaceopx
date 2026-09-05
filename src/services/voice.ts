@@ -87,6 +87,7 @@ interface Peer {
   pendingCandidates: RTCIceCandidateInit[];
   state: RTCPeerConnectionState;
   restartTimer: ReturnType<typeof setTimeout> | null;
+  createdAt: number;
 }
 
 class MeshVoiceProvider implements VoiceProvider {

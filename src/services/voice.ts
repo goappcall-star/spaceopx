@@ -75,11 +75,18 @@ const CAMERA_CONSTRAINTS: MediaTrackConstraints = {
 };
 
 interface Peer {
+  id: string;
   pc: RTCPeerConnection;
   polite: boolean;
   makingOffer: boolean;
   ignoreOffer: boolean;
   transceivers: { mic: RTCRtpTransceiver; camera: RTCRtpTransceiver; screen: RTCRtpTransceiver };
+  /** Stable per-kind remote streams — never recreated, so <audio>/<video> keep playing. */
+  streams: { mic: MediaStream; camera: MediaStream; screen: MediaStream };
+  /** Candidates that arrived before the remote description was applied. */
+  pendingCandidates: RTCIceCandidateInit[];
+  state: RTCPeerConnectionState;
+  restartTimer: ReturnType<typeof setTimeout> | null;
 }
 
 class MeshVoiceProvider implements VoiceProvider {
@@ -144,6 +151,10 @@ class MeshVoiceProvider implements VoiceProvider {
       channel.subscribe((status) => {
         if (status === "SUBSCRIBED") {
           this.signaling = channel;
+          // Announce ourselves: peers already in the room answer with their own
+          // hello, which is what makes negotiation start only once BOTH sides
+          // are actually subscribed (broadcast has no message history).
+          this.broadcast({ hello: true });
           resolve();
         } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
           reject(new Error("signaling failed"));

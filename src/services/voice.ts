@@ -242,12 +242,20 @@ class MeshVoiceProvider implements VoiceProvider {
     if (existing) return existing;
 
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
-    // Deterministic m-line order on both ends: mic, camera, screen.
-    const transceivers = {
-      mic: pc.addTransceiver("audio", { direction: "sendrecv" }),
-      camera: pc.addTransceiver("video", { direction: "sendrecv" }),
-      screen: pc.addTransceiver("video", { direction: "sendrecv" }),
-    };
+    // Exactly ONE side creates the m-lines. If both did, the session would end
+    // up with six m-lines and each side would receive tracks on transceivers it
+    // cannot map back to mic/camera/screen — that is what silently dropped the
+    // incoming audio in one direction.
+    const initiator = this.userId > remoteId;
+    const transceivers: Peer["transceivers"] = initiator
+      ? {
+          // Deterministic m-line order on both ends: mic, camera, screen.
+          mic: pc.addTransceiver("audio", { direction: "sendrecv" }),
+          camera: pc.addTransceiver("video", { direction: "sendrecv" }),
+          screen: pc.addTransceiver("video", { direction: "sendrecv" }),
+        }
+      : { mic: null, camera: null, screen: null };
+
     const peer: Peer = {
       id: remoteId,
       pc,
@@ -264,9 +272,11 @@ class MeshVoiceProvider implements VoiceProvider {
     };
     this.peers.set(remoteId, peer);
 
-    void transceivers.mic.sender.replaceTrack(this.outgoingAudioTrack());
-    void transceivers.camera.sender.replaceTrack(this.cameraStream?.getVideoTracks()[0] ?? null);
-    void transceivers.screen.sender.replaceTrack(this.screenStream?.getVideoTracks()[0] ?? null);
+    if (initiator) {
+      void transceivers.mic?.sender.replaceTrack(this.localTrack("mic"));
+      void transceivers.camera?.sender.replaceTrack(this.localTrack("camera"));
+      void transceivers.screen?.sender.replaceTrack(this.localTrack("screen"));
+    }
 
     pc.onicecandidate = ({ candidate }) => {
       if (candidate) this.send(remoteId, { candidate: candidate.toJSON() });

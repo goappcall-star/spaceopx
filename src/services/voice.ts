@@ -178,8 +178,7 @@ class MeshVoiceProvider implements VoiceProvider {
     this.audioContext = null;
 
     for (const [id, peer] of this.peers) {
-      peer.pc.close();
-      this.peers.delete(id);
+      this.closePeer(id, peer);
     }
     this.remote = {};
     this.events.onRemoteMedia?.({});
@@ -584,7 +583,9 @@ class MeshVoiceProvider implements VoiceProvider {
 
 interface SignalPayload {
   from: string;
+  /** Target user id, or "*" for a room-wide announcement. */
   to: string;
+  hello?: boolean;
   description?: RTCSessionDescriptionInit;
   candidate?: RTCIceCandidateInit;
 }

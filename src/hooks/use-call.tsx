@@ -213,6 +213,7 @@ export function CallProviderRoot({
           onStateChange: (state) => {
             if (state === "connected") setStatus("active");
             else if (state === "reconnecting") setStatus("reconnecting");
+            else if (state === "connecting") setStatus("connecting");
           },
           onRemoteMedia: (media) => setRemote(media[remoteId] ?? null),
           onLocalMedia: ({ camera, screen }) => {
@@ -230,7 +231,6 @@ export function CallProviderRoot({
             .catch(() => undefined);
         provider.setInputGain(audioRef.current.inputVolume);
         provider.syncPeers([remoteId]);
-        setStatus("active");
         if (withVideo) {
           try {
             await provider.enableCamera();

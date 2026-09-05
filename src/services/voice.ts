@@ -207,19 +207,36 @@ class MeshVoiceProvider implements VoiceProvider {
     const wanted = new Set(userIds.filter((id) => id !== this.userId));
 
     for (const [id, peer] of this.peers) {
-      if (!wanted.has(id)) {
-        peer.pc.close();
-        this.peers.delete(id);
-        delete this.remote[id];
-        this.emitRemote();
-      }
+      if (!wanted.has(id)) this.closePeer(id, peer);
     }
     for (const id of wanted) {
       if (!this.peers.has(id)) this.createPeer(id);
     }
+    this.emitAggregateState();
+  }
+
+  /** Tear a single peer down without touching any of the others. */
+  private closePeer(id: string, peer: Peer) {
+    if (peer.restartTimer) clearTimeout(peer.restartTimer);
+    peer.pc.onicecandidate = null;
+    peer.pc.onnegotiationneeded = null;
+    peer.pc.ontrack = null;
+    peer.pc.onconnectionstatechange = null;
+    peer.pc.oniceconnectionstatechange = null;
+    try {
+      peer.pc.close();
+    } catch {
+      /* already closed */
+    }
+    this.peers.delete(id);
+    delete this.remote[id];
+    this.emitRemote();
   }
 
   private createPeer(remoteId: string): Peer {
+    const existing = this.peers.get(remoteId);
+    if (existing) return existing;
+
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     // Deterministic m-line order on both ends: mic, camera, screen.
     const transceivers = {
@@ -228,12 +245,17 @@ class MeshVoiceProvider implements VoiceProvider {
       screen: pc.addTransceiver("video", { direction: "sendrecv" }),
     };
     const peer: Peer = {
+      id: remoteId,
       pc,
       // The lexicographically smaller id is polite; ties are impossible.
       polite: this.userId < remoteId,
       makingOffer: false,
       ignoreOffer: false,
       transceivers,
+      streams: { mic: new MediaStream(), camera: new MediaStream(), screen: new MediaStream() },
+      pendingCandidates: [],
+      state: "new",
+      restartTimer: null,
     };
     this.peers.set(remoteId, peer);
 
@@ -260,28 +282,65 @@ class MeshVoiceProvider implements VoiceProvider {
     pc.ontrack = ({ transceiver, track }) => {
       const kind = this.kindForTransceiver(peer, transceiver);
       if (!kind) return;
-      const stream = new MediaStream([track]);
+      const stream = peer.streams[kind];
+      for (const other of stream.getTracks()) if (other !== track) stream.removeTrack(other);
+      if (!stream.getTracks().includes(track)) stream.addTrack(track);
       this.updateRemote(remoteId, kind, stream);
-      const clear = () => this.updateRemote(remoteId, kind, null);
-      track.addEventListener("ended", clear);
-      track.addEventListener("mute", clear);
-      track.addEventListener("unmute", () => this.updateRemote(remoteId, kind, new MediaStream([track])));
+
+      track.addEventListener("ended", () => {
+        stream.removeTrack(track);
+        this.updateRemote(remoteId, kind, null);
+      });
+      // Audio is NEVER dropped on `mute`: remote audio tracks start muted and go
+      // briefly muted on packet loss — clearing it there kills incoming voice.
+      if (kind !== "mic") {
+        track.addEventListener("mute", () => this.updateRemote(remoteId, kind, null));
+        track.addEventListener("unmute", () => this.updateRemote(remoteId, kind, stream));
+      }
     };
 
     pc.onconnectionstatechange = () => {
-      if (pc.connectionState === "failed") {
-        this.events.onStateChange?.("reconnecting");
-        try {
-          pc.restartIce();
-        } catch {
-          /* ignore */
-        }
-      } else if (pc.connectionState === "connected") {
-        this.events.onStateChange?.("connected");
+      peer.state = pc.connectionState;
+      if (pc.connectionState === "failed") this.scheduleIceRestart(peer, 0);
+      this.emitAggregateState();
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      if (pc.iceConnectionState === "disconnected") this.scheduleIceRestart(peer, 2500);
+      else if (pc.iceConnectionState === "connected" && peer.restartTimer) {
+        clearTimeout(peer.restartTimer);
+        peer.restartTimer = null;
       }
     };
 
     return peer;
+  }
+
+  /** Per-peer recovery: one bad link never disturbs the other participants. */
+  private scheduleIceRestart(peer: Peer, delay: number) {
+    if (peer.restartTimer || this.disposed) return;
+    // Only the impolite side restarts, so both ends never restart at once.
+    if (peer.polite) return;
+    peer.restartTimer = setTimeout(() => {
+      peer.restartTimer = null;
+      const state = peer.pc.iceConnectionState;
+      if (state !== "disconnected" && state !== "failed") return;
+      try {
+        peer.pc.restartIce();
+      } catch {
+        /* connection already closed */
+      }
+    }, delay);
+  }
+
+  private emitAggregateState() {
+    if (this.disposed) return;
+    const states = [...this.peers.values()].map((p) => p.state);
+    if (states.length === 0 || states.some((s) => s === "connected"))
+      this.events.onStateChange?.("connected");
+    else if (states.some((s) => s === "new" || s === "connecting"))
+      this.events.onStateChange?.("connecting");
+    else this.events.onStateChange?.("reconnecting");
   }
 
   private kindForTransceiver(peer: Peer, transceiver: RTCRtpTransceiver): MediaKind | null {
@@ -298,6 +357,7 @@ class MeshVoiceProvider implements VoiceProvider {
   private updateRemote(userId: string, kind: MediaKind, stream: MediaStream | null) {
     const current = this.remote[userId] ?? { audio: null, camera: null, screen: null };
     const key = kind === "mic" ? "audio" : kind;
+    if (current[key] === stream) return;
     this.remote = { ...this.remote, [userId]: { ...current, [key]: stream } };
     this.emitRemote();
   }
@@ -316,8 +376,26 @@ class MeshVoiceProvider implements VoiceProvider {
     });
   }
 
+  private broadcast(data: Omit<SignalPayload, "from" | "to">) {
+    this.send("*", data);
+  }
+
   private async onSignal(payload: SignalPayload) {
-    if (this.disposed || payload.to !== this.userId || payload.from === this.userId) return;
+    if (this.disposed || payload.from === this.userId) return;
+    if (payload.to !== this.userId && payload.to !== "*") return;
+
+    if (payload.hello) {
+      const peer = this.peers.get(payload.from) ?? this.createPeer(payload.from);
+      // Reply directly so the newcomer learns about us too (but never loop).
+      if (payload.to === "*") this.send(payload.from, { hello: true });
+      // Repair: our previous offer may have been sent before this peer was
+      // subscribed, leaving us stuck in have-local-offer forever.
+      if (peer.pc.signalingState === "have-local-offer" && peer.pc.localDescription)
+        this.send(payload.from, { description: peer.pc.localDescription.toJSON() });
+      this.emitAggregateState();
+      return;
+    }
+
     const peer = this.peers.get(payload.from) ?? this.createPeer(payload.from);
     const { pc } = peer;
 
@@ -327,23 +405,34 @@ class MeshVoiceProvider implements VoiceProvider {
         const offerCollision =
           description.type === "offer" && (peer.makingOffer || pc.signalingState !== "stable");
         peer.ignoreOffer = !peer.polite && offerCollision;
-        if (peer.ignoreOffer) return;
+        if (peer.ignoreOffer) {
+          // Keep our own offer, but make sure the peer actually received it.
+          if (pc.localDescription) this.send(payload.from, { description: pc.localDescription.toJSON() });
+          return;
+        }
 
         await pc.setRemoteDescription(description);
+        await this.flushCandidates(peer);
         if (description.type === "offer") {
           await pc.setLocalDescription();
           if (pc.localDescription)
             this.send(payload.from, { description: pc.localDescription.toJSON() });
         }
       } else if (payload.candidate) {
-        try {
-          await pc.addIceCandidate(payload.candidate);
-        } catch {
-          if (!peer.ignoreOffer) throw new Error("ice");
-        }
+        // Candidates can outrun the description — buffer instead of dropping.
+        if (!pc.remoteDescription) peer.pendingCandidates.push(payload.candidate);
+        else await pc.addIceCandidate(payload.candidate).catch(() => undefined);
       }
     } catch {
       /* transient signaling error; negotiation will retry */
+    }
+  }
+
+  private async flushCandidates(peer: Peer) {
+    const queued = peer.pendingCandidates;
+    peer.pendingCandidates = [];
+    for (const candidate of queued) {
+      await peer.pc.addIceCandidate(candidate).catch(() => undefined);
     }
   }
 

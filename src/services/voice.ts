@@ -80,7 +80,12 @@ interface Peer {
   polite: boolean;
   makingOffer: boolean;
   ignoreOffer: boolean;
-  transceivers: { mic: RTCRtpTransceiver; camera: RTCRtpTransceiver; screen: RTCRtpTransceiver };
+  /** Null on the answering side until the offer's m-lines are bound by mid. */
+  transceivers: {
+    mic: RTCRtpTransceiver | null;
+    camera: RTCRtpTransceiver | null;
+    screen: RTCRtpTransceiver | null;
+  };
   /** Stable per-kind remote streams — never recreated, so <audio>/<video> keep playing. */
   streams: { mic: MediaStream; camera: MediaStream; screen: MediaStream };
   /** Candidates that arrived before the remote description was applied. */
@@ -359,14 +364,50 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   private kindForTransceiver(peer: Peer, transceiver: RTCRtpTransceiver): MediaKind | null {
-    if (transceiver === peer.transceivers.mic) return "mic";
-    if (transceiver === peer.transceivers.camera) return "camera";
-    if (transceiver === peer.transceivers.screen) return "screen";
+    if (peer.transceivers.mic && transceiver === peer.transceivers.mic) return "mic";
+    if (peer.transceivers.camera && transceiver === peer.transceivers.camera) return "camera";
+    if (peer.transceivers.screen && transceiver === peer.transceivers.screen) return "screen";
     // Fall back to mid ordering (remote-created transceivers).
     if (transceiver.mid === "0") return "mic";
     if (transceiver.mid === "1") return "camera";
     if (transceiver.mid === "2") return "screen";
     return null;
+  }
+
+  /** Local track currently feeding a given media slot. */
+  private localTrack(kind: MediaKind): MediaStreamTrack | null {
+    if (kind === "mic") return this.outgoingAudioTrack();
+    if (kind === "camera") return this.cameraStream?.getVideoTracks()[0] ?? null;
+    return this.screenStream?.getVideoTracks()[0] ?? null;
+  }
+
+  /** Push one media slot to every peer without touching the other slots. */
+  private applyLocalTrack(kind: MediaKind, track: MediaStreamTrack | null) {
+    for (const peer of this.peers.values()) {
+      void peer.transceivers[kind]?.sender.replaceTrack(track).catch(() => undefined);
+    }
+  }
+
+  /** Bind the offer's m-lines to our media slots (answering side only). */
+  private bindTransceivers(peer: Peer) {
+    for (const transceiver of peer.pc.getTransceivers()) {
+      const kind =
+        transceiver.mid === "0"
+          ? "mic"
+          : transceiver.mid === "1"
+            ? "camera"
+            : transceiver.mid === "2"
+              ? "screen"
+              : null;
+      if (!kind || peer.transceivers[kind]) continue;
+      peer.transceivers[kind] = transceiver;
+      try {
+        transceiver.direction = "sendrecv";
+      } catch {
+        /* direction already fixed by the remote description */
+      }
+      void transceiver.sender.replaceTrack(this.localTrack(kind)).catch(() => undefined);
+    }
   }
 
   private updateRemote(userId: string, kind: MediaKind, stream: MediaStream | null) {
@@ -427,6 +468,9 @@ class MeshVoiceProvider implements VoiceProvider {
         }
 
         await pc.setRemoteDescription(description);
+        // Answering side: adopt the offerer's m-lines (mic/camera/screen by mid)
+        // and start sending our own media on them.
+        if (description.type === "offer") this.bindTransceivers(peer);
         await this.flushCandidates(peer);
         if (description.type === "offer") {
           await pc.setLocalDescription();
@@ -493,7 +537,7 @@ class MeshVoiceProvider implements VoiceProvider {
     this.cameraStream = stream;
     const track = stream.getVideoTracks()[0] ?? null;
     track?.addEventListener("ended", () => this.disableCamera());
-    for (const peer of this.peers.values()) void peer.transceivers.camera.sender.replaceTrack(track);
+    this.applyLocalTrack("camera", track);
     this.events.onLocalMedia?.({ camera: stream, screen: this.screenStream });
   }
 
@@ -501,7 +545,7 @@ class MeshVoiceProvider implements VoiceProvider {
     if (!this.cameraStream) return;
     stopStream(this.cameraStream);
     this.cameraStream = null;
-    for (const peer of this.peers.values()) void peer.transceivers.camera.sender.replaceTrack(null);
+    this.applyLocalTrack("camera", null);
     this.events.onLocalMedia?.({ camera: null, screen: this.screenStream });
   }
 
@@ -517,7 +561,7 @@ class MeshVoiceProvider implements VoiceProvider {
       this.stopScreenShare();
       this.events.onScreenShareEnded?.();
     });
-    for (const peer of this.peers.values()) void peer.transceivers.screen.sender.replaceTrack(track);
+    this.applyLocalTrack("screen", track);
     this.events.onLocalMedia?.({ camera: this.cameraStream, screen: stream });
   }
 
@@ -525,7 +569,7 @@ class MeshVoiceProvider implements VoiceProvider {
     if (!this.screenStream) return;
     stopStream(this.screenStream);
     this.screenStream = null;
-    for (const peer of this.peers.values()) void peer.transceivers.screen.sender.replaceTrack(null);
+    this.applyLocalTrack("screen", null);
     this.events.onLocalMedia?.({ camera: this.cameraStream, screen: null });
   }
 
@@ -546,8 +590,7 @@ class MeshVoiceProvider implements VoiceProvider {
       this.micStream = stream;
       this.applyMuteToTracks();
       this.startSpeakingDetection();
-      const track = this.outgoingAudioTrack();
-      for (const peer of this.peers.values()) void peer.transceivers.mic.sender.replaceTrack(track);
+      this.applyLocalTrack("mic", this.outgoingAudioTrack());
     }
 
     if (devices.cameraId && devices.cameraId !== previous.cameraId && this.cameraStream) {

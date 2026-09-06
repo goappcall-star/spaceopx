@@ -5,14 +5,21 @@
  * The shipped provider (`MeshVoiceProvider`) is a real WebRTC implementation:
  *
  * - signaling runs over a Supabase Realtime broadcast channel (`rtc:<channelId>`)
+ * - every client announces itself with a `hello` when it subscribes, so peers are
+ *   only created once both ends can actually receive signaling (broadcast has no
+ *   history — an offer sent too early is simply lost)
  * - one RTCPeerConnection per remote participant (full mesh, fine for small rooms)
- * - three transceivers are negotiated up-front in a fixed order so both sides
- *   agree on the meaning of each m-line without extra metadata:
+ * - EXACTLY ONE side (the lexicographically greater user id) creates the three
+ *   m-lines, in a fixed order, so both ends agree on their meaning:
  *     mid 0 -> microphone audio
  *     mid 1 -> camera video
  *     mid 2 -> screen share video
- *   Camera and screen share are therefore transmitted simultaneously.
- * - perfect negotiation (polite/impolite by user id comparison) avoids glare.
+ *   The answering side binds those mids to its own slots and sends on them.
+ *   Camera and screen share are therefore transmitted simultaneously and are
+ *   never confused with one another.
+ * - perfect negotiation (polite/impolite by user id comparison) handles glare.
+ * - ICE candidates arriving before the remote description are buffered, and a
+ *   failing link is restarted per peer, never by dropping the whole room.
  *
  * Tracks are only ever created after an explicit user action, and every track is
  * stopped when the corresponding feature is turned off or the user disconnects.
@@ -64,9 +71,27 @@ export interface VoiceProvider {
   setInputGain(percent: number): void;
 }
 
-const ICE_SERVERS: RTCIceServer[] = [
-  { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
-];
+/**
+ * STUN is always on. TURN is optional and configured through public env vars
+ * (never a committed secret) — needed on networks where direct P2P is blocked.
+ */
+function buildIceServers(): RTCIceServer[] {
+  const servers: RTCIceServer[] = [
+    { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
+  ];
+  const env = import.meta.env as Record<string, string | undefined>;
+  const turnUrl = env["VITE_TURN_URL"];
+  if (turnUrl) {
+    servers.push({
+      urls: turnUrl.split(",").map((url) => url.trim()),
+      ...(env["VITE_TURN_USERNAME"] ? { username: env["VITE_TURN_USERNAME"] } : {}),
+      ...(env["VITE_TURN_CREDENTIAL"] ? { credential: env["VITE_TURN_CREDENTIAL"] } : {}),
+    });
+  }
+  return servers;
+}
+
+const ICE_SERVERS: RTCIceServer[] = buildIceServers();
 
 const CAMERA_CONSTRAINTS: MediaTrackConstraints = {
   width: { ideal: 1280, max: 1280 },
@@ -80,7 +105,12 @@ interface Peer {
   polite: boolean;
   makingOffer: boolean;
   ignoreOffer: boolean;
-  transceivers: { mic: RTCRtpTransceiver; camera: RTCRtpTransceiver; screen: RTCRtpTransceiver };
+  /** Null on the answering side until the offer's m-lines are bound by mid. */
+  transceivers: {
+    mic: RTCRtpTransceiver | null;
+    camera: RTCRtpTransceiver | null;
+    screen: RTCRtpTransceiver | null;
+  };
   /** Stable per-kind remote streams — never recreated, so <audio>/<video> keep playing. */
   streams: { mic: MediaStream; camera: MediaStream; screen: MediaStream };
   /** Candidates that arrived before the remote description was applied. */
@@ -359,14 +389,50 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   private kindForTransceiver(peer: Peer, transceiver: RTCRtpTransceiver): MediaKind | null {
-    if (transceiver === peer.transceivers.mic) return "mic";
-    if (transceiver === peer.transceivers.camera) return "camera";
-    if (transceiver === peer.transceivers.screen) return "screen";
+    if (peer.transceivers.mic && transceiver === peer.transceivers.mic) return "mic";
+    if (peer.transceivers.camera && transceiver === peer.transceivers.camera) return "camera";
+    if (peer.transceivers.screen && transceiver === peer.transceivers.screen) return "screen";
     // Fall back to mid ordering (remote-created transceivers).
     if (transceiver.mid === "0") return "mic";
     if (transceiver.mid === "1") return "camera";
     if (transceiver.mid === "2") return "screen";
     return null;
+  }
+
+  /** Local track currently feeding a given media slot. */
+  private localTrack(kind: MediaKind): MediaStreamTrack | null {
+    if (kind === "mic") return this.outgoingAudioTrack();
+    if (kind === "camera") return this.cameraStream?.getVideoTracks()[0] ?? null;
+    return this.screenStream?.getVideoTracks()[0] ?? null;
+  }
+
+  /** Push one media slot to every peer without touching the other slots. */
+  private applyLocalTrack(kind: MediaKind, track: MediaStreamTrack | null) {
+    for (const peer of this.peers.values()) {
+      void peer.transceivers[kind]?.sender.replaceTrack(track).catch(() => undefined);
+    }
+  }
+
+  /** Bind the offer's m-lines to our media slots (answering side only). */
+  private bindTransceivers(peer: Peer) {
+    for (const transceiver of peer.pc.getTransceivers()) {
+      const kind =
+        transceiver.mid === "0"
+          ? "mic"
+          : transceiver.mid === "1"
+            ? "camera"
+            : transceiver.mid === "2"
+              ? "screen"
+              : null;
+      if (!kind || peer.transceivers[kind]) continue;
+      peer.transceivers[kind] = transceiver;
+      try {
+        transceiver.direction = "sendrecv";
+      } catch {
+        /* direction already fixed by the remote description */
+      }
+      void transceiver.sender.replaceTrack(this.localTrack(kind)).catch(() => undefined);
+    }
   }
 
   private updateRemote(userId: string, kind: MediaKind, stream: MediaStream | null) {
@@ -427,6 +493,9 @@ class MeshVoiceProvider implements VoiceProvider {
         }
 
         await pc.setRemoteDescription(description);
+        // Answering side: adopt the offerer's m-lines (mic/camera/screen by mid)
+        // and start sending our own media on them.
+        if (description.type === "offer") this.bindTransceivers(peer);
         await this.flushCandidates(peer);
         if (description.type === "offer") {
           await pc.setLocalDescription();
@@ -493,7 +562,7 @@ class MeshVoiceProvider implements VoiceProvider {
     this.cameraStream = stream;
     const track = stream.getVideoTracks()[0] ?? null;
     track?.addEventListener("ended", () => this.disableCamera());
-    for (const peer of this.peers.values()) void peer.transceivers.camera.sender.replaceTrack(track);
+    this.applyLocalTrack("camera", track);
     this.events.onLocalMedia?.({ camera: stream, screen: this.screenStream });
   }
 
@@ -501,7 +570,7 @@ class MeshVoiceProvider implements VoiceProvider {
     if (!this.cameraStream) return;
     stopStream(this.cameraStream);
     this.cameraStream = null;
-    for (const peer of this.peers.values()) void peer.transceivers.camera.sender.replaceTrack(null);
+    this.applyLocalTrack("camera", null);
     this.events.onLocalMedia?.({ camera: null, screen: this.screenStream });
   }
 
@@ -517,7 +586,7 @@ class MeshVoiceProvider implements VoiceProvider {
       this.stopScreenShare();
       this.events.onScreenShareEnded?.();
     });
-    for (const peer of this.peers.values()) void peer.transceivers.screen.sender.replaceTrack(track);
+    this.applyLocalTrack("screen", track);
     this.events.onLocalMedia?.({ camera: this.cameraStream, screen: stream });
   }
 
@@ -525,7 +594,7 @@ class MeshVoiceProvider implements VoiceProvider {
     if (!this.screenStream) return;
     stopStream(this.screenStream);
     this.screenStream = null;
-    for (const peer of this.peers.values()) void peer.transceivers.screen.sender.replaceTrack(null);
+    this.applyLocalTrack("screen", null);
     this.events.onLocalMedia?.({ camera: this.cameraStream, screen: null });
   }
 
@@ -546,8 +615,7 @@ class MeshVoiceProvider implements VoiceProvider {
       this.micStream = stream;
       this.applyMuteToTracks();
       this.startSpeakingDetection();
-      const track = this.outgoingAudioTrack();
-      for (const peer of this.peers.values()) void peer.transceivers.mic.sender.replaceTrack(track);
+      this.applyLocalTrack("mic", this.outgoingAudioTrack());
     }
 
     if (devices.cameraId && devices.cameraId !== previous.cameraId && this.cameraStream) {

@@ -115,6 +115,8 @@ export function VoiceProviderRoot({
   const refreshDevices = refreshSharedDevices;
 
   // One presence channel per server carries every voice room's occupancy.
+  // The presence payload is republished whenever the channel (re)subscribes,
+  // so a socket reconnect restores our slot instead of silently dropping it.
   useEffect(() => {
     if (!serverId || !userId) {
       setParticipants({});
@@ -129,7 +131,9 @@ export function VoiceProviderRoot({
       const state = channel.presenceState<VoiceParticipant & { channel_id: string }>();
       const next: Record<string, VoiceParticipant[]> = {};
       for (const entries of Object.values(state)) {
-        const entry = entries[0];
+        // A user can briefly hold more than one meta (reconnect, second tab);
+        // the newest one wins so a stale socket never dictates the room.
+        const entry = entries[entries.length - 1];
         if (!entry?.channel_id) continue;
         next[entry.channel_id] = [
           ...(next[entry.channel_id] ?? []),
@@ -146,37 +150,51 @@ export function VoiceProviderRoot({
       setParticipants(next);
     };
 
-    channel.on("presence", { event: "sync" }, sync).subscribe();
+    channel
+      .on("presence", { event: "sync" }, sync)
+      .on("presence", { event: "join" }, sync)
+      .on("presence", { event: "leave" }, sync)
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          subscribedRef.current = true;
+          publishNow();
+        } else {
+          subscribedRef.current = false;
+        }
+      });
     channelRef.current = channel;
 
+    const releaseOnUnload = () => {
+      void channel.untrack();
+    };
+    window.addEventListener("pagehide", releaseOnUnload);
+
     return () => {
+      window.removeEventListener("pagehide", releaseOnUnload);
       channelRef.current = null;
+      subscribedRef.current = false;
       void supabase.removeChannel(channel);
     };
-  }, [serverId, userId]);
+  }, [serverId, userId, publishNow]);
 
-  const publish = useCallback(async () => {
-    const channel = channelRef.current;
-    const s = stateRef.current;
-    if (!channel || !userId) return;
-    if (!s.activeChannelId) {
-      await channel.untrack();
-      return;
-    }
-    await channel.track({
-      user_id: userId,
-      channel_id: s.activeChannelId,
-      muted: s.muted,
-      deafened: s.deafened,
-      speaking: s.speaking,
-      camera: s.cameraOn,
-      screen: s.screenOn,
-    });
-  }, [userId]);
+  // Every state change publishes at once; only the noisy `speaking` flag is
+  // coalesced, because tracking on each speech burst floods the realtime
+  // socket and gets the whole presence entry dropped mid-call.
+  useEffect(() => {
+    schedulePublish(true);
+  }, [schedulePublish, activeChannelId, muted, deafened, cameraOn, screenOn]);
 
   useEffect(() => {
-    void publish();
-  }, [publish, activeChannelId, muted, deafened, speaking, cameraOn, screenOn]);
+    schedulePublish(false);
+  }, [schedulePublish, speaking]);
+
+  useEffect(
+    () => () => {
+      if (publishTimer.current) clearTimeout(publishTimer.current);
+    },
+    [],
+  );
+
 
   // Keep the WebRTC mesh in sync with who is present in the active room.
   const roomPeers = activeChannelId ? (participantsByChannel[activeChannelId] ?? []) : [];

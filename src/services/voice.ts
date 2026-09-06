@@ -71,9 +71,27 @@ export interface VoiceProvider {
   setInputGain(percent: number): void;
 }
 
-const ICE_SERVERS: RTCIceServer[] = [
-  { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
-];
+/**
+ * STUN is always on. TURN is optional and configured through public env vars
+ * (never a committed secret) — needed on networks where direct P2P is blocked.
+ */
+function buildIceServers(): RTCIceServer[] {
+  const servers: RTCIceServer[] = [
+    { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
+  ];
+  const env = import.meta.env as Record<string, string | undefined>;
+  const turnUrl = env["VITE_TURN_URL"];
+  if (turnUrl) {
+    servers.push({
+      urls: turnUrl.split(",").map((url) => url.trim()),
+      ...(env["VITE_TURN_USERNAME"] ? { username: env["VITE_TURN_USERNAME"] } : {}),
+      ...(env["VITE_TURN_CREDENTIAL"] ? { credential: env["VITE_TURN_CREDENTIAL"] } : {}),
+    });
+  }
+  return servers;
+}
+
+const ICE_SERVERS: RTCIceServer[] = buildIceServers();
 
 const CAMERA_CONSTRAINTS: MediaTrackConstraints = {
   width: { ideal: 1280, max: 1280 },

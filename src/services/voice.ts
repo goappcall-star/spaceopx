@@ -5,14 +5,21 @@
  * The shipped provider (`MeshVoiceProvider`) is a real WebRTC implementation:
  *
  * - signaling runs over a Supabase Realtime broadcast channel (`rtc:<channelId>`)
+ * - every client announces itself with a `hello` when it subscribes, so peers are
+ *   only created once both ends can actually receive signaling (broadcast has no
+ *   history — an offer sent too early is simply lost)
  * - one RTCPeerConnection per remote participant (full mesh, fine for small rooms)
- * - three transceivers are negotiated up-front in a fixed order so both sides
- *   agree on the meaning of each m-line without extra metadata:
+ * - EXACTLY ONE side (the lexicographically greater user id) creates the three
+ *   m-lines, in a fixed order, so both ends agree on their meaning:
  *     mid 0 -> microphone audio
  *     mid 1 -> camera video
  *     mid 2 -> screen share video
- *   Camera and screen share are therefore transmitted simultaneously.
- * - perfect negotiation (polite/impolite by user id comparison) avoids glare.
+ *   The answering side binds those mids to its own slots and sends on them.
+ *   Camera and screen share are therefore transmitted simultaneously and are
+ *   never confused with one another.
+ * - perfect negotiation (polite/impolite by user id comparison) handles glare.
+ * - ICE candidates arriving before the remote description are buffered, and a
+ *   failing link is restarted per peer, never by dropping the whole room.
  *
  * Tracks are only ever created after an explicit user action, and every track is
  * stopped when the corresponding feature is turned off or the user disconnects.

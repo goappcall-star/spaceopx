@@ -230,6 +230,16 @@ export function VoiceProviderRoot({
     return () => {
       window.removeEventListener("pagehide", releaseOnUnload);
       if (channelRef.current === channel) {
+        // Invalidate the room before the replacement server subscribes. This
+        // prevents it from briefly publishing the channel id from the server
+        // we just left.
+        stateRef.current = {
+          ...stateRef.current,
+          activeChannelId: null,
+          speaking: false,
+          cameraOn: false,
+          screenOn: false,
+        };
         channelRef.current = null;
         subscribedRef.current = false;
       }

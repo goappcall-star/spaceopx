@@ -63,6 +63,12 @@ const VoiceContext = createContext<VoiceContextValue | undefined>(undefined);
 const VOLUME_KEY = "securechat:voice-volumes";
 const DEVICE_KEY = "securechat:voice-devices";
 
+type VoicePresenceMeta = VoiceParticipant & {
+  channel_id: string;
+  voice_session_id?: string;
+  updated_at?: number;
+};
+
 export function VoiceProviderRoot({
   serverId,
   userId,
@@ -97,6 +103,11 @@ export function VoiceProviderRoot({
 
   const providerRef = useRef<VoiceProvider | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const subscribedRef = useRef(false);
+  const publishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const publishQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const sessionIdRef = useRef(crypto.randomUUID());
+  const previousServerRef = useRef<string | null>(serverId);
   const stateRef = useRef({ activeChannelId, muted, deafened, speaking, cameraOn, screenOn });
   stateRef.current = { activeChannelId, muted, deafened, speaking, cameraOn, screenOn };
 
@@ -114,6 +125,44 @@ export function VoiceProviderRoot({
 
   const refreshDevices = refreshSharedDevices;
 
+  const publishNow = useCallback(() => {
+    const channel = channelRef.current;
+    if (!channel || !subscribedRef.current || !userId) return;
+
+    const snapshot = { ...stateRef.current };
+    publishQueueRef.current = publishQueueRef.current
+      .catch(() => undefined)
+      .then(async () => {
+        // The provider may have switched servers while this update waited.
+        if (channelRef.current !== channel || !subscribedRef.current) return;
+        if (!snapshot.activeChannelId) {
+          await channel.untrack();
+          return;
+        }
+        await channel.track({
+          user_id: userId,
+          channel_id: snapshot.activeChannelId,
+          muted: snapshot.muted,
+          deafened: snapshot.deafened,
+          speaking: snapshot.speaking,
+          camera: snapshot.cameraOn,
+          screen: snapshot.screenOn,
+          voice_session_id: sessionIdRef.current,
+          updated_at: Date.now(),
+        });
+      });
+  }, [userId]);
+
+  const schedulePublish = useCallback(
+    (immediate: boolean) => {
+      if (publishTimer.current) clearTimeout(publishTimer.current);
+      publishTimer.current = null;
+      if (immediate) publishNow();
+      else publishTimer.current = setTimeout(publishNow, 250);
+    },
+    [publishNow],
+  );
+
   // One presence channel per server carries every voice room's occupancy.
   // The presence payload is republished whenever the channel (re)subscribes,
   // so a socket reconnect restores our slot instead of silently dropping it.
@@ -128,12 +177,18 @@ export function VoiceProviderRoot({
     });
 
     const sync = () => {
-      const state = channel.presenceState<VoiceParticipant & { channel_id: string }>();
+      const state = channel.presenceState<VoicePresenceMeta>();
       const next: Record<string, VoiceParticipant[]> = {};
       for (const entries of Object.values(state)) {
         // A user can briefly hold more than one meta (reconnect, second tab);
         // the newest one wins so a stale socket never dictates the room.
-        const entry = entries[entries.length - 1];
+        const entry = entries.reduce<(typeof entries)[number] | undefined>(
+          (newest, candidate) =>
+            !newest || (candidate.updated_at ?? 0) > (newest.updated_at ?? 0)
+              ? candidate
+              : newest,
+          undefined,
+        );
         if (!entry?.channel_id) continue;
         next[entry.channel_id] = [
           ...(next[entry.channel_id] ?? []),
@@ -155,6 +210,9 @@ export function VoiceProviderRoot({
       .on("presence", { event: "join" }, sync)
       .on("presence", { event: "leave" }, sync)
       .subscribe((status) => {
+        // A late CLOSED/TIMED_OUT callback from the previous server must not
+        // disable publishing on the replacement subscription.
+        if (channelRef.current !== channel) return;
         if (status === "SUBSCRIBED") {
           subscribedRef.current = true;
           publishNow();
@@ -171,8 +229,10 @@ export function VoiceProviderRoot({
 
     return () => {
       window.removeEventListener("pagehide", releaseOnUnload);
-      channelRef.current = null;
-      subscribedRef.current = false;
+      if (channelRef.current === channel) {
+        channelRef.current = null;
+        subscribedRef.current = false;
+      }
       void supabase.removeChannel(channel);
     };
   }, [serverId, userId, publishNow]);
@@ -205,6 +265,14 @@ export function VoiceProviderRoot({
   }, [peerKey, activeChannelId]);
 
   const leave = useCallback(async () => {
+    stateRef.current = {
+      ...stateRef.current,
+      activeChannelId: null,
+      speaking: false,
+      cameraOn: false,
+      screenOn: false,
+    };
+    schedulePublish(true);
     await providerRef.current?.disconnect();
     providerRef.current = null;
     setActiveChannelId(null);
@@ -215,8 +283,16 @@ export function VoiceProviderRoot({
     setLocalScreen(null);
     setRemoteMedia({});
     setConnectionState("disconnected");
-    await channelRef.current?.untrack();
-  }, []);
+    await publishQueueRef.current;
+  }, [schedulePublish]);
+
+  // Switching servers owns the full voice lifecycle: leave the previous room
+  // before the new server can publish or negotiate with its participants.
+  useEffect(() => {
+    const previous = previousServerRef.current;
+    previousServerRef.current = serverId;
+    if (previous && previous !== serverId && stateRef.current.activeChannelId) void leave();
+  }, [serverId, leave]);
 
   const join = useCallback(
     async (channelId: string) => {

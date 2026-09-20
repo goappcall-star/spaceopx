@@ -63,6 +63,12 @@ const VoiceContext = createContext<VoiceContextValue | undefined>(undefined);
 const VOLUME_KEY = "securechat:voice-volumes";
 const DEVICE_KEY = "securechat:voice-devices";
 
+type VoicePresenceMeta = VoiceParticipant & {
+  channel_id: string;
+  voice_session_id?: string;
+  updated_at?: number;
+};
+
 export function VoiceProviderRoot({
   serverId,
   userId,
@@ -170,7 +176,7 @@ export function VoiceProviderRoot({
     });
 
     const sync = () => {
-      const state = channel.presenceState<VoiceParticipant & { channel_id: string }>();
+      const state = channel.presenceState<VoicePresenceMeta>();
       const next: Record<string, VoiceParticipant[]> = {};
       for (const entries of Object.values(state)) {
         // A user can briefly hold more than one meta (reconnect, second tab);

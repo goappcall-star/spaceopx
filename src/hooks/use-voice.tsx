@@ -97,6 +97,10 @@ export function VoiceProviderRoot({
 
   const providerRef = useRef<VoiceProvider | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const subscribedRef = useRef(false);
+  const publishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const publishQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const sessionIdRef = useRef(crypto.randomUUID());
   const stateRef = useRef({ activeChannelId, muted, deafened, speaking, cameraOn, screenOn });
   stateRef.current = { activeChannelId, muted, deafened, speaking, cameraOn, screenOn };
 
@@ -113,6 +117,44 @@ export function VoiceProviderRoot({
   }, []);
 
   const refreshDevices = refreshSharedDevices;
+
+  const publishNow = useCallback(() => {
+    const channel = channelRef.current;
+    if (!channel || !subscribedRef.current || !userId) return;
+
+    const snapshot = { ...stateRef.current };
+    publishQueueRef.current = publishQueueRef.current
+      .catch(() => undefined)
+      .then(async () => {
+        // The provider may have switched servers while this update waited.
+        if (channelRef.current !== channel || !subscribedRef.current) return;
+        if (!snapshot.activeChannelId) {
+          await channel.untrack();
+          return;
+        }
+        await channel.track({
+          user_id: userId,
+          channel_id: snapshot.activeChannelId,
+          muted: snapshot.muted,
+          deafened: snapshot.deafened,
+          speaking: snapshot.speaking,
+          camera: snapshot.cameraOn,
+          screen: snapshot.screenOn,
+          voice_session_id: sessionIdRef.current,
+          updated_at: Date.now(),
+        });
+      });
+  }, [userId]);
+
+  const schedulePublish = useCallback(
+    (immediate: boolean) => {
+      if (publishTimer.current) clearTimeout(publishTimer.current);
+      publishTimer.current = null;
+      if (immediate) publishNow();
+      else publishTimer.current = setTimeout(publishNow, 250);
+    },
+    [publishNow],
+  );
 
   // One presence channel per server carries every voice room's occupancy.
   // The presence payload is republished whenever the channel (re)subscribes,
@@ -133,7 +175,13 @@ export function VoiceProviderRoot({
       for (const entries of Object.values(state)) {
         // A user can briefly hold more than one meta (reconnect, second tab);
         // the newest one wins so a stale socket never dictates the room.
-        const entry = entries[entries.length - 1];
+        const entry = entries.reduce<(typeof entries)[number] | undefined>(
+          (newest, candidate) =>
+            !newest || (candidate.updated_at ?? 0) > (newest.updated_at ?? 0)
+              ? candidate
+              : newest,
+          undefined,
+        );
         if (!entry?.channel_id) continue;
         next[entry.channel_id] = [
           ...(next[entry.channel_id] ?? []),
@@ -171,8 +219,10 @@ export function VoiceProviderRoot({
 
     return () => {
       window.removeEventListener("pagehide", releaseOnUnload);
-      channelRef.current = null;
-      subscribedRef.current = false;
+      if (channelRef.current === channel) {
+        channelRef.current = null;
+        subscribedRef.current = false;
+      }
       void supabase.removeChannel(channel);
     };
   }, [serverId, userId, publishNow]);
@@ -215,8 +265,10 @@ export function VoiceProviderRoot({
     setLocalScreen(null);
     setRemoteMedia({});
     setConnectionState("disconnected");
-    await channelRef.current?.untrack();
-  }, []);
+    stateRef.current = { ...stateRef.current, activeChannelId: null, speaking: false, cameraOn: false, screenOn: false };
+    schedulePublish(true);
+    await publishQueueRef.current;
+  }, [schedulePublish]);
 
   const join = useCallback(
     async (channelId: string) => {

@@ -107,6 +107,7 @@ export function VoiceProviderRoot({
   const publishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const publishQueueRef = useRef<Promise<void>>(Promise.resolve());
   const sessionIdRef = useRef(crypto.randomUUID());
+  const previousServerRef = useRef<string | null>(serverId);
   const stateRef = useRef({ activeChannelId, muted, deafened, speaking, cameraOn, screenOn });
   stateRef.current = { activeChannelId, muted, deafened, speaking, cameraOn, screenOn };
 
@@ -209,6 +210,9 @@ export function VoiceProviderRoot({
       .on("presence", { event: "join" }, sync)
       .on("presence", { event: "leave" }, sync)
       .subscribe((status) => {
+        // A late CLOSED/TIMED_OUT callback from the previous server must not
+        // disable publishing on the replacement subscription.
+        if (channelRef.current !== channel) return;
         if (status === "SUBSCRIBED") {
           subscribedRef.current = true;
           publishNow();
@@ -261,6 +265,14 @@ export function VoiceProviderRoot({
   }, [peerKey, activeChannelId]);
 
   const leave = useCallback(async () => {
+    stateRef.current = {
+      ...stateRef.current,
+      activeChannelId: null,
+      speaking: false,
+      cameraOn: false,
+      screenOn: false,
+    };
+    schedulePublish(true);
     await providerRef.current?.disconnect();
     providerRef.current = null;
     setActiveChannelId(null);
@@ -271,10 +283,16 @@ export function VoiceProviderRoot({
     setLocalScreen(null);
     setRemoteMedia({});
     setConnectionState("disconnected");
-    stateRef.current = { ...stateRef.current, activeChannelId: null, speaking: false, cameraOn: false, screenOn: false };
-    schedulePublish(true);
     await publishQueueRef.current;
   }, [schedulePublish]);
+
+  // Switching servers owns the full voice lifecycle: leave the previous room
+  // before the new server can publish or negotiate with its participants.
+  useEffect(() => {
+    const previous = previousServerRef.current;
+    previousServerRef.current = serverId;
+    if (previous && previous !== serverId && stateRef.current.activeChannelId) void leave();
+  }, [serverId, leave]);
 
   const join = useCallback(
     async (channelId: string) => {

@@ -109,6 +109,7 @@ export function VoiceProviderRoot({
   const sessionIdRef = useRef(crypto.randomUUID());
   const lifecycleQueueRef = useRef<Promise<void>>(Promise.resolve());
   const lifecycleGenerationRef = useRef(0);
+  const pendingJoinChannelRef = useRef<string | null>(null);
   const previousServerRef = useRef<string | null>(serverId);
   const stateRef = useRef({ activeChannelId, muted, deafened, speaking, cameraOn, screenOn });
   stateRef.current = { activeChannelId, muted, deafened, speaking, cameraOn, screenOn };
@@ -130,7 +131,7 @@ export function VoiceProviderRoot({
     const channel = channelRef.current;
     if (!channel || !subscribedRef.current || !userId) return;
 
-    const snapshot = { ...stateRef.current };
+    const snapshot = { ...stateRef.current, voiceSessionId: sessionIdRef.current };
     publishQueueRef.current = publishQueueRef.current
       .catch(() => undefined)
       .then(async () => {
@@ -148,7 +149,7 @@ export function VoiceProviderRoot({
           speaking: snapshot.speaking,
           camera: snapshot.cameraOn,
           screen: snapshot.screenOn,
-          voice_session_id: sessionIdRef.current,
+          voice_session_id: snapshot.voiceSessionId,
           updated_at: Date.now(),
         });
       });
@@ -201,6 +202,23 @@ export function VoiceProviderRoot({
           },
         ];
       }
+      // Presence round-trips must never make the local participant blink out.
+      // The local lifecycle remains authoritative until leave() clears it.
+      const local = stateRef.current;
+      if (local.activeChannelId) {
+        const room = next[local.activeChannelId] ?? [];
+        next[local.activeChannelId] = [
+          ...room.filter((participant) => participant.user_id !== userId),
+          {
+            user_id: userId,
+            muted: local.muted,
+            deafened: local.deafened,
+            speaking: local.speaking,
+            camera: local.cameraOn,
+            screen: local.screenOn,
+          },
+        ];
+      }
       setParticipants(next);
     };
 
@@ -232,7 +250,7 @@ export function VoiceProviderRoot({
         channelRef.current = null;
         subscribedRef.current = false;
       }
-      void supabase.removeChannel(channel);
+      void channel.untrack().finally(() => supabase.removeChannel(channel));
     };
   }, [serverId, userId, publishNow]);
 
@@ -284,8 +302,17 @@ export function VoiceProviderRoot({
     setLocalScreen(null);
     setRemoteMedia({});
     setConnectionState("disconnected");
+    setParticipants((current) => {
+      if (!userId) return current;
+      const next: Record<string, VoiceParticipant[]> = {};
+      for (const [channelId, participants] of Object.entries(current)) {
+        const remaining = participants.filter((participant) => participant.user_id !== userId);
+        if (remaining.length > 0) next[channelId] = remaining;
+      }
+      return next;
+    });
     return provider?.disconnect() ?? Promise.resolve();
-  }, [schedulePublish]);
+  }, [schedulePublish, userId]);
 
   const leave = useCallback(() => {
     // Invalidate callbacks immediately. The queued teardown then removes the
@@ -312,8 +339,12 @@ export function VoiceProviderRoot({
   const join = useCallback(
     (channelId: string) => {
       if (!userId) return Promise.resolve();
-      if (stateRef.current.activeChannelId === channelId && providerRef.current)
+      if (
+        pendingJoinChannelRef.current === channelId ||
+        (stateRef.current.activeChannelId === channelId && providerRef.current)
+      )
         return lifecycleQueueRef.current;
+      pendingJoinChannelRef.current = channelId;
       const generation = lifecycleGenerationRef.current + 1;
       lifecycleGenerationRef.current = generation;
       const disconnecting = detachCurrent();
@@ -392,6 +423,8 @@ export function VoiceProviderRoot({
             setActiveChannelId(null);
             schedulePublish(true);
             setConnectionState("error");
+          } finally {
+            if (pendingJoinChannelRef.current === channelId) pendingJoinChannelRef.current = null;
           }
         });
       return lifecycleQueueRef.current;

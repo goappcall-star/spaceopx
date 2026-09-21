@@ -101,6 +101,8 @@ const CAMERA_CONSTRAINTS: MediaTrackConstraints = {
 
 interface Peer {
   id: string;
+  /** Distinguishes a rapid re-entry by the same user from the closed session. */
+  remoteSessionId: string | null;
   pc: RTCPeerConnection;
   polite: boolean;
   makingOffer: boolean;
@@ -125,6 +127,7 @@ class MeshVoiceProvider implements VoiceProvider {
 
   private events: VoiceProviderEvents = {};
   private userId = "";
+  private readonly sessionId = crypto.randomUUID();
   private signaling: RealtimeChannel | null = null;
   private pendingSignaling: RealtimeChannel | null = null;
   private peers = new Map<string, Peer>();
@@ -147,6 +150,9 @@ class MeshVoiceProvider implements VoiceProvider {
   private volumes = new Map<string, number>();
   private disposed = false;
   private disconnectPromise: Promise<void> | null = null;
+  private cameraGeneration = 0;
+  private screenGeneration = 0;
+  private microphoneGeneration = 0;
 
   /* ------------------------------------------------------------- lifecycle */
 
@@ -240,6 +246,9 @@ class MeshVoiceProvider implements VoiceProvider {
 
   private async performDisconnect() {
     this.disposed = true;
+    this.cameraGeneration += 1;
+    this.screenGeneration += 1;
+    this.microphoneGeneration += 1;
     if (this.raf !== null) cancelAnimationFrame(this.raf);
     this.raf = null;
     this.analyser = null;
@@ -328,6 +337,7 @@ class MeshVoiceProvider implements VoiceProvider {
 
     const peer: Peer = {
       id: remoteId,
+      remoteSessionId: null,
       pc,
       // The lexicographically smaller id is polite; ties are impossible.
       polite: this.userId < remoteId,
@@ -490,10 +500,11 @@ class MeshVoiceProvider implements VoiceProvider {
   /* ------------------------------------------------------------- signaling */
 
   private send(to: string, data: Omit<SignalPayload, "from" | "to">) {
+    if (this.disposed) return;
     void this.signaling?.send({
       type: "broadcast",
       event: "signal",
-      payload: { from: this.userId, to, ...data },
+      payload: { from: this.userId, from_session: this.sessionId, to, ...data },
     });
   }
 
@@ -505,8 +516,21 @@ class MeshVoiceProvider implements VoiceProvider {
     if (this.disposed || payload.from === this.userId) return;
     if (payload.to !== this.userId && payload.to !== "*") return;
 
+    // A participant that leaves and immediately returns has a new signaling
+    // session. Never negotiate that session over the closed peer connection.
+    const existing = this.peers.get(payload.from);
+    if (
+      existing &&
+      payload.from_session &&
+      existing.remoteSessionId &&
+      existing.remoteSessionId !== payload.from_session
+    ) {
+      this.closePeer(payload.from, existing);
+    }
+
     if (payload.hello) {
       const peer = this.peers.get(payload.from) ?? this.createPeer(payload.from);
+      if (payload.from_session) peer.remoteSessionId = payload.from_session;
       // Reply directly so the newcomer learns about us too (but never loop).
       if (payload.to === "*") this.send(payload.from, { hello: true });
       // Repair: our previous offer may have been sent before this peer was
@@ -518,6 +542,7 @@ class MeshVoiceProvider implements VoiceProvider {
     }
 
     const peer = this.peers.get(payload.from) ?? this.createPeer(payload.from);
+    if (payload.from_session) peer.remoteSessionId = payload.from_session;
     const { pc } = peer;
 
     try {
@@ -534,12 +559,14 @@ class MeshVoiceProvider implements VoiceProvider {
         }
 
         await pc.setRemoteDescription(description);
+        if (this.disposed || this.peers.get(payload.from) !== peer) return;
         // Answering side: adopt the offerer's m-lines (mic/camera/screen by mid)
         // and start sending our own media on them.
         if (description.type === "offer") this.bindTransceivers(peer);
         await this.flushCandidates(peer);
         if (description.type === "offer") {
           await pc.setLocalDescription();
+          if (this.disposed || this.peers.get(payload.from) !== peer) return;
           if (pc.localDescription)
             this.send(payload.from, { description: pc.localDescription.toJSON() });
         }
@@ -593,10 +620,16 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   async enableCamera(deviceId?: string) {
+    if (this.disposed) throw new DOMException("Voice session ended", "AbortError");
+    const generation = ++this.cameraGeneration;
     const id = deviceId ?? this.devices.cameraId;
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { ...CAMERA_CONSTRAINTS, ...(id ? { deviceId: { exact: id } } : {}) },
     });
+    if (this.disposed || generation !== this.cameraGeneration) {
+      stopStream(stream);
+      throw new DOMException("Voice session ended", "AbortError");
+    }
     stopStream(this.cameraStream);
     this.cameraStream = stream;
     const track = stream.getVideoTracks()[0] ?? null;
@@ -606,6 +639,7 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   disableCamera() {
+    this.cameraGeneration += 1;
     if (!this.cameraStream) return;
     stopStream(this.cameraStream);
     this.cameraStream = null;
@@ -614,10 +648,16 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   async startScreenShare() {
+    if (this.disposed) throw new DOMException("Voice session ended", "AbortError");
+    const generation = ++this.screenGeneration;
     const stream = await navigator.mediaDevices.getDisplayMedia({
       video: { frameRate: { ideal: 15, max: 30 } },
       audio: false,
     });
+    if (this.disposed || generation !== this.screenGeneration) {
+      stopStream(stream);
+      throw new DOMException("Voice session ended", "AbortError");
+    }
     stopStream(this.screenStream);
     this.screenStream = stream;
     const track = stream.getVideoTracks()[0] ?? null;
@@ -630,6 +670,7 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   stopScreenShare() {
+    this.screenGeneration += 1;
     if (!this.screenStream) return;
     stopStream(this.screenStream);
     this.screenStream = null;
@@ -638,10 +679,12 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   async setDevices(devices: DeviceIds) {
+    if (this.disposed) throw new DOMException("Voice session ended", "AbortError");
     const previous = this.devices;
     this.devices = { ...previous, ...devices };
 
     if (devices.microphoneId && devices.microphoneId !== previous.microphoneId && this.micStream) {
+      const generation = ++this.microphoneGeneration;
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -650,6 +693,10 @@ class MeshVoiceProvider implements VoiceProvider {
           deviceId: { exact: devices.microphoneId },
         },
       });
+      if (this.disposed || generation !== this.microphoneGeneration) {
+        stopStream(stream);
+        throw new DOMException("Voice session ended", "AbortError");
+      }
       stopStream(this.micStream);
       this.micStream = stream;
       this.applyMuteToTracks();
@@ -706,6 +753,7 @@ class MeshVoiceProvider implements VoiceProvider {
 
 interface SignalPayload {
   from: string;
+  from_session?: string;
   /** Target user id, or "*" for a room-wide announcement. */
   to: string;
   hello?: boolean;

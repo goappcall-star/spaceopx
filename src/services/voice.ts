@@ -165,14 +165,23 @@ class MeshVoiceProvider implements VoiceProvider {
           ...(this.devices.microphoneId ? { deviceId: { exact: this.devices.microphoneId } } : {}),
         },
       });
+      if (this.disposed) {
+        stopStream(this.micStream);
+        this.micStream = null;
+        throw new DOMException("Voice session ended", "AbortError");
+      }
     } catch (error) {
-      events.onStateChange?.("error");
-      events.onError?.(error as Error);
+      if (!this.disposed) {
+        events.onStateChange?.("error");
+        events.onError?.(error as Error);
+      }
       throw error;
     }
 
     this.applyMuteToTracks();
     this.startSpeakingDetection();
+
+    if (this.disposed) throw new DOMException("Voice session ended", "AbortError");
 
     await new Promise<void>((resolve, reject) => {
       const channel = supabase.channel(`rtc:${channelId}`, {

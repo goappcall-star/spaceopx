@@ -126,6 +126,7 @@ class MeshVoiceProvider implements VoiceProvider {
   private events: VoiceProviderEvents = {};
   private userId = "";
   private signaling: RealtimeChannel | null = null;
+  private pendingSignaling: RealtimeChannel | null = null;
   private peers = new Map<string, Peer>();
   private remote: Record<string, RemoteMedia> = {};
 
@@ -145,6 +146,7 @@ class MeshVoiceProvider implements VoiceProvider {
   private devices: DeviceIds = {};
   private volumes = new Map<string, number>();
   private disposed = false;
+  private disconnectPromise: Promise<void> | null = null;
 
   /* ------------------------------------------------------------- lifecycle */
 
@@ -163,34 +165,65 @@ class MeshVoiceProvider implements VoiceProvider {
           ...(this.devices.microphoneId ? { deviceId: { exact: this.devices.microphoneId } } : {}),
         },
       });
+      if (this.disposed) {
+        stopStream(this.micStream);
+        this.micStream = null;
+        throw new DOMException("Voice session ended", "AbortError");
+      }
     } catch (error) {
-      events.onStateChange?.("error");
-      events.onError?.(error as Error);
+      if (!this.disposed) {
+        events.onStateChange?.("error");
+        events.onError?.(error as Error);
+      }
       throw error;
     }
 
     this.applyMuteToTracks();
     this.startSpeakingDetection();
 
+    if (this.disposed) throw new DOMException("Voice session ended", "AbortError");
+
     await new Promise<void>((resolve, reject) => {
       const channel = supabase.channel(`rtc:${channelId}`, {
         config: { broadcast: { self: false, ack: false } },
       });
+      this.pendingSignaling = channel;
+      let settled = false;
       channel.on("broadcast", { event: "signal" }, ({ payload }) => {
         void this.onSignal(payload as SignalPayload);
       });
       channel.subscribe((status) => {
         if (status === "SUBSCRIBED") {
+          if (this.disposed) {
+            if (!settled) {
+              settled = true;
+              reject(new DOMException("Voice session ended", "AbortError"));
+            }
+            void supabase.removeChannel(channel);
+            return;
+          }
+          this.pendingSignaling = null;
           this.signaling = channel;
           // Announce ourselves: peers already in the room answer with their own
           // hello, which is what makes negotiation start only once BOTH sides
           // are actually subscribed (broadcast has no message history).
           this.broadcast({ hello: true });
-          resolve();
+          if (!settled) {
+            settled = true;
+            resolve();
+          }
         } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          reject(new Error("signaling failed"));
-        } else if (status === "CLOSED" && this.signaling) {
-          this.events.onStateChange?.("reconnecting");
+          if (!settled) {
+            settled = true;
+            reject(new Error("signaling failed"));
+          }
+        } else if (status === "CLOSED") {
+          if (!settled) {
+            settled = true;
+            reject(new DOMException("Voice signaling closed", "AbortError"));
+          } else if (!this.disposed && this.signaling === channel) {
+            this.events.onStateChange?.("reconnecting");
+          }
         }
       });
     });
@@ -200,6 +233,12 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   async disconnect() {
+    if (this.disconnectPromise) return this.disconnectPromise;
+    this.disconnectPromise = this.performDisconnect();
+    return this.disconnectPromise;
+  }
+
+  private async performDisconnect() {
     this.disposed = true;
     if (this.raf !== null) cancelAnimationFrame(this.raf);
     this.raf = null;
@@ -223,9 +262,10 @@ class MeshVoiceProvider implements VoiceProvider {
     this.screenStream = null;
     this.events.onLocalMedia?.({ camera: null, screen: null });
 
-    if (this.signaling) {
-      const channel = this.signaling;
-      this.signaling = null;
+    const channel = this.signaling ?? this.pendingSignaling;
+    this.signaling = null;
+    this.pendingSignaling = null;
+    if (channel) {
       await supabase.removeChannel(channel);
     }
     this.speaking = false;
@@ -488,7 +528,8 @@ class MeshVoiceProvider implements VoiceProvider {
         peer.ignoreOffer = !peer.polite && offerCollision;
         if (peer.ignoreOffer) {
           // Keep our own offer, but make sure the peer actually received it.
-          if (pc.localDescription) this.send(payload.from, { description: pc.localDescription.toJSON() });
+          if (pc.localDescription)
+            this.send(payload.from, { description: pc.localDescription.toJSON() });
           return;
         }
 
@@ -529,9 +570,7 @@ class MeshVoiceProvider implements VoiceProvider {
 
   /** Processed (gain-adjusted) mic track when the audio graph is up, raw track otherwise. */
   private outgoingAudioTrack(): MediaStreamTrack | null {
-    return (
-      this.processedStream?.getAudioTracks()[0] ?? this.micStream?.getAudioTracks()[0] ?? null
-    );
+    return this.processedStream?.getAudioTracks()[0] ?? this.micStream?.getAudioTracks()[0] ?? null;
   }
 
   setInputGain(percent: number) {
@@ -713,7 +752,8 @@ export async function listMediaDevices(): Promise<MediaDeviceList> {
 
 export function supportsScreenShare(): boolean {
   return (
-    typeof navigator !== "undefined" && typeof navigator.mediaDevices?.getDisplayMedia === "function"
+    typeof navigator !== "undefined" &&
+    typeof navigator.mediaDevices?.getDisplayMedia === "function"
   );
 }
 

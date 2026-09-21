@@ -266,7 +266,7 @@ export function VoiceProviderRoot({
     providerRef.current?.syncPeers(peerKey ? peerKey.split(",") : []);
   }, [peerKey, activeChannelId]);
 
-  const leaveCurrent = useCallback(async () => {
+  const detachCurrent = useCallback(() => {
     const provider = providerRef.current;
     providerRef.current = null;
     stateRef.current = {
@@ -277,7 +277,6 @@ export function VoiceProviderRoot({
       screenOn: false,
     };
     schedulePublish(true);
-    await provider?.disconnect();
     setActiveChannelId(null);
     setSpeaking(false);
     setCameraOn(false);
@@ -286,18 +285,22 @@ export function VoiceProviderRoot({
     setLocalScreen(null);
     setRemoteMedia({});
     setConnectionState("disconnected");
-    await publishQueueRef.current;
+    return provider?.disconnect() ?? Promise.resolve();
   }, [schedulePublish]);
 
   const leave = useCallback(() => {
     // Invalidate callbacks immediately. The queued teardown then removes the
     // exact current presence slot before another session is allowed to start.
     lifecycleGenerationRef.current += 1;
+    const disconnecting = detachCurrent();
     lifecycleQueueRef.current = lifecycleQueueRef.current
       .catch(() => undefined)
-      .then(leaveCurrent);
+      .then(async () => {
+        await disconnecting;
+        await publishQueueRef.current;
+      });
     return lifecycleQueueRef.current;
-  }, [leaveCurrent]);
+  }, [detachCurrent]);
 
   // Switching servers owns the full voice lifecycle: leave the previous room
   // before the new server can publish or negotiate with its participants.
@@ -310,16 +313,17 @@ export function VoiceProviderRoot({
   const join = useCallback(
     (channelId: string) => {
       if (!userId) return Promise.resolve();
+      if (stateRef.current.activeChannelId === channelId && providerRef.current)
+        return lifecycleQueueRef.current;
       const generation = lifecycleGenerationRef.current + 1;
       lifecycleGenerationRef.current = generation;
+      const disconnecting = detachCurrent();
 
       lifecycleQueueRef.current = lifecycleQueueRef.current
         .catch(() => undefined)
         .then(async () => {
-          if (generation !== lifecycleGenerationRef.current) return;
-          if (stateRef.current.activeChannelId === channelId && providerRef.current) return;
-
-          await leaveCurrent();
+          await disconnecting;
+          await publishQueueRef.current;
           if (generation !== lifecycleGenerationRef.current) return;
 
           // Every entry is a distinct voice session. Presence from a previous
@@ -394,7 +398,7 @@ export function VoiceProviderRoot({
       return lifecycleQueueRef.current;
     },
     [
-      leaveCurrent,
+      detachCurrent,
       userId,
       refreshDevices,
       schedulePublish,

@@ -146,6 +146,7 @@ class MeshVoiceProvider implements VoiceProvider {
   private devices: DeviceIds = {};
   private volumes = new Map<string, number>();
   private disposed = false;
+  private disconnectPromise: Promise<void> | null = null;
 
   /* ------------------------------------------------------------- lifecycle */
 
@@ -223,6 +224,12 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   async disconnect() {
+    if (this.disconnectPromise) return this.disconnectPromise;
+    this.disconnectPromise = this.performDisconnect();
+    return this.disconnectPromise;
+  }
+
+  private async performDisconnect() {
     this.disposed = true;
     if (this.raf !== null) cancelAnimationFrame(this.raf);
     this.raf = null;

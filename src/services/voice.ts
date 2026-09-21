@@ -528,7 +528,8 @@ class MeshVoiceProvider implements VoiceProvider {
         peer.ignoreOffer = !peer.polite && offerCollision;
         if (peer.ignoreOffer) {
           // Keep our own offer, but make sure the peer actually received it.
-          if (pc.localDescription) this.send(payload.from, { description: pc.localDescription.toJSON() });
+          if (pc.localDescription)
+            this.send(payload.from, { description: pc.localDescription.toJSON() });
           return;
         }
 
@@ -569,9 +570,7 @@ class MeshVoiceProvider implements VoiceProvider {
 
   /** Processed (gain-adjusted) mic track when the audio graph is up, raw track otherwise. */
   private outgoingAudioTrack(): MediaStreamTrack | null {
-    return (
-      this.processedStream?.getAudioTracks()[0] ?? this.micStream?.getAudioTracks()[0] ?? null
-    );
+    return this.processedStream?.getAudioTracks()[0] ?? this.micStream?.getAudioTracks()[0] ?? null;
   }
 
   setInputGain(percent: number) {
@@ -753,7 +752,8 @@ export async function listMediaDevices(): Promise<MediaDeviceList> {
 
 export function supportsScreenShare(): boolean {
   return (
-    typeof navigator !== "undefined" && typeof navigator.mediaDevices?.getDisplayMedia === "function"
+    typeof navigator !== "undefined" &&
+    typeof navigator.mediaDevices?.getDisplayMedia === "function"
   );
 }
 

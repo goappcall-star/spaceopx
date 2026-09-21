@@ -118,8 +118,7 @@ export function VoiceProviderRoot({
       const raw = localStorage.getItem(VOLUME_KEY);
       if (raw) setVolumes(JSON.parse(raw) as Record<string, number>);
       const rawDevices = localStorage.getItem(DEVICE_KEY);
-      if (rawDevices)
-        setCameraDeviceId((JSON.parse(rawDevices) as { cameraId?: string }).cameraId);
+      if (rawDevices) setCameraDeviceId((JSON.parse(rawDevices) as { cameraId?: string }).cameraId);
     } catch {
       /* ignore corrupted local settings */
     }
@@ -186,9 +185,7 @@ export function VoiceProviderRoot({
         // the newest one wins so a stale socket never dictates the room.
         const entry = entries.reduce<(typeof entries)[number] | undefined>(
           (newest, candidate) =>
-            !newest || (candidate.updated_at ?? 0) > (newest.updated_at ?? 0)
-              ? candidate
-              : newest,
+            !newest || (candidate.updated_at ?? 0) > (newest.updated_at ?? 0) ? candidate : newest,
           undefined,
         );
         if (!entry?.channel_id) continue;
@@ -257,10 +254,12 @@ export function VoiceProviderRoot({
     [],
   );
 
-
   // Keep the WebRTC mesh in sync with who is present in the active room.
   const roomPeers = activeChannelId ? (participantsByChannel[activeChannelId] ?? []) : [];
-  const peerKey = roomPeers.map((p) => p.user_id).sort().join(",");
+  const peerKey = roomPeers
+    .map((p) => p.user_id)
+    .sort()
+    .join(",");
   useEffect(() => {
     if (!activeChannelId) return;
     providerRef.current?.syncPeers(peerKey ? peerKey.split(",") : []);

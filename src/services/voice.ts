@@ -126,6 +126,7 @@ class MeshVoiceProvider implements VoiceProvider {
   private events: VoiceProviderEvents = {};
   private userId = "";
   private signaling: RealtimeChannel | null = null;
+  private pendingSignaling: RealtimeChannel | null = null;
   private peers = new Map<string, Peer>();
   private remote: Record<string, RemoteMedia> = {};
 
@@ -176,21 +177,43 @@ class MeshVoiceProvider implements VoiceProvider {
       const channel = supabase.channel(`rtc:${channelId}`, {
         config: { broadcast: { self: false, ack: false } },
       });
+      this.pendingSignaling = channel;
+      let settled = false;
       channel.on("broadcast", { event: "signal" }, ({ payload }) => {
         void this.onSignal(payload as SignalPayload);
       });
       channel.subscribe((status) => {
         if (status === "SUBSCRIBED") {
+          if (this.disposed) {
+            if (!settled) {
+              settled = true;
+              reject(new DOMException("Voice session ended", "AbortError"));
+            }
+            void supabase.removeChannel(channel);
+            return;
+          }
+          this.pendingSignaling = null;
           this.signaling = channel;
           // Announce ourselves: peers already in the room answer with their own
           // hello, which is what makes negotiation start only once BOTH sides
           // are actually subscribed (broadcast has no message history).
           this.broadcast({ hello: true });
-          resolve();
+          if (!settled) {
+            settled = true;
+            resolve();
+          }
         } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          reject(new Error("signaling failed"));
-        } else if (status === "CLOSED" && this.signaling) {
-          this.events.onStateChange?.("reconnecting");
+          if (!settled) {
+            settled = true;
+            reject(new Error("signaling failed"));
+          }
+        } else if (status === "CLOSED") {
+          if (!settled) {
+            settled = true;
+            reject(new DOMException("Voice signaling closed", "AbortError"));
+          } else if (!this.disposed && this.signaling === channel) {
+            this.events.onStateChange?.("reconnecting");
+          }
         }
       });
     });
@@ -223,9 +246,10 @@ class MeshVoiceProvider implements VoiceProvider {
     this.screenStream = null;
     this.events.onLocalMedia?.({ camera: null, screen: null });
 
-    if (this.signaling) {
-      const channel = this.signaling;
-      this.signaling = null;
+    const channel = this.signaling ?? this.pendingSignaling;
+    this.signaling = null;
+    this.pendingSignaling = null;
+    if (channel) {
       await supabase.removeChannel(channel);
     }
     this.speaking = false;

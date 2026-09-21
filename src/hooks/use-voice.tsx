@@ -107,6 +107,8 @@ export function VoiceProviderRoot({
   const publishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const publishQueueRef = useRef<Promise<void>>(Promise.resolve());
   const sessionIdRef = useRef(crypto.randomUUID());
+  const lifecycleQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const lifecycleGenerationRef = useRef(0);
   const previousServerRef = useRef<string | null>(serverId);
   const stateRef = useRef({ activeChannelId, muted, deafened, speaking, cameraOn, screenOn });
   stateRef.current = { activeChannelId, muted, deafened, speaking, cameraOn, screenOn };
@@ -264,7 +266,9 @@ export function VoiceProviderRoot({
     providerRef.current?.syncPeers(peerKey ? peerKey.split(",") : []);
   }, [peerKey, activeChannelId]);
 
-  const leave = useCallback(async () => {
+  const leaveCurrent = useCallback(async () => {
+    const provider = providerRef.current;
+    providerRef.current = null;
     stateRef.current = {
       ...stateRef.current,
       activeChannelId: null,
@@ -273,8 +277,7 @@ export function VoiceProviderRoot({
       screenOn: false,
     };
     schedulePublish(true);
-    await providerRef.current?.disconnect();
-    providerRef.current = null;
+    await provider?.disconnect();
     setActiveChannelId(null);
     setSpeaking(false);
     setCameraOn(false);
@@ -286,6 +289,16 @@ export function VoiceProviderRoot({
     await publishQueueRef.current;
   }, [schedulePublish]);
 
+  const leave = useCallback(() => {
+    // Invalidate callbacks immediately. The queued teardown then removes the
+    // exact current presence slot before another session is allowed to start.
+    lifecycleGenerationRef.current += 1;
+    lifecycleQueueRef.current = lifecycleQueueRef.current
+      .catch(() => undefined)
+      .then(leaveCurrent);
+    return lifecycleQueueRef.current;
+  }, [leaveCurrent]);
+
   // Switching servers owns the full voice lifecycle: leave the previous room
   // before the new server can publish or negotiate with its participants.
   useEffect(() => {
@@ -295,44 +308,99 @@ export function VoiceProviderRoot({
   }, [serverId, leave]);
 
   const join = useCallback(
-    async (channelId: string) => {
-      if (stateRef.current.activeChannelId === channelId) return;
-      if (!userId) return;
-      await leave();
-      const provider = createVoiceProvider();
-      providerRef.current = provider;
-      setConnectionState("connecting");
-      setActiveChannelId(channelId);
-      try {
-        await provider.connect(channelId, userId, {
-          onStateChange: (state) => setConnectionState(state),
-          onSpeakingChange: (value) => setSpeaking(value),
-          onRemoteMedia: (media) => setRemoteMedia(media),
-          onLocalMedia: ({ camera, screen }) => {
-            setLocalCamera(camera);
-            setLocalScreen(screen);
-            setCameraOn(!!camera);
-            setScreenOn(!!screen);
-          },
-          onScreenShareEnded: () => setScreenOn(false),
-          onError: () => {
-            setMicPermission("denied");
-            toast.error("Não foi possível acessar o microfone.");
-          },
+    (channelId: string) => {
+      if (!userId) return Promise.resolve();
+      const generation = lifecycleGenerationRef.current + 1;
+      lifecycleGenerationRef.current = generation;
+
+      lifecycleQueueRef.current = lifecycleQueueRef.current
+        .catch(() => undefined)
+        .then(async () => {
+          if (generation !== lifecycleGenerationRef.current) return;
+          if (stateRef.current.activeChannelId === channelId && providerRef.current) return;
+
+          await leaveCurrent();
+          if (generation !== lifecycleGenerationRef.current) return;
+
+          // Every entry is a distinct voice session. Presence from a previous
+          // entry can no longer be mistaken for, or clean up, this one.
+          sessionIdRef.current = crypto.randomUUID();
+          stateRef.current = {
+            ...stateRef.current,
+            activeChannelId: channelId,
+            speaking: false,
+            cameraOn: false,
+            screenOn: false,
+          };
+          setConnectionState("connecting");
+          setActiveChannelId(channelId);
+          schedulePublish(true);
+
+          const provider = createVoiceProvider();
+          providerRef.current = provider;
+          const isCurrent = () =>
+            generation === lifecycleGenerationRef.current && providerRef.current === provider;
+
+          try {
+            await provider.connect(channelId, userId, {
+              onStateChange: (state) => {
+                if (isCurrent()) setConnectionState(state);
+              },
+              onSpeakingChange: (value) => {
+                if (isCurrent()) setSpeaking(value);
+              },
+              onRemoteMedia: (media) => {
+                if (isCurrent()) setRemoteMedia(media);
+              },
+              onLocalMedia: ({ camera, screen }) => {
+                if (!isCurrent()) return;
+                setLocalCamera(camera);
+                setLocalScreen(screen);
+                setCameraOn(!!camera);
+                setScreenOn(!!screen);
+              },
+              onScreenShareEnded: () => {
+                if (isCurrent()) setScreenOn(false);
+              },
+              onError: () => {
+                if (!isCurrent()) return;
+                setMicPermission("denied");
+                toast.error("Não foi possível acessar o microfone.");
+              },
+            });
+            if (!isCurrent()) {
+              await provider.disconnect();
+              return;
+            }
+            setMicPermission("granted");
+            if (audioSettings.inputDeviceId)
+              await provider
+                .setDevices({ microphoneId: audioSettings.inputDeviceId })
+                .catch(() => undefined);
+            if (!isCurrent()) return;
+            provider.setInputGain(audioSettings.inputVolume);
+            provider.setMuted(stateRef.current.muted);
+            void refreshDevices();
+          } catch {
+            await provider.disconnect().catch(() => undefined);
+            if (!isCurrent()) return;
+            providerRef.current = null;
+            stateRef.current = { ...stateRef.current, activeChannelId: null };
+            setActiveChannelId(null);
+            schedulePublish(true);
+            setConnectionState("error");
+          }
         });
-        setMicPermission("granted");
-        if (audioSettings.inputDeviceId)
-          await provider.setDevices({ microphoneId: audioSettings.inputDeviceId }).catch(() => undefined);
-        provider.setInputGain(audioSettings.inputVolume);
-        provider.setMuted(stateRef.current.muted);
-        void refreshDevices();
-      } catch {
-        providerRef.current = null;
-        setActiveChannelId(null);
-        setConnectionState("error");
-      }
+      return lifecycleQueueRef.current;
     },
-    [leave, userId, refreshDevices, audioSettings.inputDeviceId, audioSettings.inputVolume],
+    [
+      leaveCurrent,
+      userId,
+      refreshDevices,
+      schedulePublish,
+      audioSettings.inputDeviceId,
+      audioSettings.inputVolume,
+    ],
   );
 
   const toggleMute = useCallback(() => {
@@ -483,7 +551,15 @@ export function VoiceProviderRoot({
     providerRef.current?.setMuted(muted || !pttActive);
   }, [muted, pttActive, activeChannelId]);
 
-  useEffect(() => () => void providerRef.current?.disconnect(), []);
+  useEffect(
+    () => () => {
+      lifecycleGenerationRef.current += 1;
+      const provider = providerRef.current;
+      providerRef.current = null;
+      void provider?.disconnect();
+    },
+    [],
+  );
 
   const value = useMemo<VoiceContextValue>(
     () => ({

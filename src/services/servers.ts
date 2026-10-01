@@ -78,7 +78,13 @@ export const serversService = {
   },
 
   async remove(serverId: string) {
-    const { error } = await supabase.from("servers").delete().eq("id", serverId);
+    const { data, error } = await supabase
+      .from("servers")
+      .delete()
+      .eq("id", serverId)
+      .select("id")
+      .single();
     if (error) throw error;
+    return data.id;
   },
 };

@@ -17,7 +17,7 @@ export function MemberPanel({
   loading: boolean;
   onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {
-  const { statusOf } = useGlobalPresence();
+  const { statusOf, games } = useGlobalPresence();
   // Single batched query + realtime for the whole list — no per-member fetch.
   const gamePresence = useGamePresenceMap(members.map((m) => m.user_id));
 
@@ -64,8 +64,8 @@ export function MemberPanel({
               >
                 {name}
               </p>
-              {game ? (
-                <GamePresenceLine presence={game} />
+              {game || games[member.user_id] ? (
+                <GamePresenceLine userId={member.user_id} presence={game} />
               ) : (
                 <p className="text-muted-foreground truncate text-xs">
                   {member.profile?.custom_status

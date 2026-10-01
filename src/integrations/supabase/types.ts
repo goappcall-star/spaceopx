@@ -934,6 +934,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      google_registration_ready: { Args: Record<PropertyKey, never>; Returns: boolean }
+      complete_registration: { Args: { chosen_username: string }; Returns: undefined }
+      get_server_dm_privacy: {
+        Args: { _server_id: string }
+        Returns: boolean
+      }
+      set_server_dm_privacy: {
+        Args: { _server_id: string; _allow: boolean }
+        Returns: boolean
+      }
       add_group_member: {
         Args: { _conversation_id: string; _user_id: string }
         Returns: boolean

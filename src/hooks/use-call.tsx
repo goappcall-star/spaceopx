@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useAudioSettings } from "@/hooks/use-audio-settings";
 import { supabase } from "@/integrations/supabase/client";
 import { createVoiceProvider, type RemoteMedia, type VoiceProvider } from "@/services/voice";
+import { createCallGracePeriod } from "@/services/call-grace-period";
 import type { Profile } from "@/types";
 
 /**
@@ -28,22 +29,10 @@ import type { Profile } from "@/types";
  */
 
 export type CallStatus =
-  | "idle"
-  | "outgoing"
-  | "incoming"
-  | "connecting"
-  | "active"
-  | "reconnecting"
-  | "ended";
+  "idle" | "outgoing" | "incoming" | "connecting" | "active" | "reconnecting" | "waiting" | "ended";
 
 export type CallEndReason =
-  | "declined"
-  | "cancelled"
-  | "ended"
-  | "busy"
-  | "failed"
-  | "unanswered"
-  | null;
+  "declined" | "cancelled" | "ended" | "busy" | "failed" | "unanswered" | null;
 
 export interface CallPeer {
   id: string;
@@ -53,8 +42,13 @@ export interface CallPeer {
 }
 
 interface CallContextValue {
+  groupConversationId: string | null;
+  participants: CallPeer[];
+  groupMedia: Record<string, RemoteMedia>;
+  startGroupCall: (id: string, name: string, members: CallPeer[]) => Promise<void>;
   status: CallStatus;
   endReason: CallEndReason;
+  aloneDeadline: number | null;
   peer: CallPeer | null;
   video: boolean;
   muted: boolean;
@@ -100,6 +94,8 @@ export function CallProviderRoot({
   const audioRef = useRef(audioSettings);
   audioRef.current = audioSettings;
   const [status, setStatus] = useState<CallStatus>("idle");
+  const [aloneDeadline, setAloneDeadline] = useState<number | null>(null);
+  const graceRef = useRef<ReturnType<typeof createCallGracePeriod> | null>(null);
   const [endReason, setEndReason] = useState<CallEndReason>(null);
   const [peer, setPeer] = useState<CallPeer | null>(null);
   const [video, setVideo] = useState(false);
@@ -110,6 +106,10 @@ export function CallProviderRoot({
   const [localScreen, setLocalScreen] = useState<MediaStream | null>(null);
   const [remote, setRemote] = useState<RemoteMedia | null>(null);
   const [busyUsers, setBusyUsers] = useState<Record<string, true>>({});
+  const [groupConversationId, setGroupConversationId] = useState<string | null>(null);
+  const [participants, setParticipants] = useState<CallPeer[]>([]);
+  const [groupMedia, setGroupMedia] = useState<Record<string, RemoteMedia>>({});
+  const groupPresenceRef = useRef<RealtimeChannel | null>(null);
 
   const providerRef = useRef<VoiceProvider | null>(null);
   const controlRef = useRef<RealtimeChannel | null>(null);
@@ -138,7 +138,9 @@ export function CallProviderRoot({
   /* --------------------------------------------------------------- cleanup */
 
   const teardownMedia = useCallback(async () => {
-    await providerRef.current?.disconnect();
+    const presence = groupPresenceRef.current;
+    groupPresenceRef.current = null;
+    const provider = providerRef.current;
     providerRef.current = null;
     setRemote(null);
     setLocalCamera(null);
@@ -146,31 +148,54 @@ export function CallProviderRoot({
     setCameraOn(false);
     setScreenOn(false);
     setMuted(false);
+    setGroupConversationId(null);
+    setParticipants([]);
+    setGroupMedia({});
+    await Promise.all([presence ? supabase.removeChannel(presence) : undefined, provider?.disconnect()]);
   }, []);
 
-  const closeControl = useCallback(async () => {
+  const closeControl = useCallback(async (pending?: Promise<unknown>) => {
     const channel = controlRef.current;
     controlRef.current = null;
+    if (pending) await pending.catch(() => undefined);
     if (channel) await supabase.removeChannel(channel);
   }, []);
 
   const finish = useCallback(
-    async (reason: CallEndReason) => {
+    async (reason: CallEndReason, pending?: Promise<unknown>) => {
       if (ringTimer.current) clearTimeout(ringTimer.current);
       ringTimer.current = null;
-      await teardownMedia();
-      await closeControl();
+      graceRef.current?.cancel();
+      setAloneDeadline(null);
       callIdRef.current = null;
+      statusRef.current = reason ? "ended" : "idle";
       setEndReason(reason);
       setStatus(reason ? "ended" : "idle");
       if (reason) setTimeout(() => setStatus((s) => (s === "ended" ? "idle" : s)), 2600);
+      await Promise.all([teardownMedia(), closeControl(pending)]);
     },
     [teardownMedia, closeControl],
   );
 
+  const waitAfterPeerLeft = useCallback(() => {
+    if (["waiting"].includes(statusRef.current)) return;
+    if (!["active", "connecting", "reconnecting"].includes(statusRef.current)) {
+      void finish(null);
+      return;
+    }
+    statusRef.current = "waiting";
+    setStatus("waiting");
+    setRemote(null);
+    providerRef.current?.syncPeers([]);
+    if (!graceRef.current) graceRef.current = createCallGracePeriod(() => {
+      if (["waiting"].includes(statusRef.current)) void finish(null);
+    });
+    setAloneDeadline(graceRef.current.start());
+  }, [finish]);
+
   /* ------------------------------------------------------------ presence */
 
-  const inCall = status === "active" || status === "connecting" || status === "reconnecting";
+  const inCall = status === "active" || status === "connecting" || status === "reconnecting" || status === "waiting";
 
   useEffect(() => {
     if (!userId) return;
@@ -207,16 +232,21 @@ export function CallProviderRoot({
     async (callId: string, remoteId: string, withVideo: boolean) => {
       const provider = createVoiceProvider();
       providerRef.current = provider;
+      statusRef.current = "connecting";
       setStatus("connecting");
       try {
         await provider.connect(`call-${callId}`, userId!, {
           onStateChange: (state) => {
+            if (providerRef.current !== provider || ["waiting"].includes(statusRef.current)) return;
             if (state === "connected") setStatus("active");
             else if (state === "reconnecting") setStatus("reconnecting");
             else if (state === "connecting") setStatus("connecting");
           },
-          onRemoteMedia: (media) => setRemote(media[remoteId] ?? null),
+          onRemoteMedia: (media) => {
+            if (providerRef.current === provider && statusRef.current !== "waiting") setRemote(media[remoteId] ?? null);
+          },
           onLocalMedia: ({ camera, screen }) => {
+            if (providerRef.current !== provider) return;
             setLocalCamera(camera);
             setLocalScreen(screen);
             setCameraOn(!!camera);
@@ -225,10 +255,13 @@ export function CallProviderRoot({
           onScreenShareEnded: () => setScreenOn(false),
           onError: () => toast.error("Não foi possível acessar o microfone."),
         });
+        if (providerRef.current !== provider) { await provider.disconnect(); return; }
+        if (["waiting"].includes(statusRef.current)) return;
         if (audioRef.current.inputDeviceId)
           await provider
             .setDevices({ microphoneId: audioRef.current.inputDeviceId })
             .catch(() => undefined);
+        if (providerRef.current !== provider || ["waiting"].includes(statusRef.current)) return;
         provider.setInputGain(audioRef.current.inputVolume);
         provider.syncPeers([remoteId]);
         if (withVideo) {
@@ -240,6 +273,7 @@ export function CallProviderRoot({
           }
         }
       } catch {
+        if (providerRef.current !== provider || ["waiting"].includes(statusRef.current)) return;
         toast.error("Falha ao iniciar a chamada.");
         await finish("failed");
       }
@@ -250,7 +284,7 @@ export function CallProviderRoot({
   /* ------------------------------------------------------------- control */
 
   const sendControl = useCallback((type: Control) => {
-    void controlRef.current?.send({
+    return controlRef.current?.send({
       type: "broadcast",
       event: "control",
       payload: { type },
@@ -261,9 +295,10 @@ export function CallProviderRoot({
     async (callId: string) => {
       await closeControl();
       const channel = supabase.channel(`callsig:${callId}`, {
-        config: { broadcast: { self: false, ack: false } },
+        config: { broadcast: { self: false, ack: true } },
       });
       channel.on("broadcast", { event: "control" }, ({ payload }) => {
+        if (callIdRef.current !== callId) return;
         const type = (payload as { type: Control }).type;
         if (type === "accept") {
           const remoteId = peerRef.current?.id;
@@ -274,16 +309,17 @@ export function CallProviderRoot({
         } else if (type === "decline") void finish("declined");
         else if (type === "cancel") void finish("cancelled");
         else if (type === "busy") void finish("busy");
-        else if (type === "end") void finish("ended");
+        else if (type === "end") waitAfterPeerLeft();
       });
       await new Promise<void>((resolve) => {
         channel.subscribe((state) => {
           if (state === "SUBSCRIBED") resolve();
         });
       });
+      if (callIdRef.current !== callId) { await supabase.removeChannel(channel); return; }
       controlRef.current = channel;
     },
-    [closeControl, finish, startMedia, video],
+    [closeControl, finish, startMedia, video, waitAfterPeerLeft],
   );
 
   /* --------------------------------------------------------------- inbox */
@@ -326,6 +362,78 @@ export function CallProviderRoot({
   }, [userId, openControl, finish]);
 
   /* -------------------------------------------------------------- actions */
+
+  const startGroupCall = useCallback(
+    async (id: string, name: string, members: CallPeer[]) => {
+      if (!userId || !me || !members.some((member) => member.id === userId)) return;
+      if (statusRef.current !== "idle" && statusRef.current !== "ended") return;
+      statusRef.current = "connecting";
+      setStatus("connecting");
+      setEndReason(null);
+      setGroupConversationId(id);
+      setPeer({ id, display_name: name, username: "", avatar_url: null });
+      setParticipants([me]);
+      const provider = createVoiceProvider();
+      providerRef.current = provider;
+      const presence = supabase.channel(`group-call:${id}`, {
+        config: { presence: { key: userId } },
+      });
+      groupPresenceRef.current = presence;
+      const sync = () => {
+        if (groupPresenceRef.current !== presence) return;
+        const ids = new Set(
+          Object.values(presence.presenceState<{ user_id: string }>())
+            .flat()
+            .map((entry) => entry.user_id),
+        );
+        ids.add(userId);
+        const connected = members.filter((member) => ids.has(member.id));
+        setParticipants(connected);
+        provider.syncPeers(
+          connected.filter((member) => member.id !== userId).map((member) => member.id),
+        );
+      };
+      try {
+        await provider.connect(`group-call-${id}`, userId, {
+          onStateChange: (state) => {
+            if (providerRef.current !== provider) return;
+            if (state === "error") {
+              void finish("failed");
+              return;
+            }
+            setStatus(state === "connected" ? "active" : state);
+          },
+          onRemoteMedia: (media) => {
+            if (providerRef.current === provider) setGroupMedia(media);
+          },
+          onLocalMedia: ({ camera, screen }) => {
+            if (providerRef.current !== provider) return;
+            setLocalCamera(camera);
+            setLocalScreen(screen);
+            setCameraOn(!!camera);
+            setScreenOn(!!screen);
+          },
+          onScreenShareEnded: () => setScreenOn(false),
+        });
+        if (providerRef.current !== provider) {
+          await provider.disconnect();
+          return;
+        }
+        provider.setInputGain(audioRef.current.inputVolume);
+        if (audioRef.current.inputDeviceId)
+          await provider.setDevices({ microphoneId: audioRef.current.inputDeviceId });
+        presence.on("presence", { event: "sync" }, sync).subscribe((state) => {
+          if (groupPresenceRef.current !== presence) return;
+          if (state === "SUBSCRIBED") void presence.track({ user_id: userId }).then(sync);
+          else if (state === "CHANNEL_ERROR" || state === "TIMED_OUT") void finish("failed");
+        });
+      } catch {
+        toast.error("Não foi possível entrar na chamada do grupo.");
+        await finish("failed");
+      }
+    },
+    [userId, me, finish],
+  );
 
   const startCall = useCallback(
     async (target: CallPeer, withVideo: boolean) => {
@@ -378,13 +486,13 @@ export function CallProviderRoot({
   );
 
   const decline = useCallback(() => {
-    sendControl("decline");
-    void finish("declined");
+    const pending = sendControl("decline");
+    void finish("declined", pending);
   }, [sendControl, finish]);
 
   const hangUp = useCallback(() => {
-    sendControl(statusRef.current === "outgoing" ? "cancel" : "end");
-    void finish("ended");
+    const pending = sendControl(statusRef.current === "outgoing" ? "cancel" : "end");
+    void finish(null, pending);
   }, [sendControl, finish]);
 
   const toggleMute = useCallback(() => {
@@ -436,15 +544,24 @@ export function CallProviderRoot({
 
   useEffect(
     () => () => {
+      graceRef.current?.cancel();
+      if (controlRef.current) void supabase.removeChannel(controlRef.current);
+      if (ringTimer.current) clearTimeout(ringTimer.current);
       void providerRef.current?.disconnect();
+      if (groupPresenceRef.current) void supabase.removeChannel(groupPresenceRef.current);
     },
     [],
   );
 
   const value = useMemo<CallContextValue>(
     () => ({
+      groupConversationId,
+      participants,
+      groupMedia,
+      startGroupCall,
       status,
       endReason,
+      aloneDeadline,
       peer,
       video,
       muted,
@@ -464,8 +581,13 @@ export function CallProviderRoot({
       dismiss,
     }),
     [
+      groupConversationId,
+      participants,
+      groupMedia,
+      startGroupCall,
       status,
       endReason,
+      aloneDeadline,
       peer,
       video,
       muted,

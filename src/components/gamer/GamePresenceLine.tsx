@@ -1,3 +1,5 @@
+import { useGlobalPresence } from "@/hooks/use-global-presence";
+import { LiveGameActivity } from "./LiveGameActivity";
 import { Gamepad2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -5,14 +7,19 @@ import type { GamePresence } from "@/types";
 
 /** Renders "🎮 Jogando <game>" — used in member list and profile card. */
 export function GamePresenceLine({
+  userId,
   presence,
   className,
   withLabel = false,
 }: {
+  userId?: string | undefined;
   presence: GamePresence | null | undefined;
   className?: string;
   withLabel?: boolean;
 }) {
+  const { games } = useGlobalPresence();
+  const id = userId ?? presence?.user_id;
+  if (games[id ?? ""]) return <LiveGameActivity userId={id} className={className} />;
   if (!presence || presence.status !== "playing" || !presence.game) return null;
 
   return (

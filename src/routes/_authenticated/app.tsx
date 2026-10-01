@@ -1,6 +1,7 @@
+import { useSessionServer } from "@/components/call/SessionCommunications";
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { z } from "zod";
-import { Gamepad2, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { ChannelSidebar } from "@/components/app/ChannelSidebar";
@@ -12,15 +13,11 @@ import { MemberPanel } from "@/components/app/MemberPanel";
 import { ServerRail } from "@/components/app/ServerRail";
 import { ServerSettingsDialog } from "@/components/server-settings/ServerSettingsDialog";
 import { UserBar } from "@/components/app/UserBar";
-import { CallOverlay } from "@/components/call/CallOverlay";
-import { IncomingCallDialog } from "@/components/call/IncomingCallDialog";
+import { CallWorkspace } from "@/components/call/CallOverlay";
 import { ChatView } from "@/components/chat/ChatView";
-import { RemoteAudio } from "@/components/voice/RemoteAudio";
 import { VoiceRoom } from "@/components/voice/VoiceRoom";
 import { Button } from "@/components/ui/button";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
-import { GlobalPresenceProvider } from "@/hooks/use-global-presence";
 import {
   useMyServers,
   useServerChannels,
@@ -28,8 +25,6 @@ import {
   useServerPermissions,
 } from "@/hooks/use-servers";
 import { useServerAbilities } from "@/hooks/use-server-admin";
-import { CallProviderRoot } from "@/hooks/use-call";
-import { VoiceProviderRoot } from "@/hooks/use-voice";
 import { ProfileDialogProvider, useProfileDialog } from "@/components/gamer/ProfileDialog";
 import { DirectChatView } from "@/components/social/DirectChatView";
 import { SocialHome } from "@/components/social/SocialHome";
@@ -37,6 +32,15 @@ import { SocialSidebar, type SocialTab } from "@/components/social/SocialSidebar
 import { useConversations, useFriends } from "@/hooks/use-social";
 import type { ConversationOverview, FriendEntry, FriendRequestEntry } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { channelsService } from "@/services/channels";
+import { readStatesService } from "@/services/messages";
+import { membersService } from "@/services/members";
+import { memberHasPermission } from "@/services/permissions";
+import { useServerPreferences, isServerMuted } from "@/hooks/use-server-preferences";
+import { ServerPersonalDialog } from "@/components/app/ServerPersonalDialog";
+import type { ServerMenuAction } from "@/components/app/ServerContextMenu";
+import type { Server } from "@/types";
 
 export const Route = createFileRoute("/_authenticated/app")({
   validateSearch: z.object({ server: z.string().optional() }),
@@ -63,13 +67,19 @@ function AppPage() {
   const { user, profile } = useAuth();
   const { server: serverParam } = useSearch({ from: "/_authenticated/app" });
   const { data: servers = [], isLoading: loadingServers } = useMyServers();
-  const [activeServerId, setActiveServerId] = useState<string | null>(null);
+  const { serverId: activeServerId, setServerId: setActiveServerId } = useSessionServer();
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [channelOpen, setChannelOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const preferences = useServerPreferences(user?.id);
+  const [menuDialog, setMenuDialog] = useState<{
+    server: Server;
+    action: "profile" | "privacy" | "leave";
+  } | null>(null);
+  const [menuInviteServer, setMenuInviteServer] = useState<Server | null>(null);
   const [unread, setUnread] = useState<Set<string>>(new Set());
   const [view, setView] = useState<"servers" | "social">("servers");
   const [socialTab, setSocialTab] = useState<SocialTab>("friends");
@@ -78,8 +88,7 @@ function AppPage() {
   const { friends, requests } = useFriends(user?.id);
   const { conversations, totalUnread } = useConversations(user?.id);
   const pendingRequests = requests.filter((r) => r.direction === "incoming").length;
-  const activeConversation =
-    conversations.find((c) => c.id === activeConversationId) ?? null;
+  const activeConversation = conversations.find((c) => c.id === activeConversationId) ?? null;
 
   function openConversation(conversationId: string) {
     setView("social");
@@ -93,6 +102,38 @@ function AppPage() {
   );
   const { me, canManage } = useServerPermissions(members, user?.id);
   const abilities = useServerAbilities(activeServer, members, user?.id);
+  const activePreferences = activeServer ? preferences.get(activeServer.id) : null;
+
+  async function handleServerAction(action: ServerMenuAction, server: Server) {
+    if (!user) return;
+    if (action === "privacy" || action === "profile" || action === "leave") {
+      setMenuDialog({ action, server });
+      return;
+    }
+    try {
+      if (action === "invite") {
+        const serverMembers = await membersService.listByServer(server.id);
+        const member = serverMembers.find((m) => m.user_id === user.id);
+        if (!memberHasPermission(member, server.owner_id, "create_invite")) {
+          toast.error("Você não tem permissão para criar convites neste servidor.");
+          return;
+        }
+        setMenuInviteServer(server);
+      } else {
+        const serverChannels = await channelsService.listByServer(server.id);
+        const ids = new Set(serverChannels.map((c) => c.id));
+        await Promise.all(
+          serverChannels
+            .filter((c) => c.type !== "voice")
+            .map((c) => readStatesService.markRead(c.id, user.id, null)),
+        );
+        setUnread((previous) => new Set([...previous].filter((id) => !ids.has(id))));
+        toast.success("Servidor marcado como lido.");
+      }
+    } catch {
+      toast.error("Não foi possível concluir a operação. Tente novamente.");
+    }
+  }
 
   // Deep link (?server=...) — e.g. right after accepting an invite.
   useEffect(() => {
@@ -103,10 +144,10 @@ function AppPage() {
   }, [serverParam, servers]);
 
   useEffect(() => {
-    if (activeServerId && !servers.some((s) => s.id === activeServerId)) {
+    if (!loadingServers && activeServerId && !servers.some((s) => s.id === activeServerId)) {
       setActiveServerId(null);
     }
-  }, [servers, activeServerId]);
+  }, [servers, activeServerId, loadingServers, setActiveServerId]);
 
   useEffect(() => {
     if (channels.length === 0) {
@@ -124,17 +165,29 @@ function AppPage() {
     const ids = new Set(channels.map((c) => c.id));
     const realtime = supabase
       .channel(`unread:${activeServer.id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
-        const row = payload.new as { channel_id: string; author_id: string };
-        if (!ids.has(row.channel_id)) return;
-        if (row.author_id === user.id || row.channel_id === activeChannelId) return;
-        setUnread((prev) => new Set(prev).add(row.channel_id));
-      })
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const row = payload.new as { channel_id: string; author_id: string; mentions?: string[] };
+          if (!ids.has(row.channel_id)) return;
+          if (row.author_id === user.id || row.channel_id === activeChannelId) return;
+          if (
+            activePreferences &&
+            (isServerMuted(activePreferences) ||
+              activePreferences.mutedChannels.includes(row.channel_id) ||
+              activePreferences.notifications === "none" ||
+              (activePreferences.notifications === "mentions" && !row.mentions?.includes(user.id)))
+          )
+            return;
+          setUnread((prev) => new Set(prev).add(row.channel_id));
+        },
+      )
       .subscribe();
     return () => {
       void supabase.removeChannel(realtime);
     };
-  }, [activeServer, channels, activeChannelId, user?.id]);
+  }, [activeServer, channels, activeChannelId, user?.id, activePreferences]);
 
   const handleRead = useCallback((channelId: string) => {
     setUnread((prev) => {
@@ -148,16 +201,15 @@ function AppPage() {
   const activeChannel = channels.find((c) => c.id === activeChannelId) ?? null;
 
   return (
-    <GlobalPresenceProvider userId={user?.id} profileStatus={profile?.status}>
-    <VoiceProviderRoot serverId={activeServer?.id ?? null} userId={user?.id}>
-      <RemoteAudio />
-      <TooltipProvider delayDuration={200}>
-        <CallProviderRoot userId={user?.id} profile={profile}>
-        <IncomingCallDialog />
-        <CallOverlay />
-        <ProfileDialogProvider onStartDirect={openConversation}>
+    <>
+      <ProfileDialogProvider onStartDirect={openConversation}>
         <div className="bg-background flex h-screen overflow-hidden">
           <ServerRail
+            getPreferences={preferences.get}
+            onUpdatePreferences={preferences.update}
+            onServerAction={(action, server) => {
+              void handleServerAction(action, server);
+            }}
             servers={servers}
             activeServerId={activeServerId}
             onSelect={(id) => {
@@ -184,6 +236,15 @@ function AppPage() {
             />
           ) : activeServer ? (
             <ChannelSidebar
+              preferences={preferences.get(activeServer.id)}
+              onToggleMuteChannel={(channelId) => {
+                const current = preferences.get(activeServer.id);
+                preferences.update(activeServer.id, {
+                  mutedChannels: current.mutedChannels.includes(channelId)
+                    ? current.mutedChannels.filter((id) => id !== channelId)
+                    : [...current.mutedChannels, channelId],
+                });
+              }}
               server={activeServer}
               channels={channels}
               activeChannelId={activeChannelId}
@@ -217,8 +278,10 @@ function AppPage() {
             </aside>
           )}
 
-
-          <main className="flex min-w-0 flex-1 flex-col">
+          <CallWorkspace
+            onOpenConversation={openConversation}
+            conversation={view === "social" ? activeConversation : null}
+          >
             {view === "social" ? (
               <SocialMain
                 conversation={activeConversation}
@@ -233,12 +296,7 @@ function AppPage() {
               />
             ) : activeServer && activeChannel ? (
               activeChannel.type === "voice" ? (
-                <VoiceRoom
-                  channel={activeChannel}
-                  members={members}
-                  me={me}
-                  userId={user?.id}
-                />
+                <VoiceRoom channel={activeChannel} members={members} me={me} userId={user?.id} />
               ) : (
                 <ChatView
                   key={activeChannel.id}
@@ -267,15 +325,19 @@ function AppPage() {
 
                 <div className="animate-fade-up relative max-w-lg text-center">
                   <span className="surface-elevated glow-soft mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl">
-                    <Gamepad2 className="text-primary h-9 w-9" strokeWidth={1.9} />
+                    <img
+                      src="/lobbyx-logo.png"
+                      alt="LobbyX"
+                      className="h-20 w-20 rounded-3xl object-contain"
+                    />
                   </span>
                   <p className="text-caption mb-3">Plataforma social gamer</p>
                   <h1 className="text-3xl font-semibold tracking-tight">
                     Bem-vindo ao <span className="text-brand-gradient">LobbyX</span>
                   </h1>
                   <p className="text-muted-foreground mx-auto mt-3 max-w-sm text-sm">
-                    Escolha um lobby na barra lateral, crie a sua própria comunidade ou entre com
-                    um convite.
+                    Escolha um lobby na barra lateral, crie a sua própria comunidade ou entre com um
+                    convite.
                   </p>
                   <div className="mt-7 flex flex-wrap justify-center gap-3">
                     <Button size="lg" onClick={() => setCreateOpen(true)}>
@@ -304,18 +366,19 @@ function AppPage() {
                   </div>
 
                   {loadingServers && (
-                    <p className="text-muted-foreground mt-6 text-xs">
-                      Carregando seus lobbies...
-                    </p>
+                    <p className="text-muted-foreground mt-6 text-xs">Carregando seus lobbies...</p>
                   )}
                 </div>
               </div>
             )}
-
-          </main>
+          </CallWorkspace>
 
           {view === "servers" && activeServer && (
-            <MemberPanel members={members} loading={loadingMembers} onStartDirect={openConversation} />
+            <MemberPanel
+              members={members}
+              loading={loadingMembers}
+              onStartDirect={openConversation}
+            />
           )}
         </div>
 
@@ -324,6 +387,33 @@ function AppPage() {
           onOpenChange={setCreateOpen}
           onCreated={(serverId) => setActiveServerId(serverId)}
         />
+        {menuInviteServer && (
+          <InviteDialog
+            key={menuInviteServer.id}
+            serverId={menuInviteServer.id}
+            open
+            onOpenChange={(open) => {
+              if (!open) setMenuInviteServer(null);
+            }}
+          />
+        )}
+        {menuDialog && user && (
+          <ServerPersonalDialog
+            key={`${menuDialog.server.id}:${menuDialog.action}`}
+            {...menuDialog}
+            userId={user.id}
+            onClose={() => setMenuDialog(null)}
+            onLeft={(serverId) => {
+              if (activeServerId === serverId) {
+                setActiveServerId(null);
+                setActiveChannelId(null);
+                setSettingsOpen(false);
+                setInviteOpen(false);
+                setChannelOpen(false);
+              }
+            }}
+          />
+        )}
         <JoinServerDialog
           open={joinOpen}
           onOpenChange={setJoinOpen}
@@ -352,13 +442,9 @@ function AppPage() {
               />
             )}
           </>
-
         )}
-        </ProfileDialogProvider>
-        </CallProviderRoot>
-      </TooltipProvider>
-    </VoiceProviderRoot>
-    </GlobalPresenceProvider>
+      </ProfileDialogProvider>
+    </>
   );
 }
 

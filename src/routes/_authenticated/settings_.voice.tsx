@@ -1,8 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Headphones } from "lucide-react";
+import { SettingsShell } from "@/components/settings/SettingsShell";
+import { createFileRoute } from "@tanstack/react-router";
 
 import { AudioSettingsPanel } from "@/components/settings/AudioSettingsPanel";
-import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/settings_/voice")({
   head: () => ({
@@ -25,28 +24,11 @@ export const Route = createFileRoute("/_authenticated/settings_/voice")({
 
 function VoiceSettingsPage() {
   return (
-    <div className="bg-background min-h-screen">
-      <div className="mx-auto max-w-2xl px-4 py-10">
-        <Button asChild variant="ghost" size="sm" className="mb-6 -ml-2">
-          <Link to="/app">
-            <ArrowLeft className="mr-1 h-4 w-4" /> Voltar
-          </Link>
-        </Button>
-
-        <header className="mb-8 flex items-center gap-3">
-          <span className="border-primary/40 bg-primary/10 text-primary glow-soft flex h-11 w-11 items-center justify-center rounded-xl border">
-            <Headphones className="h-5 w-5" />
-          </span>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Voz e áudio</h1>
-            <p className="text-muted-foreground text-sm">
-              Suas preferências ficam salvas na sua conta e valem para canais de voz e chamadas.
-            </p>
-          </div>
-        </header>
-
+    <SettingsShell active="voice">
+      <div className="max-w-3xl">
         <AudioSettingsPanel />
       </div>
-    </div>
+    </SettingsShell>
   );
 }
+

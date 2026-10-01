@@ -1,3 +1,4 @@
+import { useGlobalPresence } from "@/hooks/use-global-presence";
 import { StatusDot } from "@/components/app/StatusDot";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -25,6 +26,7 @@ export function GroupMembersDialog({
   userId,
   onOpenProfile,
 }: Props) {
+  const { statusOf } = useGlobalPresence();
   const { data: members = [] } = useConversationMembers(open ? conversation.id : null);
 
   return (
@@ -55,7 +57,7 @@ export function GroupMembersDialog({
                   </Avatar>
                   {profile && (
                     <StatusDot
-                      status={profile.status as UserStatus}
+                      status={statusOf(profile.id)}
                       className="border-background absolute -right-0.5 -bottom-0.5 h-3 w-3 border-2"
                     />
                   )}

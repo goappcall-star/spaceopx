@@ -3,6 +3,7 @@ import { AlertTriangle, Loader2, MonitorUp, Video } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { VideoTile, type TileData } from "@/components/voice/VideoTile";
+import { SharedScreen } from "@/components/call/SharedScreen";
 import { VoiceControlBar } from "@/components/voice/VoiceControlBar";
 import { useGamePresenceMap } from "@/hooks/use-gamer";
 import { useVoice } from "@/hooks/use-voice";
@@ -122,7 +123,6 @@ export function VoiceRoom({ channel, members, me, userId }: Props) {
 
   return (
     <div className="bg-hero-glow flex flex-1 flex-col overflow-hidden">
-
       <header className="border-border flex items-center justify-between gap-3 border-b px-4 py-2.5">
         <div className="min-w-0">
           <h2 className="truncate text-sm font-semibold">🔊 {channel.name}</h2>
@@ -147,7 +147,9 @@ export function VoiceRoom({ channel, members, me, userId }: Props) {
         {sharing && (
           <p className="text-primary flex items-center gap-1.5 text-xs">
             <MonitorUp className="h-3.5 w-3.5" />
-            {sharing.isSelf ? "Você está compartilhando a tela" : `${sharing.name} está compartilhando a tela`}
+            {sharing.isSelf
+              ? "Você está compartilhando a tela"
+              : `${sharing.name} está compartilhando a tela`}
           </p>
         )}
       </header>
@@ -163,9 +165,14 @@ export function VoiceRoom({ channel, members, me, userId }: Props) {
 
         {screenTiles.length > 0 ? (
           <div className="flex h-full min-h-0 flex-col gap-3">
-            <div className="min-h-0 flex-1">
+            <div className="flex min-h-[280px] flex-1 flex-col gap-3">
               {screenTiles.map((tile) => (
-                <VideoTile key={`${tile.userId}-screen`} tile={tile} className="h-full min-h-[280px]" large />
+                <div
+                  key={`${tile.userId}-${tile.stream?.id}`}
+                  className="flex min-h-[280px] flex-1"
+                >
+                  <SharedScreen tile={tile} />
+                </div>
               ))}
             </div>
             <ul className="flex gap-3 overflow-x-auto pb-1">

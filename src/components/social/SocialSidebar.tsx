@@ -1,3 +1,5 @@
+import { LiveGameActivity } from "@/components/gamer/LiveGameActivity";
+import { useGlobalPresence } from "@/hooks/use-global-presence";
 import { MessageSquare, UserPlus, Users, UsersRound } from "lucide-react";
 
 import { StatusDot } from "@/components/app/StatusDot";
@@ -43,6 +45,7 @@ export function SocialSidebar({
   onSelectConversation,
   pendingRequests,
 }: Props) {
+  const { statusOf } = useGlobalPresence();
   const direct = conversations.filter((c) => c.type === "direct");
 
   return (
@@ -116,14 +119,15 @@ export function SocialSidebar({
                         </AvatarFallback>
                       </Avatar>
                       <StatusDot
-                        status={(profile?.status as UserStatus) ?? "offline"}
+                        status={statusOf(profile?.id)}
                         className="border-surface absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 border-2"
                       />
                     </div>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm">
+                      <span className="font-friend block truncate text-sm font-bold">
                         {profile?.display_name ?? "Conversa"}
                       </span>
+                      <LiveGameActivity userId={profile?.id} />
                       <span className="text-muted-foreground block truncate text-[11px]">
                         {conversation.last_message_content ?? "Sem mensagens"}
                       </span>

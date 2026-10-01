@@ -8,6 +8,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useVoice } from "@/hooks/use-voice";
 import { cn } from "@/lib/utils";
 import type { Channel, MemberWithProfile, Server } from "@/types";
+import type { ServerPreferences } from "@/hooks/use-server-preferences";
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuCheckboxItem,
+} from "@/components/ui/context-menu";
 
 interface Props {
   server: Server;
@@ -22,6 +29,8 @@ interface Props {
   onOpenSettings?: () => void;
   onInvite: () => void;
   onCreateChannel: () => void;
+  preferences: ServerPreferences;
+  onToggleMuteChannel: (channelId: string) => void;
 }
 
 function CategoryHeader({
@@ -83,12 +92,20 @@ export function ChannelSidebar({
   onOpenSettings,
   onInvite,
   onCreateChannel,
+  preferences,
+  onToggleMuteChannel,
 }: Props) {
   const { participantsByChannel, activeChannelId: voiceChannelId, join } = useVoice();
   const [textOpen, setTextOpen] = useState(true);
   const [voiceOpen, setVoiceOpen] = useState(true);
 
-  const textChannels = channels.filter((c) => c.type !== "voice");
+  const textChannels = channels.filter(
+    (c) =>
+      c.type !== "voice" &&
+      (!preferences.hideMutedChannels ||
+        !preferences.mutedChannels.includes(c.id) ||
+        c.id === activeChannelId),
+  );
   const voiceChannels = channels.filter((c) => c.type === "voice");
   const activeVoiceChannel = channels.find((c) => c.id === voiceChannelId) ?? null;
 
@@ -144,16 +161,13 @@ export function ChannelSidebar({
         </div>
       </div>
 
-
       <div className="scrollbar-slim flex-1 overflow-y-auto px-2 py-2">
         <CategoryHeader
           label="Canais de texto"
           count={textChannels.length}
           open={textOpen}
           onToggle={() => setTextOpen((v) => !v)}
-          {...(canManage
-            ? { action: { label: "Criar canal", onClick: onCreateChannel } }
-            : {})}
+          {...(canManage ? { action: { label: "Criar canal", onClick: onCreateChannel } } : {})}
         />
         {textOpen && (
           <ul className="space-y-0.5">
@@ -162,31 +176,46 @@ export function ChannelSidebar({
             )}
             {textChannels.map((channel) => {
               const active = channel.id === activeChannelId;
-              const unread = unreadChannelIds.has(channel.id) && !active;
+              const unread =
+                unreadChannelIds.has(channel.id) &&
+                !active &&
+                !preferences.mutedChannels.includes(channel.id);
               return (
                 <li key={channel.id}>
-                  <button
-                    type="button"
-                    onClick={() => onSelectChannel(channel.id)}
-                    className={cn(
-                      "group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all duration-150",
-                      active
-                        ? "accent-marker bg-surface-active text-foreground font-medium"
-                        : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
-                      unread && "text-foreground font-semibold",
-                    )}
-                  >
-                    <Hash
-                      className={cn(
-                        "h-4 w-4 shrink-0 transition-colors",
-                        active ? "text-primary" : "text-muted-foreground/70",
-                      )}
-                    />
-                    <span className="truncate">{channel.name}</span>
-                    {unread && (
-                      <span className="bg-primary ml-auto h-2 w-2 shrink-0 rounded-full shadow-[0_0_8px_0_color-mix(in_oklab,var(--color-primary)_80%,transparent)]" />
-                    )}
-                  </button>
+                  <ContextMenu>
+                    <ContextMenuTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => onSelectChannel(channel.id)}
+                        className={cn(
+                          "group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all duration-150",
+                          active
+                            ? "accent-marker bg-surface-active text-foreground font-medium"
+                            : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
+                          unread && "text-foreground font-semibold",
+                        )}
+                      >
+                        <Hash
+                          className={cn(
+                            "h-4 w-4 shrink-0 transition-colors",
+                            active ? "text-primary" : "text-muted-foreground/70",
+                          )}
+                        />
+                        <span className="truncate">{channel.name}</span>
+                        {unread && (
+                          <span className="bg-primary ml-auto h-2 w-2 shrink-0 rounded-full shadow-[0_0_8px_0_color-mix(in_oklab,var(--color-primary)_80%,transparent)]" />
+                        )}
+                      </button>
+                    </ContextMenuTrigger>
+                    <ContextMenuContent>
+                      <ContextMenuCheckboxItem
+                        checked={preferences.mutedChannels.includes(channel.id)}
+                        onCheckedChange={() => onToggleMuteChannel(channel.id)}
+                      >
+                        Silenciar canal
+                      </ContextMenuCheckboxItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
                 </li>
               );
             })}
@@ -199,9 +228,7 @@ export function ChannelSidebar({
             count={voiceChannels.length}
             open={voiceOpen}
             onToggle={() => setVoiceOpen((v) => !v)}
-            {...(canManage
-              ? { action: { label: "Criar canal", onClick: onCreateChannel } }
-              : {})}
+            {...(canManage ? { action: { label: "Criar canal", onClick: onCreateChannel } } : {})}
           />
         </div>
         {voiceOpen && (
@@ -231,7 +258,11 @@ export function ChannelSidebar({
                     <Volume2
                       className={cn(
                         "h-4 w-4 shrink-0",
-                        connectedHere ? "text-success" : active ? "text-primary" : "text-muted-foreground/70",
+                        connectedHere
+                          ? "text-success"
+                          : active
+                            ? "text-primary"
+                            : "text-muted-foreground/70",
                       )}
                     />
                     <span className="truncate">{channel.name}</span>
@@ -248,14 +279,18 @@ export function ChannelSidebar({
                           key={participant.user_id}
                           className={cn(
                             "flex items-center gap-1.5 truncate py-0.5 text-xs transition-colors",
-                            participant.speaking ? "text-success font-medium" : "text-muted-foreground",
+                            participant.speaking
+                              ? "text-success font-medium"
+                              : "text-muted-foreground",
                           )}
                         >
                           <span
                             aria-hidden
                             className={cn(
                               "h-1.5 w-1.5 shrink-0 rounded-full",
-                              participant.speaking ? "bg-success animate-pulse" : "bg-muted-foreground/50",
+                              participant.speaking
+                                ? "bg-success animate-pulse"
+                                : "bg-muted-foreground/50",
                             )}
                           />
                           <span className="truncate">{memberName(participant.user_id)}</span>

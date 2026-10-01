@@ -1,3 +1,5 @@
+import { LiveGameActivity } from "./LiveGameActivity";
+import { useGlobalPresence } from "@/hooks/use-global-presence";
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -62,6 +64,7 @@ function ProfileDialogBody({
   userId: string | null;
   onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {
+  const { statusOf, games } = useGlobalPresence();
   const { data, isLoading } = usePublicProfile(userId);
 
   if (isLoading || !data) {
@@ -96,14 +99,15 @@ function ProfileDialogBody({
 
         <SocialActions userId={profile.id} onStartDirect={onStartDirect} />
 
+        <LiveGameActivity userId={profile.id} className="mt-2" />
         <p className="mt-2 text-xs">
-          {presence?.game ? (
+          {presence?.game && !games[profile.id] ? (
             <span className="text-primary inline-flex items-center gap-1.5">
               <Gamepad2 className="h-3.5 w-3.5" /> Jogando {presence.game.name}
             </span>
           ) : (
             <span className="text-muted-foreground">
-              {STATUS_EMOJI[profile.status]} {STATUS_LABEL[profile.status]}
+              {STATUS_EMOJI[statusOf(profile.id)]} {STATUS_LABEL[statusOf(profile.id)]}
             </span>
           )}
         </p>

@@ -398,7 +398,7 @@ function FriendList({
               name={friend.profile.display_name}
               username={friend.profile.username}
               status={statusOf(friend.profile.id)}
-              presenceNode={<GamePresenceLine presence={friend.presence} withLabel />}
+              presenceNode={<GamePresenceLine userId={friend.profile.id} presence={friend.presence} withLabel />}
               onStartDirect={onStartDirect}
               actions={
                 <>

@@ -26,6 +26,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { shouldExposeRemoteTrack } from "./remote-track";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 export type MediaKind = "mic" | "camera" | "screen";
@@ -245,6 +246,11 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   private async performDisconnect() {
+    const departure = this.signaling?.send({
+      type: "broadcast",
+      event: "signal",
+      payload: { from: this.userId, from_session: this.sessionId, to: "*", bye: true },
+    });
     this.disposed = true;
     this.cameraGeneration += 1;
     this.screenGeneration += 1;
@@ -275,6 +281,7 @@ class MeshVoiceProvider implements VoiceProvider {
     this.signaling = null;
     this.pendingSignaling = null;
     if (channel) {
+      await departure?.catch(() => undefined);
       await supabase.removeChannel(channel);
     }
     this.speaking = false;
@@ -380,7 +387,7 @@ class MeshVoiceProvider implements VoiceProvider {
       const stream = peer.streams[kind];
       for (const other of stream.getTracks()) if (other !== track) stream.removeTrack(other);
       if (!stream.getTracks().includes(track)) stream.addTrack(track);
-      this.updateRemote(remoteId, kind, stream);
+      this.updateRemote(remoteId, kind, shouldExposeRemoteTrack(kind, track) ? stream : null);
 
       track.addEventListener("ended", () => {
         stream.removeTrack(track);
@@ -390,7 +397,9 @@ class MeshVoiceProvider implements VoiceProvider {
       // briefly muted on packet loss — clearing it there kills incoming voice.
       if (kind !== "mic") {
         track.addEventListener("mute", () => this.updateRemote(remoteId, kind, null));
-        track.addEventListener("unmute", () => this.updateRemote(remoteId, kind, stream));
+        track.addEventListener("unmute", () => {
+          this.updateRemote(remoteId, kind, shouldExposeRemoteTrack(kind, track) ? stream : null);
+        });
       }
     };
 
@@ -519,6 +528,16 @@ class MeshVoiceProvider implements VoiceProvider {
     // A participant that leaves and immediately returns has a new signaling
     // session. Never negotiate that session over the closed peer connection.
     const existing = this.peers.get(payload.from);
+    if (payload.bye) {
+      if (
+        existing &&
+        (!existing.remoteSessionId || existing.remoteSessionId === payload.from_session)
+      ) {
+        this.closePeer(payload.from, existing);
+        this.emitAggregateState();
+      }
+      return;
+    }
     if (
       existing &&
       payload.from_session &&
@@ -757,6 +776,7 @@ interface SignalPayload {
   /** Target user id, or "*" for a room-wide announcement. */
   to: string;
   hello?: boolean;
+  bye?: boolean;
   description?: RTCSessionDescriptionInit;
   candidate?: RTCIceCandidateInit;
 }

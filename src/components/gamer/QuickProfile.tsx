@@ -1,3 +1,4 @@
+import { LiveGameActivity } from "./LiveGameActivity";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, Gamepad2, MessageSquare, Phone, UserCheck, UserPlus, X } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
@@ -98,7 +99,7 @@ function QuickProfileCard({
   onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {
   const { data, isLoading } = usePublicProfile(userId);
-  const { statusOf } = useGlobalPresence();
+  const { statusOf, games } = useGlobalPresence();
 
   if (isLoading || !data) {
     return (
@@ -140,7 +141,8 @@ function QuickProfileCard({
           <StatusDot status={status} className="h-2.5 w-2.5" />
           {STATUS_LABEL[status]}
         </p>
-        {presence?.game && (
+        <LiveGameActivity userId={profile.id} />
+        {presence?.game && !games[profile.id] && (
           <p className="text-primary mt-1 flex items-center gap-1.5 text-xs">
             <Gamepad2 className="h-3.5 w-3.5" /> {presence.game.name}
           </p>

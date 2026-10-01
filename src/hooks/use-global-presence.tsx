@@ -1,5 +1,6 @@
+import { maintainPresence } from "@/services/presence-connection";
+import { readDetectedGames, type DetectedGame } from "@/services/desktop-activity";
 import { useQueryClient } from "@tanstack/react-query";
-import type { RealtimeChannel } from "@supabase/supabase-js";
 import {
   createContext,
   useCallback,
@@ -10,83 +11,25 @@ import {
   useState,
   type ReactNode,
 } from "react";
-
 import { supabase } from "@/integrations/supabase/client";
 import { profilesService } from "@/services/profiles";
 import type { UserStatus } from "@/types";
+import { resolvePresence, type PresenceRow } from "@/services/presence";
 
-/** Statuses a user can pick. `offline` is derived, never chosen. */
 export type SelectableStatus = Extract<UserStatus, "online" | "idle" | "dnd">;
-
 export type ConnectionState = "connecting" | "online" | "reconnecting";
-
-/** Re-announce presence this often so a stale client is detected quickly. */
-const HEARTBEAT_MS = 25_000;
-/** Tolerance before a vanished client is painted offline (suspend, flaky net). */
-const GRACE_MS = 20_000;
-
-/* ------------------------------------------------------------------------ */
-/* Single shared realtime channel — supabase-js rejects a second subscribe on  */
-/* the same topic, so the channel lives at module scope and fans out events.   */
-
-type PresenceRow = { user_id: string; status: UserStatus };
-
-let shared: { channel: RealtimeChannel; userId: string } | null = null;
-const syncListeners = new Set<(present: Record<string, UserStatus>) => void>();
-const stateListeners = new Set<(state: ConnectionState) => void>();
-
-function readPresence(channel: RealtimeChannel) {
-  const state = channel.presenceState<PresenceRow>();
-  const present: Record<string, UserStatus> = {};
-  for (const entries of Object.values(state)) {
-    const first = entries[0];
-    if (first?.user_id) present[first.user_id] = first.status ?? "online";
-  }
-  return present;
-}
-
-function getPresenceChannel(userId: string) {
-  if (shared && shared.userId === userId) return shared.channel;
-  if (shared) {
-    const previous = shared.channel;
-    shared = null;
-    void previous.untrack().then(() => supabase.removeChannel(previous));
-  }
-
-  const channel = supabase.channel(`presence:global:${userId}`, {
-    config: { presence: { key: userId } },
-  });
-  const emit = () => {
-    const present = readPresence(channel);
-    for (const listener of syncListeners) listener(present);
-  };
-  channel
-    .on("presence", { event: "sync" }, emit)
-    .on("presence", { event: "join" }, emit)
-    .on("presence", { event: "leave" }, emit)
-    .subscribe((status) => {
-      const next: ConnectionState = status === "SUBSCRIBED" ? "online" : "reconnecting";
-      for (const listener of stateListeners) listener(next);
-      if (status === "SUBSCRIBED") emit();
-    });
-
-  shared = { channel, userId };
-  return channel;
-}
-
-/* ------------------------------------------------------------------------ */
-
+let presenceRelease: Promise<unknown> = Promise.resolve();
+let stopPresence: (() => void) | null = null;
 interface GlobalPresenceValue {
   statuses: Record<string, UserStatus>;
-  statusOf: (userId: string | null | undefined) => UserStatus;
-  isOnline: (userId: string | null | undefined) => boolean;
+  games: Record<string, DetectedGame>;
+  statusOf: (id: string | null | undefined) => UserStatus;
+  isOnline: (id: string | null | undefined) => boolean;
   myStatus: UserStatus;
   setStatus: (status: SelectableStatus) => Promise<void>;
   connection: ConnectionState;
 }
-
 const GlobalPresenceContext = createContext<GlobalPresenceValue | undefined>(undefined);
-
 export function GlobalPresenceProvider({
   userId,
   profileStatus,
@@ -97,151 +40,137 @@ export function GlobalPresenceProvider({
   children: ReactNode;
 }) {
   const queryClient = useQueryClient();
+  const [games, setGames] = useState<Record<string, DetectedGame>>({});
+  const gameRef = useRef<DetectedGame | null>(null);
   const [statuses, setStatuses] = useState<Record<string, UserStatus>>({});
   const [connection, setConnection] = useState<ConnectionState>("connecting");
-  const [myStatus, setMyStatus] = useState<SelectableStatus>("online");
-
-  const trackRef = useRef<(() => void) | null>(null);
   const statusRef = useRef<SelectableStatus>("online");
-  const graceTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-
-  // The persisted profile status is the desired status; presence decides online.
+  const trackRef = useRef<(() => void) | null>(null);
   useEffect(() => {
-    if (profileStatus && profileStatus !== "offline") {
-      setMyStatus(profileStatus as SelectableStatus);
-      statusRef.current = profileStatus as SelectableStatus;
-    }
-  }, [profileStatus]);
+    statusRef.current = profileStatus && profileStatus !== "offline" ? profileStatus : "online";
+    trackRef.current?.();
+  }, [profileStatus, userId]);
 
   useEffect(() => {
-    const timers = graceTimers.current;
-    if (!userId) {
-      setStatuses({});
-      setConnection("connecting");
-      return;
-    }
-
-    const channel = getPresenceChannel(userId);
-
-    const track = () => {
-      void channel.track({ user_id: userId, status: statusRef.current, at: Date.now() });
+    gameRef.current = null;
+    if (!userId || !window.lobbyxDesktop) return;
+    let disposed = false;
+    let busy = false;
+    const syncActivity = async () => {
+      if (busy) return;
+      busy = true;
+      try {
+        const state = await window.lobbyxDesktop!.activity();
+        if (!disposed) { gameRef.current = state.enabled ? state.game : null; trackRef.current?.(); }
+      } catch { if (!disposed) { gameRef.current = null; trackRef.current?.(); } }
+      finally { busy = false; }
     };
+    void syncActivity();
+    const timer = setInterval(() => void syncActivity(), 10000);
+    window.addEventListener("lobbyx:activity-changed", syncActivity);
+    return () => { disposed = true; gameRef.current = null; clearInterval(timer); window.removeEventListener("lobbyx:activity-changed", syncActivity); };
+  }, [userId]);
+
+  useEffect(() => {
+    setGames({});
+    setStatuses({});
+    setConnection("connecting");
+    if (!userId) return;
+    let disposed = false;
+    let suspended = false;
+    const connection = maintainPresence({
+      create: () => supabase.channel("presence:global", { config: { presence: { key: userId } } }),
+      remove: (channel) => supabase.removeChannel(channel),
+      payload: () => ({ user_id: userId, status: statusRef.current, at: Date.now(), game: gameRef.current }),
+      available: () => !suspended && navigator.onLine,
+      connected: () => { if (!disposed) setConnection("online"); },
+      disconnected: () => { if (!disposed) { setConnection("reconnecting"); setStatuses({}); setGames({}); } },
+      sync: (channel) => {
+        if(disposed) return;
+        const state = channel.presenceState<PresenceRow & { game?: unknown }>();
+        setStatuses(resolvePresence(state));
+        setGames(readDetectedGames(state));
+      },
+    });
+    const track = connection.track;
     trackRef.current = track;
-
-    const onSync = (present: Record<string, UserStatus>) => {
-      setStatuses((prev) => {
-        const next: Record<string, UserStatus> = { ...prev, ...present };
-        // Someone vanished: keep them visible during the tolerance window.
-        for (const id of Object.keys(prev)) {
-          if (!present[id] && !timers[id]) {
-            timers[id] = setTimeout(() => {
-              delete timers[id];
-              setStatuses((current) => {
-                const copy = { ...current };
-                delete copy[id];
-                return copy;
-              });
-            }, GRACE_MS);
-          }
-        }
-        for (const id of Object.keys(present)) {
-          const timer = timers[id];
-          if (timer) {
-            clearTimeout(timer);
-            delete timers[id];
-          }
-        }
-        return next;
-      });
+    // A route remount must wait until the previous instance leaves this topic.
+    void presenceRelease.catch(() => undefined).then(() => disposed ? undefined : connection.start());
+    const offline = connection.offline;
+    const online = track;
+    const hide = () => {
+      suspended = true;
+      offline();
     };
-
-    syncListeners.add(onSync);
-    stateListeners.add(setConnection);
-    onSync(readPresence(channel));
-    track();
-
-    const heartbeat = setInterval(track, HEARTBEAT_MS);
-
-    const onVisible = () => {
+    const show = () => {
+      suspended = false;
+      online();
+    };
+    const visible = () => {
       if (document.visibilityState === "visible") track();
     };
-    const onOnline = () => {
-      setConnection("online");
-      track();
-    };
-    const onOffline = () => setConnection("reconnecting");
-    const onUnload = () => {
-      void channel.untrack();
-    };
-
-    document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("online", onOnline);
-    window.addEventListener("offline", onOffline);
-    window.addEventListener("pagehide", onUnload);
-
-    return () => {
+    const heartbeat = setInterval(track, 25000);
+    window.addEventListener("offline", offline);
+    window.addEventListener("online", online);
+    window.addEventListener("pagehide", hide);
+    window.addEventListener("pageshow", show);
+    document.addEventListener("visibilitychange", visible);
+    const cleanup = () => {
+      if (disposed) return;
+      disposed = true;
       clearInterval(heartbeat);
-      syncListeners.delete(onSync);
-      stateListeners.delete(setConnection);
-      document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("online", onOnline);
-      window.removeEventListener("offline", onOffline);
-      window.removeEventListener("pagehide", onUnload);
-      for (const timer of Object.values(timers)) clearTimeout(timer);
-      for (const id of Object.keys(timers)) delete timers[id];
       trackRef.current = null;
+      window.removeEventListener("offline", offline);
+      window.removeEventListener("online", online);
+      window.removeEventListener("pagehide", hide);
+      window.removeEventListener("pageshow", show);
+      document.removeEventListener("visibilitychange", visible);
+      presenceRelease = Promise.all([presenceRelease, connection.stop()]).catch(() => undefined);
+      setGames({});
+      setStatuses({});
+      setConnection("connecting");
+      if (stopPresence === cleanup) stopPresence = null;
     };
+    stopPresence = cleanup;
+    return cleanup;
   }, [userId]);
 
   const setStatus = useCallback(
     async (status: SelectableStatus) => {
-      statusRef.current = status;
-      setMyStatus(status);
-      trackRef.current?.();
       if (!userId) return;
       await profilesService.update(userId, { status });
+      statusRef.current = status;
+      trackRef.current?.();
       void queryClient.invalidateQueries({ queryKey: ["profile", userId] });
     },
     [userId, queryClient],
   );
-
-  const value = useMemo<GlobalPresenceValue>(() => {
-    const resolved: Record<string, UserStatus> = { ...statuses };
-    if (userId) resolved[userId] = myStatus;
-    return {
-      statuses: resolved,
-      statusOf: (id) => (id ? (resolved[id] ?? "offline") : "offline"),
-      isOnline: (id) => Boolean(id && resolved[id] && resolved[id] !== "offline"),
-      myStatus: resolved[userId ?? ""] ?? myStatus,
+  const value = useMemo<GlobalPresenceValue>(
+    () => ({
+      statuses,
+      games,
+      statusOf: (id) => (id ? (statuses[id] ?? "offline") : "offline"),
+      isOnline: (id) => Boolean(id && statuses[id] && statuses[id] !== "offline"),
+      myStatus: statuses[userId ?? ""] ?? "offline",
       setStatus,
       connection,
-    };
-  }, [statuses, userId, myStatus, setStatus, connection]);
-
-  return (
-    <GlobalPresenceContext.Provider value={value}>{children}</GlobalPresenceContext.Provider>
+    }),
+    [statuses, games, userId, setStatus, connection],
   );
+  return <GlobalPresenceContext.Provider value={value}>{children}</GlobalPresenceContext.Provider>;
 }
-
 const FALLBACK: GlobalPresenceValue = {
   statuses: {},
+  games: {},
   statusOf: () => "offline",
   isOnline: () => false,
   myStatus: "offline",
   setStatus: async () => undefined,
   connection: "connecting",
 };
-
 export function useGlobalPresence() {
   return useContext(GlobalPresenceContext) ?? FALLBACK;
 }
-
-/** Called on sign-out / account switch so no presence leaks between users. */
 export function teardownPresence() {
-  if (!shared) return;
-  const { channel } = shared;
-  shared = null;
-  syncListeners.clear();
-  stateListeners.clear();
-  void channel.untrack().then(() => supabase.removeChannel(channel));
+  stopPresence?.();
 }

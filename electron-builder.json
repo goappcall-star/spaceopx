@@ -1,0 +1,45 @@
+{
+  "appId": "com.lobbyx.desktop",
+  "productName": "LobbyX",
+  "directories": {
+    "app": "desktop",
+    "output": "../outputs/windows"
+  },
+  "files": [
+    "*.cjs",
+    "picker.html",
+    "picker.css",
+    "picker.js",
+    "package.json",
+    "web/**/*",
+    "!node_modules/**/*"
+  ],
+  "asar": true,
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "signExecutable": false,
+    "icon": "public/favicon.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true
+  },
+  "artifactName": "LobbyX-Setup-${version}-${arch}.${ext}",
+  "protocols": [
+    {
+      "name": "LobbyX",
+      "schemes": [
+        "lobbyx"
+      ]
+    }
+  ]
+}

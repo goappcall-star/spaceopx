@@ -64,12 +64,19 @@ export const membersService = {
     const { error } = await supabase
       .from("server_members")
       .update({ nickname: nickname?.trim() || null })
-      .eq("id", memberId);
+      .eq("id", memberId)
+      .select("id")
+      .single();
     if (error) throw error;
   },
 
   async leave(memberId: string) {
-    const { error } = await supabase.from("server_members").delete().eq("id", memberId);
+    const { error } = await supabase
+      .from("server_members")
+      .delete()
+      .eq("id", memberId)
+      .select("id")
+      .single();
     if (error) throw error;
   },
 };

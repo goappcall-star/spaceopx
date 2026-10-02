@@ -2,7 +2,6 @@ import { ChevronDown, Hash, Plus, Settings, UserPlus, Volume2 } from "lucide-rea
 import { useState } from "react";
 
 import { UserBar } from "@/components/app/UserBar";
-import { VoiceBar } from "@/components/voice/VoiceBar";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useVoice } from "@/hooks/use-voice";
@@ -107,7 +106,6 @@ export function ChannelSidebar({
         c.id === activeChannelId),
   );
   const voiceChannels = channels.filter((c) => c.type === "voice");
-  const activeVoiceChannel = channels.find((c) => c.id === voiceChannelId) ?? null;
 
   const memberName = (userId: string) => {
     const member = members.find((m) => m.user_id === userId);
@@ -317,7 +315,6 @@ export function ChannelSidebar({
         )}
       </div>
 
-      {activeVoiceChannel && <VoiceBar channelName={activeVoiceChannel.name} />}
       <UserBar />
     </aside>
   );

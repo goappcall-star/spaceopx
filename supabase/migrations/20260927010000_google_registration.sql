@@ -48,7 +48,7 @@ $$;
 REVOKE ALL ON FUNCTION public.complete_registration(text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.complete_registration(text) TO authenticated;
 CREATE OR REPLACE FUNCTION public.google_registration_ready()
-RETURNS boolean LANGUAGE sql STABLE AS $ SELECT true $;
+RETURNS boolean LANGUAGE sql STABLE AS $$ SELECT true $$;
 REVOKE ALL ON FUNCTION public.google_registration_ready() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.google_registration_ready() TO anon, authenticated;
 COMMIT;

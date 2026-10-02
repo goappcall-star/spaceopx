@@ -6,10 +6,16 @@ import { RemoteAudio } from "@/components/voice/RemoteAudio";
 import { CallAudioPlayback } from "@/components/call/CallOverlay";
 import { IncomingCallDialog } from "@/components/call/IncomingCallDialog";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useRouterState } from "@tanstack/react-router";
+import { ConnectedVoiceBar } from "@/components/voice/ConnectedVoiceBar";
 
 const ServerContext = createContext<{
   serverId: string | null;
   setServerId: React.Dispatch<React.SetStateAction<string | null>>;
+  voiceReturn: { serverId: string; channelId: string } | null;
+  setVoiceReturn: React.Dispatch<
+    React.SetStateAction<{ serverId: string; channelId: string } | null>
+  >;
 } | null>(null);
 export function useSessionServer() {
   const context = useContext(ServerContext);
@@ -20,8 +26,12 @@ export function useSessionServer() {
 export function SessionCommunications({ children }: { children: ReactNode }) {
   const { user, profile } = useAuth();
   const [serverId, setServerId] = useState<string | null>(null);
+  const [voiceReturn, setVoiceReturn] = useState<{ serverId: string; channelId: string } | null>(
+    null,
+  );
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   return (
-    <ServerContext.Provider value={{ serverId, setServerId }}>
+    <ServerContext.Provider value={{ serverId, setServerId, voiceReturn, setVoiceReturn }}>
       <VoiceProviderRoot serverId={serverId} userId={user?.id}>
         <CallProviderRoot userId={user?.id} profile={profile}>
           <TooltipProvider delayDuration={200}>
@@ -29,6 +39,7 @@ export function SessionCommunications({ children }: { children: ReactNode }) {
             <CallAudioPlayback />
             <IncomingCallDialog />
             {children}
+            {pathname !== "/app" && <ConnectedVoiceBar floating />}
           </TooltipProvider>
         </CallProviderRoot>
       </VoiceProviderRoot>

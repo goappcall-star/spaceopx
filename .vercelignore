@@ -1,0 +1,11 @@
+node_modules
+.git
+.env
+.env.*
+desktop
+tests
+.output
+.wrangler
+dist
+*.exe
+*.blockmap

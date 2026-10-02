@@ -30,7 +30,7 @@ export function AccountSettings() {
       <section className="border-border bg-surface overflow-hidden rounded-2xl border">
         <div className="bg-primary/10 h-20" />
         <div className="px-6 pb-6">
-          <Avatar className="border-surface -mt-8 h-16 w-16 border-4">
+          <Avatar frame={profile?.avatar_frame} className="border-surface -mt-8 h-16 w-16 border-4">
             <AvatarImage src={profile?.avatar_url ?? undefined} />
             <AvatarFallback>{profile?.display_name.slice(0, 2)}</AvatarFallback>
           </Avatar>

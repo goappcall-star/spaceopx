@@ -71,7 +71,7 @@ export const DmMessageItem = memo(function DmMessageItem({
         ) : (
           <QuickProfile userId={message.sender_id} side="right">
           <button type="button" onClick={() => onOpenProfile(message.sender_id)} aria-label={name}>
-            <Avatar className="ring-border hover:ring-primary/60 h-9 w-9 ring-1 transition">
+            <Avatar frame={message.author?.avatar_frame} className="ring-border hover:ring-primary/60 h-9 w-9 ring-1 transition">
               <AvatarImage src={message.author?.avatar_url ?? undefined} alt="" />
               <AvatarFallback className="bg-surface-elevated text-xs">
                 {name.slice(0, 2).toUpperCase()}

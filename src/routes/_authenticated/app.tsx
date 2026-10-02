@@ -67,7 +67,12 @@ function AppPage() {
   const { user, profile } = useAuth();
   const { server: serverParam } = useSearch({ from: "/_authenticated/app" });
   const { data: servers = [], isLoading: loadingServers } = useMyServers();
-  const { serverId: activeServerId, setServerId: setActiveServerId } = useSessionServer();
+  const {
+    serverId: activeServerId,
+    setServerId: setActiveServerId,
+    voiceReturn,
+    setVoiceReturn,
+  } = useSessionServer();
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
@@ -158,6 +163,19 @@ function AppPage() {
       setActiveChannelId(channels.find((c) => c.type !== "voice")?.id ?? channels[0]?.id ?? null);
     }
   }, [channels, activeChannelId]);
+
+  useEffect(() => {
+    if (!voiceReturn) return;
+    setView("servers");
+    setActiveServerId(voiceReturn.serverId);
+    if (
+      activeServerId === voiceReturn.serverId &&
+      channels.some((c) => c.id === voiceReturn.channelId)
+    ) {
+      setActiveChannelId(voiceReturn.channelId);
+      setVoiceReturn(null);
+    }
+  }, [voiceReturn, activeServerId, channels, setActiveServerId, setVoiceReturn]);
 
   // Server-wide unread badges: any insert outside the open channel marks it.
   useEffect(() => {

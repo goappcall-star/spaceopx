@@ -97,7 +97,7 @@ export function DirectChatView({
             className="flex min-w-0 items-center gap-3 text-left"
           >
             <span className="relative">
-              <Avatar className="ring-border h-8 w-8 ring-1">
+              <Avatar frame={isGroup ? undefined : other?.avatar_frame} className="ring-border h-8 w-8 ring-1">
                 <AvatarImage
                   src={(isGroup ? conversation.avatar_url : other?.avatar_url) ?? undefined}
                   alt=""

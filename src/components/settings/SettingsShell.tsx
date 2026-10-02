@@ -124,7 +124,7 @@ export function SettingsShell({
           search={{ section: "profile" }}
           className="mb-6 flex items-center gap-3 rounded-xl p-2 hover:bg-surface-hover"
         >
-          <Avatar className="h-11 w-11">
+          <Avatar frame={profile?.avatar_frame} className="h-11 w-11">
             <AvatarImage src={profile?.avatar_url ?? undefined} />
             <AvatarFallback>{profile?.display_name.slice(0, 2)}</AvatarFallback>
           </Avatar>

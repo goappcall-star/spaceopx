@@ -1,3 +1,4 @@
+import { AVATAR_FRAMES, normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
 import { z } from "zod";
 import {
   SettingsShell,
@@ -105,6 +106,7 @@ function ProfileSettingsPage() {
     bio: "",
     custom_status: "",
     avatar_url: "",
+    avatar_frame: "default" as AvatarFrameId,
     banner_url: "",
     status: "online" as UserStatus,
   });
@@ -117,6 +119,7 @@ function ProfileSettingsPage() {
       bio: profile.bio ?? "",
       custom_status: profile.custom_status ?? "",
       avatar_url: profile.avatar_url ?? "",
+      avatar_frame: normalizeAvatarFrame(profile.avatar_frame),
       banner_url: profile.banner_url ?? "",
       status: profile.status,
     });
@@ -129,12 +132,15 @@ function ProfileSettingsPage() {
         bio: form.bio,
         custom_status: form.custom_status,
         avatar_url: form.avatar_url,
+        ...(form.avatar_frame !== normalizeAvatarFrame(profile?.avatar_frame)
+          ? { avatar_frame: form.avatar_frame }
+          : {}),
         banner_url: form.banner_url,
         status: form.status,
       }),
     onSuccess: async () => {
       await refreshProfile();
-      await queryClient.invalidateQueries({ queryKey: ["members"] });
+      await queryClient.invalidateQueries();
       toast.success("Perfil atualizado.");
     },
     onError: (error) => {
@@ -142,7 +148,9 @@ function ProfileSettingsPage() {
       toast.error(
         message.includes("username_is_permanent")
           ? "Seu username é permanente e não pode ser alterado."
-          : "Não foi possível salvar o perfil.",
+          : /avatar_frame|schema cache/.test(message)
+            ? "As molduras ainda precisam ser ativadas no servidor. Tente novamente após a atualização."
+            : "Não foi possível salvar o perfil.",
       );
     },
   });
@@ -326,6 +334,47 @@ function ProfileSettingsPage() {
                   </Select>
                 </div>
 
+                <fieldset className="space-y-3">
+                  <legend className="text-sm font-semibold">Moldura do avatar</legend>
+                  <p className="text-muted-foreground text-xs">
+                    Escolha uma moldura e salve seu perfil para aplicar.
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {AVATAR_FRAMES.map((frame) => (
+                      <label
+                        key={frame.id}
+                        className={
+                          "relative flex cursor-pointer flex-col items-center gap-3 rounded-xl border px-3 py-5 transition-colors " +
+                          (form.avatar_frame === frame.id
+                            ? "border-primary bg-primary/10"
+                            : "border-border bg-surface hover:bg-surface-elevated")
+                        }
+                      >
+                        <input
+                          type="radio"
+                          name="avatar-frame"
+                          value={frame.id}
+                          checked={form.avatar_frame === frame.id}
+                          onChange={() =>
+                            setForm((current) => ({ ...current, avatar_frame: frame.id }))
+                          }
+                          className="absolute right-3 top-3 accent-[var(--color-primary)]"
+                        />
+                        <Avatar frame={frame.id} className="my-2 h-16 w-16">
+                          <AvatarImage src={form.avatar_url || undefined} alt="" />
+                          <AvatarFallback>
+                            {form.display_name.slice(0, 2).toUpperCase() || "LX"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-semibold">{frame.name}</span>
+                        <span className="text-muted-foreground text-center text-xs">
+                          {frame.description}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
                 <Button type="submit" disabled={saveProfile.isPending}>
                   {saveProfile.isPending ? "Salvando..." : "Salvar perfil"}
                 </Button>
@@ -489,7 +538,10 @@ function ProfileSettingsPage() {
               />
               <div className="p-5">
                 <div className="relative -mt-12 w-fit">
-                  <Avatar className="border-surface glow-ring h-20 w-20 border-4">
+                  <Avatar
+                    frame={form.avatar_frame}
+                    className="border-surface glow-ring h-20 w-20 border-4"
+                  >
                     <AvatarImage src={form.avatar_url || undefined} alt="" />
                     <AvatarFallback className="bg-secondary text-lg">
                       {form.display_name.slice(0, 2).toUpperCase() || "??"}

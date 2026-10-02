@@ -25,7 +25,13 @@ const STATE_LABEL: Record<string, string> = {
   disconnected: "Desconectado",
 };
 
-export function VoiceBar({ channelName }: { channelName: string }) {
+export function VoiceBar({
+  channelName,
+  onReturn,
+}: {
+  channelName: string;
+  onReturn?: () => void;
+}) {
   const {
     connectionState,
     muted,
@@ -60,7 +66,12 @@ export function VoiceBar({ channelName }: { channelName: string }) {
         >
           <Signal className={cn("h-3.5 w-3.5", !connected && "animate-pulse")} />
         </span>
-        <div className="min-w-0 flex-1">
+        <button
+          type="button"
+          onClick={onReturn}
+          title="Voltar à chamada"
+          className="min-w-0 flex-1 text-left hover:opacity-80"
+        >
           <p
             className={cn(
               "truncate text-xs font-semibold tracking-tight",
@@ -70,7 +81,7 @@ export function VoiceBar({ channelName }: { channelName: string }) {
             {STATE_LABEL[connectionState]}
           </p>
           <p className="text-muted-foreground truncate text-[11px]">🔊 {channelName}</p>
-        </div>
+        </button>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -87,65 +98,57 @@ export function VoiceBar({ channelName }: { channelName: string }) {
         </Tooltip>
       </div>
 
-      <div className="mt-2 grid grid-cols-2 gap-2">
+      <div className="mt-2 grid grid-cols-4 gap-1.5">
         <Button
           size="sm"
           variant={muted ? "destructive" : "secondary"}
+          title={muted ? "Ativar microfone" : "Silenciar microfone"}
           onClick={toggleMute}
           aria-pressed={muted}
         >
-          {muted ? <MicOff className="mr-1.5 h-4 w-4" /> : <Mic className="mr-1.5 h-4 w-4" />}
-          {muted ? "Mudo" : "Microfone"}
+          {muted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          <span className="sr-only">{muted ? "Ativar microfone" : "Silenciar microfone"}</span>
         </Button>
         <Button
           size="sm"
           variant={deafened ? "destructive" : "secondary"}
+          title={deafened ? "Ativar áudio" : "Silenciar áudio"}
           onClick={toggleDeafen}
           aria-pressed={deafened}
         >
-          {deafened ? (
-            <HeadphoneOff className="mr-1.5 h-4 w-4" />
-          ) : (
-            <Headphones className="mr-1.5 h-4 w-4" />
-          )}
-          {deafened ? "Silenciado" : "Áudio"}
+          {deafened ? <HeadphoneOff className="h-4 w-4" /> : <Headphones className="h-4 w-4" />}
+          <span className="sr-only">{deafened ? "Ativar áudio" : "Silenciar áudio"}</span>
         </Button>
-      </div>
 
-      {(supportsCamera() || supportsScreenShare()) && (
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          {supportsCamera() && (
-            <Button
-              size="sm"
-              variant={cameraOn ? "default" : "secondary"}
-              onClick={() => void toggleCamera()}
-              aria-pressed={cameraOn}
-            >
-              {cameraOn ? (
-                <Video className="mr-1.5 h-4 w-4" />
-              ) : (
-                <VideoOff className="mr-1.5 h-4 w-4" />
-              )}
-              Câmera
-            </Button>
-          )}
-          {supportsScreenShare() && (
-            <Button
-              size="sm"
-              variant={screenOn ? "default" : "secondary"}
-              onClick={() => void toggleScreenShare()}
-              aria-pressed={screenOn}
-            >
-              {screenOn ? (
-                <MonitorOff className="mr-1.5 h-4 w-4" />
-              ) : (
-                <Monitor className="mr-1.5 h-4 w-4" />
-              )}
-              Tela
-            </Button>
-          )}
-        </div>
-      )}
+        {(supportsCamera() || supportsScreenShare()) && (
+          <div className="contents">
+            {supportsCamera() && (
+              <Button
+                size="sm"
+                variant={cameraOn ? "default" : "secondary"}
+                title={cameraOn ? "Desligar câmera" : "Ligar câmera"}
+                onClick={() => void toggleCamera()}
+                aria-pressed={cameraOn}
+              >
+                {cameraOn ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
+                <span className="sr-only">Câmera</span>
+              </Button>
+            )}
+            {supportsScreenShare() && (
+              <Button
+                size="sm"
+                variant={screenOn ? "default" : "secondary"}
+                title={screenOn ? "Parar compartilhamento" : "Compartilhar tela"}
+                onClick={() => void toggleScreenShare()}
+                aria-pressed={screenOn}
+              >
+                {screenOn ? <MonitorOff className="h-4 w-4" /> : <Monitor className="h-4 w-4" />}
+                <span className="sr-only">Compartilhar tela</span>
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

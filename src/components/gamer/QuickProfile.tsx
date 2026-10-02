@@ -122,7 +122,7 @@ function QuickProfileCard({
       />
       <div className="px-4 pb-4">
         <div className="relative -mt-8 w-fit">
-          <Avatar className="border-surface glow-ring h-16 w-16 border-4">
+          <Avatar frame={profile.avatar_frame} className="border-surface glow-ring h-16 w-16 border-4">
             <AvatarImage src={profile.avatar_url ?? undefined} alt="" />
             <AvatarFallback className="bg-secondary">
               {profile.display_name.slice(0, 2).toUpperCase()}
@@ -206,6 +206,7 @@ function QuickProfileCard({
             display_name: profile.display_name,
             username: profile.username,
             avatar_url: profile.avatar_url,
+            avatar_frame: profile.avatar_frame,
           }}
           onDone={onDone}
           onStartDirect={onStartDirect}
@@ -222,7 +223,7 @@ function QuickActions({
   onStartDirect,
 }: {
   userId: string;
-  peer: { id: string; display_name: string; username: string; avatar_url: string | null };
+  peer: { avatar_frame?: string | undefined; id: string; display_name: string; username: string; avatar_url: string | null };
   onDone: () => void;
   onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {

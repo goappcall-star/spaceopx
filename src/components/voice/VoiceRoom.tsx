@@ -69,6 +69,7 @@ export function VoiceRoom({ channel, members, me, userId }: Props) {
       const base = {
         userId: participant.user_id,
         name,
+        avatarFrame: member?.profile?.avatar_frame,
         avatarUrl: member?.profile?.avatar_url ?? null,
         isSelf,
         speaking: participant.speaking,

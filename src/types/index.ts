@@ -15,6 +15,7 @@ export type ChannelType = "text" | "voice" | "announcement" | "forum";
 export type RoleName = "OWNER" | "ADMIN" | "MEMBER" | (string & {});
 
 export interface Profile {
+  avatar_frame?: import("@/lib/avatar-frames").AvatarFrameId;
   id: string;
   username: string;
   display_name: string;

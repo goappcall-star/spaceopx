@@ -49,7 +49,7 @@ export function GroupMembersDialog({
                 className="hover:bg-surface-elevated flex w-full items-center gap-3 rounded-xl px-2 py-1.5 text-left transition-colors"
               >
                 <span className="relative">
-                  <Avatar className="ring-border h-8 w-8 ring-1">
+                  <Avatar frame={profile?.avatar_frame} className="ring-border h-8 w-8 ring-1">
                     <AvatarImage src={profile?.avatar_url ?? undefined} alt="" />
                     <AvatarFallback className="bg-surface-elevated text-[11px]">
                       {name.slice(0, 2).toUpperCase()}

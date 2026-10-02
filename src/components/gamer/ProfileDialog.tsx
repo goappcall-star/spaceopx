@@ -87,7 +87,7 @@ function ProfileDialogBody({
         style={profile.banner_url ? { backgroundImage: `url(${profile.banner_url})` } : undefined}
       />
       <div className="px-6 pb-6">
-        <Avatar className="border-surface glow-ring -mt-10 h-20 w-20 border-4">
+        <Avatar frame={profile.avatar_frame} className="border-surface glow-ring -mt-10 h-20 w-20 border-4">
           <AvatarImage src={profile.avatar_url ?? undefined} alt="" />
           <AvatarFallback className="bg-secondary text-lg">
             {profile.display_name.slice(0, 2).toUpperCase()}

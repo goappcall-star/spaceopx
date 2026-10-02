@@ -35,6 +35,7 @@ export type CallEndReason =
   "declined" | "cancelled" | "ended" | "busy" | "failed" | "unanswered" | null;
 
 export interface CallPeer {
+  avatar_frame?: string | undefined;
   id: string;
   display_name: string;
   username: string;
@@ -130,6 +131,7 @@ export function CallProviderRoot({
             display_name: profile.display_name,
             username: profile.username,
             avatar_url: profile.avatar_url ?? null,
+            avatar_frame: profile.avatar_frame,
           }
         : null,
     [profile],

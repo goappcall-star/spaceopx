@@ -118,6 +118,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
         userId: participant.id,
         name: participant.display_name,
         avatarUrl: participant.avatar_url,
+        avatarFrame: participant.avatar_frame,
         stream:
           participant.id === profile.id
             ? localCamera
@@ -133,6 +134,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
         userId: peer.id,
         name: peer.display_name,
         avatarUrl: peer.avatar_url,
+        avatarFrame: peer.avatar_frame,
         stream: remote?.camera ?? null,
         kind: "camera",
         isSelf: false,
@@ -144,6 +146,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
         userId: profile.id,
         name: profile.display_name,
         avatarUrl: profile.avatar_url,
+        avatarFrame: profile.avatar_frame,
         stream: localCamera,
         kind: "camera",
         isSelf: true,
@@ -175,6 +178,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
         userId: sharing.id,
         name: sharing.display_name,
         avatarUrl: sharing.avatar_url,
+        avatarFrame: sharing.avatar_frame,
         stream: call.groupMedia[sharing.id]!.screen,
         kind: "screen",
         isSelf: false,
@@ -187,6 +191,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
         userId: peer.id,
         name: peer.display_name,
         avatarUrl: peer.avatar_url,
+        avatarFrame: peer.avatar_frame,
         stream: remote.screen,
         kind: "screen",
         isSelf: false,
@@ -199,6 +204,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
         userId: profile.id,
         name: profile.display_name,
         avatarUrl: profile.avatar_url,
+        avatarFrame: profile.avatar_frame,
         stream: localScreen,
         kind: "screen",
         isSelf: true,
@@ -249,7 +255,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
           )}
         >
           <header className="flex h-12 shrink-0 items-center gap-3 px-5">
-            <Avatar className="ring-border h-9 w-9 ring-1">
+            <Avatar frame={peer.avatar_frame} className="ring-border h-9 w-9 ring-1">
               <AvatarImage src={peer.avatar_url ?? undefined} alt="" />
               <AvatarFallback className="bg-surface-elevated text-xs">
                 {peer.display_name.slice(0, 2).toUpperCase()}
@@ -290,7 +296,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
                           key={tile.userId}
                           className="border-border bg-surface-elevated flex w-44 shrink-0 items-center gap-2.5 rounded-xl border px-3 py-2.5"
                         >
-                          <Avatar className="h-9 w-9 shrink-0">
+                          <Avatar frame={tile.avatarFrame} className="h-9 w-9 shrink-0">
                             <AvatarImage src={tile.avatarUrl ?? undefined} alt="" />
                             <AvatarFallback className="text-xs">
                               {tile.name.slice(0, 2).toUpperCase()}
@@ -326,7 +332,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
                       key={tile.userId}
                       className="flex w-20 shrink-0 flex-col items-center gap-2"
                     >
-                      <Avatar className="ring-border h-16 w-16 ring-2">
+                      <Avatar frame={tile.avatarFrame} className="ring-border h-16 w-16 ring-2">
                         <AvatarImage src={tile.avatarUrl ?? undefined} alt="" />
                         <AvatarFallback>{tile.name.slice(0, 2).toUpperCase()}</AvatarFallback>
                       </Avatar>
@@ -495,7 +501,7 @@ export function CallWorkspace({
           <ul className="space-y-3">
             {call.participants.map((member) => (
               <li key={member.id} className="flex items-center gap-2">
-                <Avatar className="h-8 w-8 shrink-0">
+                <Avatar frame={member.avatar_frame} className="h-8 w-8 shrink-0">
                   <AvatarImage src={member.avatar_url ?? undefined} alt="" />
                   <AvatarFallback>{member.display_name.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>

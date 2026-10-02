@@ -112,7 +112,7 @@ export function SocialSidebar({
                     )}
                   >
                     <div className="relative shrink-0">
-                      <Avatar className="h-8 w-8">
+                      <Avatar frame={profile?.avatar_frame} className="h-8 w-8">
                         <AvatarImage src={profile?.avatar_url ?? undefined} alt="" />
                         <AvatarFallback className="bg-surface-elevated text-[11px]">
                           {(profile?.display_name ?? "??").slice(0, 2).toUpperCase()}

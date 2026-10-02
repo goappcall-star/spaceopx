@@ -55,7 +55,7 @@ export function IncomingCallDialog() {
       <div className="border-border bg-overlay/95 glow-soft animate-in slide-in-from-top-4 flex w-full max-w-md items-center gap-3 rounded-2xl border p-4 shadow-2xl backdrop-blur-xl">
         <span className="relative">
           <span className="bg-primary/30 absolute inset-0 animate-ping rounded-full" />
-          <Avatar className="ring-primary/60 relative h-12 w-12 ring-2">
+          <Avatar frame={peer.avatar_frame} className="ring-primary/60 relative h-12 w-12 ring-2">
             <AvatarImage src={peer.avatar_url ?? undefined} alt="" />
             <AvatarFallback className="bg-surface-elevated">
               {peer.display_name.slice(0, 2).toUpperCase()}

@@ -87,7 +87,7 @@ export function QuickProfile({
   );
 }
 
-function QuickProfileCard({
+export function QuickProfileCard({
   userId,
   roles,
   onDone,
@@ -122,7 +122,10 @@ function QuickProfileCard({
       />
       <div className="px-4 pb-4">
         <div className="relative -mt-8 w-fit">
-          <Avatar frame={profile.avatar_frame} className="border-surface glow-ring h-16 w-16 border-4">
+          <Avatar
+            frame={profile.avatar_frame}
+            className="border-surface glow-ring h-16 w-16 border-4"
+          >
             <AvatarImage src={profile.avatar_url ?? undefined} alt="" />
             <AvatarFallback className="bg-secondary">
               {profile.display_name.slice(0, 2).toUpperCase()}
@@ -223,7 +226,13 @@ function QuickActions({
   onStartDirect,
 }: {
   userId: string;
-  peer: { avatar_frame?: string | undefined; id: string; display_name: string; username: string; avatar_url: string | null };
+  peer: {
+    avatar_frame?: string | undefined;
+    id: string;
+    display_name: string;
+    username: string;
+    avatar_url: string | null;
+  };
   onDone: () => void;
   onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {

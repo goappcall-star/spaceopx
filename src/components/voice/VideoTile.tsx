@@ -85,7 +85,11 @@ export function VideoTile({ tile, volume, onVolumeChange, className, large }: Pr
       </div>
 
       {!tile.isSelf && onVolumeChange && tile.kind === "camera" && (
-        <div className="pointer-events-auto absolute inset-x-2 top-2 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+        <div
+          onPointerDown={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
+          className="pointer-events-auto absolute inset-x-2 top-2 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+        >
           <Volume2 className="h-3.5 w-3.5 shrink-0 text-white/80" />
           <Slider
             value={[volume ?? 100]}

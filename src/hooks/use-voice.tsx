@@ -36,6 +36,8 @@ interface VoiceContextValue {
   screenOn: boolean;
   transmitsAudio: boolean;
   volumes: Record<string, number>;
+  hiddenVideos: Record<string, boolean>;
+  setVideoHidden: (userId: string, hidden: boolean) => void;
   remoteMedia: Record<string, RemoteMedia>;
   localCamera: MediaStream | null;
   localScreen: MediaStream | null;
@@ -92,6 +94,10 @@ export function VoiceProviderRoot({
   const [muted, setMuted] = useState(false);
   const [deafened, setDeafened] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [hiddenVideos, setHiddenVideos] = useState<Record<string, boolean>>({});
+  const setVideoHidden = useCallback((id: string, hidden: boolean) => {
+    setHiddenVideos((current) => ({ ...current, [id]: hidden }));
+  }, []);
   const [cameraOn, setCameraOn] = useState(false);
   const [screenOn, setScreenOn] = useState(false);
   const [volumes, setVolumes] = useState<Record<string, number>>({});
@@ -165,10 +171,18 @@ export function VoiceProviderRoot({
 
   const schedulePublish = useCallback(
     (immediate: boolean) => {
-      if (publishTimer.current) clearTimeout(publishTimer.current);
-      publishTimer.current = null;
-      if (immediate) publishNow();
-      else publishTimer.current = setTimeout(publishNow, 250);
+      if (immediate) {
+        if (publishTimer.current) clearTimeout(publishTimer.current);
+        publishTimer.current = null;
+        publishNow();
+      } else if (!publishTimer.current) {
+        // Throttle, rather than debounce: continuous speech must not postpone
+        // presence updates indefinitely.
+        publishTimer.current = setTimeout(() => {
+          publishTimer.current = null;
+          publishNow();
+        }, 100);
+      }
     },
     [publishNow],
   );
@@ -652,6 +666,8 @@ export function VoiceProviderRoot({
   const displayedParticipants = useMemo(() => {
     if (!activeChannelId) return participantsByChannel;
     const room = [...(participantsByChannel[activeChannelId] ?? [])];
+    const self = room.find((participant) => participant.user_id === userId);
+    if (self) room[room.indexOf(self)] = { ...self, speaking: speaking && !muted && pttActive };
     for (const [id, media] of Object.entries(remoteMedia)) {
       if (room.some((participant) => participant.user_id === id)) continue;
       const live = [media.audio, media.camera, media.screen].some((stream) =>
@@ -668,7 +684,7 @@ export function VoiceProviderRoot({
         });
     }
     return { ...participantsByChannel, [activeChannelId]: room };
-  }, [participantsByChannel, activeChannelId, remoteMedia]);
+  }, [participantsByChannel, activeChannelId, remoteMedia, userId, speaking, muted, pttActive]);
 
   const value = useMemo<VoiceContextValue>(
     () => ({
@@ -682,6 +698,8 @@ export function VoiceProviderRoot({
       screenOn,
       transmitsAudio: true,
       volumes,
+      hiddenVideos,
+      setVideoHidden,
       remoteMedia,
       localCamera,
       localScreen,
@@ -716,6 +734,8 @@ export function VoiceProviderRoot({
       cameraOn,
       screenOn,
       volumes,
+      hiddenVideos,
+      setVideoHidden,
       remoteMedia,
       localCamera,
       localScreen,

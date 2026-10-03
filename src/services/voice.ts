@@ -740,6 +740,8 @@ class MeshVoiceProvider implements VoiceProvider {
     if (!AudioCtx || !this.micStream) return;
 
     this.audioContext = new AudioCtx();
+    // Browsers may suspend a context created after the microphone permission prompt.
+    void this.audioContext.resume().catch(() => undefined);
     const source = this.audioContext.createMediaStreamSource(this.micStream);
     this.gainNode = this.audioContext.createGain();
     this.gainNode.gain.value = this.inputGain;
@@ -754,12 +756,16 @@ class MeshVoiceProvider implements VoiceProvider {
     this.processedStream = destination.stream;
 
     const buffer = new Uint8Array(this.analyser.frequencyBinCount);
+    let lastActivity = 0;
     const tick = () => {
       if (!this.analyser) return;
       this.analyser.getByteTimeDomainData(buffer);
       let peak = 0;
       for (const value of buffer) peak = Math.max(peak, Math.abs(value - 128));
-      const speaking = !this.muted && peak > 8;
+      const now = performance.now();
+      if (!this.muted && peak > 8) lastActivity = now;
+      // Keep the ring visible across short pauses between syllables.
+      const speaking = !this.muted && lastActivity > 0 && now - lastActivity < 240;
       if (speaking !== this.speaking) {
         this.speaking = speaking;
         this.events.onSpeakingChange?.(speaking);

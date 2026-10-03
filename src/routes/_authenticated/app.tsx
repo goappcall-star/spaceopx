@@ -254,6 +254,7 @@ function AppPage() {
             />
           ) : activeServer ? (
             <ChannelSidebar
+              onStartDirect={openConversation}
               preferences={preferences.get(activeServer.id)}
               onToggleMuteChannel={(channelId) => {
                 const current = preferences.get(activeServer.id);
@@ -314,7 +315,19 @@ function AppPage() {
               />
             ) : activeServer && activeChannel ? (
               activeChannel.type === "voice" ? (
-                <VoiceRoom channel={activeChannel} members={members} me={me} userId={user?.id} />
+                <VoiceRoom
+                  channel={activeChannel}
+                  members={members}
+                  me={me}
+                  userId={user?.id}
+                  onStartDirect={openConversation}
+                  onInvite={
+                    canManage || abilities.can("create_invite")
+                      ? () => setInviteOpen(true)
+                      : undefined
+                  }
+                  onManageRoles={canManage ? () => setSettingsOpen(true) : undefined}
+                />
               ) : (
                 <ChatView
                   key={activeChannel.id}

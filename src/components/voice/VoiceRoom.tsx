@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { VideoTile, type TileData } from "@/components/voice/VideoTile";
 import { SharedScreen } from "@/components/call/SharedScreen";
 import { VoiceControlBar } from "@/components/voice/VoiceControlBar";
+import { VoiceParticipantActions } from "@/components/voice/VoiceParticipantActions";
 import { useGamePresenceMap } from "@/hooks/use-gamer";
 import { useVoice } from "@/hooks/use-voice";
 import { hasPermission } from "@/lib/permissions";
@@ -16,6 +17,9 @@ interface Props {
   members: MemberWithProfile[];
   me: MemberWithProfile | undefined;
   userId: string | undefined;
+  onStartDirect?: ((id: string) => void) | undefined;
+  onInvite?: (() => void) | undefined;
+  onManageRoles?: (() => void) | undefined;
 }
 
 const STATE_COPY: Record<string, string> = {
@@ -34,7 +38,15 @@ function gridClass(count: number) {
   return "grid-cols-2 lg:grid-cols-4";
 }
 
-export function VoiceRoom({ channel, members, me, userId }: Props) {
+export function VoiceRoom({
+  channel,
+  members,
+  me,
+  userId,
+  onStartDirect,
+  onInvite,
+  onManageRoles,
+}: Props) {
   const {
     participantsByChannel,
     activeChannelId,
@@ -45,6 +57,7 @@ export function VoiceRoom({ channel, members, me, userId }: Props) {
     remoteMedia,
     localCamera,
     localScreen,
+    hiddenVideos,
   } = useVoice();
 
   const participants = participantsByChannel[channel.id] ?? [];
@@ -60,8 +73,16 @@ export function VoiceRoom({ channel, members, me, userId }: Props) {
       const name = member?.nickname ?? member?.profile?.display_name ?? "Usuário";
       const isSelf = participant.user_id === userId;
       const media = remoteMedia[participant.user_id];
-      const cameraStream = isSelf ? localCamera : (media?.camera ?? null);
-      const screenStream = isSelf ? localScreen : (media?.screen ?? null);
+      const cameraStream = hiddenVideos[participant.user_id]
+        ? null
+        : isSelf
+          ? localCamera
+          : (media?.camera ?? null);
+      const screenStream = hiddenVideos[participant.user_id]
+        ? null
+        : isSelf
+          ? localScreen
+          : (media?.screen ?? null);
       const presence = presenceMap[participant.user_id];
       const gameLabel =
         presence && presence.status === "playing" ? (presence.game?.name ?? null) : null;
@@ -82,7 +103,16 @@ export function VoiceRoom({ channel, members, me, userId }: Props) {
       if (screenStream) screens.push({ ...base, stream: screenStream, kind: "screen" });
     }
     return { cameraTiles: cameras, screenTiles: screens };
-  }, [participants, members, userId, remoteMedia, localCamera, localScreen, presenceMap]);
+  }, [
+    participants,
+    members,
+    userId,
+    remoteMedia,
+    localCamera,
+    localScreen,
+    presenceMap,
+    hiddenVideos,
+  ]);
 
   const sharing = screenTiles[0];
 
@@ -102,7 +132,15 @@ export function VoiceRoom({ channel, members, me, userId }: Props) {
           <ul className="flex max-w-3xl flex-wrap justify-center gap-3">
             {cameraTiles.map((tile) => (
               <li key={tile.userId} className="h-28 w-40">
-                <VideoTile tile={{ ...tile, stream: null }} className="h-full w-full" />
+                <VoiceParticipantActions
+                  userId={tile.userId}
+                  member={members.find((member) => member.user_id === tile.userId)}
+                  onStartDirect={onStartDirect}
+                  onInvite={onInvite}
+                  onManageRoles={onManageRoles}
+                >
+                  <VideoTile tile={{ ...tile, stream: null }} className="h-full w-full" />
+                </VoiceParticipantActions>
               </li>
             ))}
           </ul>
@@ -179,12 +217,20 @@ export function VoiceRoom({ channel, members, me, userId }: Props) {
             <ul className="flex gap-3 overflow-x-auto pb-1">
               {cameraTiles.map((tile) => (
                 <li key={tile.userId} className="h-24 w-36 shrink-0">
-                  <VideoTile
-                    tile={tile}
-                    className="h-full w-full"
-                    volume={volumes[tile.userId] ?? 100}
-                    onVolumeChange={(value) => setUserVolume(tile.userId, value)}
-                  />
+                  <VoiceParticipantActions
+                    userId={tile.userId}
+                    member={members.find((member) => member.user_id === tile.userId)}
+                    onStartDirect={onStartDirect}
+                    onInvite={onInvite}
+                    onManageRoles={onManageRoles}
+                  >
+                    <VideoTile
+                      tile={tile}
+                      className="h-full w-full"
+                      volume={volumes[tile.userId] ?? 100}
+                      onVolumeChange={(value) => setUserVolume(tile.userId, value)}
+                    />
+                  </VoiceParticipantActions>
                 </li>
               ))}
             </ul>
@@ -199,13 +245,21 @@ export function VoiceRoom({ channel, members, me, userId }: Props) {
                   cameraTiles.length === 3 && "last:sm:col-span-2 last:sm:mx-auto last:sm:w-1/2",
                 )}
               >
-                <VideoTile
-                  tile={tile}
-                  className="h-full w-full"
-                  volume={volumes[tile.userId] ?? 100}
-                  onVolumeChange={(value) => setUserVolume(tile.userId, value)}
-                  large={cameraTiles.length === 1}
-                />
+                <VoiceParticipantActions
+                  userId={tile.userId}
+                  member={members.find((member) => member.user_id === tile.userId)}
+                  onStartDirect={onStartDirect}
+                  onInvite={onInvite}
+                  onManageRoles={onManageRoles}
+                >
+                  <VideoTile
+                    tile={tile}
+                    className="h-full w-full"
+                    volume={volumes[tile.userId] ?? 100}
+                    onVolumeChange={(value) => setUserVolume(tile.userId, value)}
+                    large={cameraTiles.length === 1}
+                  />
+                </VoiceParticipantActions>
               </li>
             ))}
             {cameraTiles.length === 0 && (

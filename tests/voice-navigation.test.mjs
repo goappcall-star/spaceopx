@@ -6,6 +6,8 @@ import ts from "typescript";
 
 // Exercise the actual provider with deterministic hooks, signaling and media.
 function fixture() {
+  const timers = new Map();
+  let timerId = 0;
   let cursor = 0,
     pending = [],
     dirty = false,
@@ -96,6 +98,7 @@ function fixture() {
         const provider = {
           disconnects: 0,
           async connect(_room, _user, callbacks) {
+            this.callbacks = callbacks;
             callbacks.onStateChange("connected");
           },
           async disconnect() {
@@ -126,8 +129,8 @@ function fixture() {
     crypto: { randomUUID: () => Math.random().toString() },
     localStorage: { getItem: () => null },
     window: { addEventListener() {}, removeEventListener() {} },
-    setTimeout: () => 1,
-    clearTimeout() {},
+    setTimeout: (callback) => { timers.set(++timerId, callback); return timerId; },
+    clearTimeout: (id) => timers.delete(id),
     setInterval: () => 1,
     clearInterval() {},
   });
@@ -149,8 +152,25 @@ function fixture() {
     render();
   }
   render();
-  return { render, flush, channels, providers };
+  return { render, flush, channels, providers, timers };
 }
+
+test("Speech bursts publish without continually restarting the pending update", async () => {
+  const f = fixture();
+  f.channels[0].subscribed("SUBSCRIBED");
+  await f.render().join("room-a");
+  await f.flush();
+  f.providers[0].callbacks.onSpeakingChange(true);
+  f.render();
+  const firstTimer = [...f.timers.keys()][0];
+  assert.ok(firstTimer);
+  f.providers[0].callbacks.onSpeakingChange(false); f.render();
+  f.providers[0].callbacks.onSpeakingChange(true); f.render();
+  assert.equal([...f.timers.keys()][0], firstTimer);
+  f.timers.get(firstTimer)(); f.timers.delete(firstTimer);
+  await f.flush();
+  assert.equal(f.channels[0].tracks.at(-1).speaking, true);
+});
 
 test("Browsing another server or home retains media and original presence; leave still disconnects", async () => {
   const f = fixture();

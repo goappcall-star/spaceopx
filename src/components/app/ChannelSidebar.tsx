@@ -2,6 +2,7 @@ import { ChevronDown, Hash, Plus, Settings, UserPlus, Volume2 } from "lucide-rea
 import { useState } from "react";
 
 import { UserBar } from "@/components/app/UserBar";
+import { VoiceParticipantActions } from "@/components/voice/VoiceParticipantActions";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -21,6 +22,7 @@ interface Props {
   channels: Channel[];
   activeChannelId: string | null;
   onSelectChannel: (channelId: string) => void;
+  onStartDirect?: ((id: string) => void) | undefined;
   members: MemberWithProfile[];
   unreadChannelIds: Set<string>;
   canInvite: boolean;
@@ -84,6 +86,7 @@ export function ChannelSidebar({
   channels,
   activeChannelId,
   onSelectChannel,
+  onStartDirect,
   members,
   unreadChannelIds,
   canInvite,
@@ -283,40 +286,52 @@ export function ChannelSidebar({
                               : "text-muted-foreground",
                           )}
                         >
-                          <Avatar
-                            frame={
-                              members.find((member) => member.user_id === participant.user_id)
-                                ?.profile?.avatar_frame
-                            }
-                            className={cn(
-                              "h-6 w-6 ring-2 ring-offset-2 ring-offset-surface transition-shadow duration-150",
-                              participant.speaking && !participant.muted
-                                ? "ring-green-500"
-                                : "ring-transparent",
+                          <VoiceParticipantActions
+                            userId={participant.user_id}
+                            member={members.find(
+                              (member) => member.user_id === participant.user_id,
                             )}
+                            onStartDirect={onStartDirect}
+                            onInvite={canInvite ? onInvite : undefined}
+                            onManageRoles={canManage ? onOpenSettings : undefined}
                           >
-                            <AvatarImage
-                              src={
-                                members.find((member) => member.user_id === participant.user_id)
-                                  ?.profile?.avatar_url ?? undefined
-                              }
-                              alt=""
-                            />
-                            <AvatarFallback className="text-[9px]">
-                              {memberName(participant.user_id).slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="min-w-0 flex-1 truncate">
-                            {memberName(participant.user_id)}
-                          </span>
-                          {participant.speaking && !participant.muted && (
-                            <span className="sr-only">Falando</span>
-                          )}
-                          <span className="ml-auto flex shrink-0 items-center gap-1 text-[10px]">
-                            {participant.screen && <span title="Compartilhando tela">🖥️</span>}
-                            {participant.camera && <span title="Câmera ligada">🎥</span>}
-                            {participant.muted && <span title="Mudo">🔇</span>}
-                          </span>
+                            <div className="flex w-full items-center gap-2">
+                              <Avatar
+                                frame={
+                                  members.find((member) => member.user_id === participant.user_id)
+                                    ?.profile?.avatar_frame
+                                }
+                                className={cn(
+                                  "h-6 w-6 ring-2 ring-offset-2 ring-offset-surface transition-shadow duration-150",
+                                  participant.speaking && !participant.muted
+                                    ? "ring-green-500"
+                                    : "ring-transparent",
+                                )}
+                              >
+                                <AvatarImage
+                                  src={
+                                    members.find((member) => member.user_id === participant.user_id)
+                                      ?.profile?.avatar_url ?? undefined
+                                  }
+                                  alt=""
+                                />
+                                <AvatarFallback className="text-[9px]">
+                                  {memberName(participant.user_id).slice(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="min-w-0 flex-1 truncate">
+                                {memberName(participant.user_id)}
+                              </span>
+                              {participant.speaking && !participant.muted && (
+                                <span className="sr-only">Falando</span>
+                              )}
+                              <span className="ml-auto flex shrink-0 items-center gap-1 text-[10px]">
+                                {participant.screen && <span title="Compartilhando tela">🖥️</span>}
+                                {participant.camera && <span title="Câmera ligada">🎥</span>}
+                                {participant.muted && <span title="Mudo">🔇</span>}
+                              </span>
+                            </div>
+                          </VoiceParticipantActions>
                         </li>
                       ))}
                     </ul>

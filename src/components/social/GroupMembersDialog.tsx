@@ -1,3 +1,4 @@
+import { useGlobalPresence } from "@/hooks/use-global-presence";
 import { StatusDot } from "@/components/app/StatusDot";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -25,6 +26,7 @@ export function GroupMembersDialog({
   userId,
   onOpenProfile,
 }: Props) {
+  const { statusOf } = useGlobalPresence();
   const { data: members = [] } = useConversationMembers(open ? conversation.id : null);
 
   return (
@@ -47,7 +49,7 @@ export function GroupMembersDialog({
                 className="hover:bg-surface-elevated flex w-full items-center gap-3 rounded-xl px-2 py-1.5 text-left transition-colors"
               >
                 <span className="relative">
-                  <Avatar className="ring-border h-8 w-8 ring-1">
+                  <Avatar frame={profile?.avatar_frame} className="ring-border h-8 w-8 ring-1">
                     <AvatarImage src={profile?.avatar_url ?? undefined} alt="" />
                     <AvatarFallback className="bg-surface-elevated text-[11px]">
                       {name.slice(0, 2).toUpperCase()}
@@ -55,7 +57,7 @@ export function GroupMembersDialog({
                   </Avatar>
                   {profile && (
                     <StatusDot
-                      status={profile.status as UserStatus}
+                      status={statusOf(profile.id)}
                       className="border-background absolute -right-0.5 -bottom-0.5 h-3 w-3 border-2"
                     />
                   )}

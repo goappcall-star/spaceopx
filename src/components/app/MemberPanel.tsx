@@ -17,7 +17,7 @@ export function MemberPanel({
   loading: boolean;
   onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {
-  const { statusOf } = useGlobalPresence();
+  const { statusOf, games } = useGlobalPresence();
   // Single batched query + realtime for the whole list — no per-member fetch.
   const gamePresence = useGamePresenceMap(members.map((m) => m.user_id));
 
@@ -45,7 +45,7 @@ export function MemberPanel({
             )}
           >
             <div className="relative shrink-0">
-              <Avatar className="ring-border h-8 w-8 ring-1">
+              <Avatar frame={member.profile?.avatar_frame} className="ring-border h-8 w-8 ring-1">
                 <AvatarImage src={member.profile?.avatar_url ?? undefined} alt="" />
                 <AvatarFallback className="bg-surface-elevated text-xs">
                   {name.slice(0, 2).toUpperCase()}
@@ -64,8 +64,8 @@ export function MemberPanel({
               >
                 {name}
               </p>
-              {game ? (
-                <GamePresenceLine presence={game} />
+              {game || games[member.user_id] ? (
+                <GamePresenceLine userId={member.user_id} presence={game} />
               ) : (
                 <p className="text-muted-foreground truncate text-xs">
                   {member.profile?.custom_status

@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  Ban,
-  Image as ImageIcon,
-  Link2,
-  ScrollText,
-  Settings2,
-  Shield,
-  Users,
-} from "lucide-react";
+import { Ban, Image as ImageIcon, Link2, ScrollText, Settings2, Shield, Users } from "lucide-react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -18,6 +10,7 @@ import { SettingsInvites } from "./SettingsInvites";
 import { SettingsMembers } from "./SettingsMembers";
 import { SettingsProfile } from "./SettingsProfile";
 import { SettingsRoles } from "./SettingsRoles";
+import { DeleteServerButton } from "./DeleteServerButton";
 import { useServerAbilities } from "@/hooks/use-server-admin";
 import type { MemberWithProfile, Server } from "@/types";
 
@@ -38,7 +31,7 @@ export function ServerSettingsDialog({
   open,
   onOpenChange,
 }: Props) {
-  const { can } = useServerAbilities(server, members, currentUserId);
+  const { can, isOwner } = useServerAbilities(server, members, currentUserId);
   const [section, setSection] = useState<SectionId>("profile");
 
   type SectionItem = { id: SectionId; label: string; icon: typeof Shield; group: string };
@@ -58,7 +51,6 @@ export function ServerSettingsDialog({
     if (item.id === "invites") return can("create_invite") || can("manage_server");
     return true;
   });
-
 
   const groups = [...new Set(sections.map((s) => s.group))];
   const readOnlyServer = !can("manage_server");
@@ -83,8 +75,7 @@ export function ServerSettingsDialog({
                           onClick={() => setSection(item.id)}
                           className={cn(
                             "hover:bg-surface-hover flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm transition-colors",
-                            section === item.id &&
-                              "bg-surface-elevated text-primary font-medium",
+                            section === item.id && "bg-surface-elevated text-primary font-medium",
                           )}
                         >
                           <item.icon className="h-4 w-4 shrink-0" />
@@ -103,9 +94,7 @@ export function ServerSettingsDialog({
                 {sections.find((s) => s.id === section)?.label}
               </h2>
             </header>
-            {section === "profile" && (
-              <SettingsProfile server={server} readOnly={readOnlyServer} />
-            )}
+            {section === "profile" && <SettingsProfile server={server} readOnly={readOnlyServer} />}
             {section === "access" && <SettingsAccess server={server} readOnly={readOnlyServer} />}
             {section === "members" && (
               <SettingsMembers
@@ -123,10 +112,22 @@ export function ServerSettingsDialog({
             {section === "invites" && (
               <SettingsInvites server={server} canCreate={can("create_invite")} />
             )}
-            {section === "bans" && (
-              <SettingsBans server={server} canUnban={can("ban_members")} />
-            )}
+            {section === "bans" && <SettingsBans server={server} canUnban={can("ban_members")} />}
             {section === "audit" && <SettingsAudit server={server} />}
+            {isOwner && (
+              <div className="border-destructive/30 mt-8 space-y-3 border-t pt-5">
+                <h3 className="text-destructive font-semibold">Excluir servidor</h3>
+                <p className="text-muted-foreground text-sm">
+                  Exclua permanentemente este servidor e seu histórico. Esta ação não pode ser
+                  desfeita.
+                </p>
+                <DeleteServerButton
+                  key={server.id}
+                  server={server}
+                  onDeleted={() => onOpenChange(false)}
+                />
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>

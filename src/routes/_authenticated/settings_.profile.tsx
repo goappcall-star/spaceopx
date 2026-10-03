@@ -1,6 +1,15 @@
+import { AVATAR_FRAMES, normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
+import { z } from "zod";
+import {
+  SettingsShell,
+  SETTINGS_SECTIONS,
+  type SettingsSection,
+} from "@/components/settings/SettingsShell";
+import { AccountSettings } from "@/components/settings/AccountSettings";
+import { DesktopPermissions } from "@/components/gamer/DesktopPermissions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, ArrowDown, ArrowUp, Gamepad2, Plus, Trash2, Upload } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { ArrowDown, ArrowUp, Gamepad2, Plus, Trash2, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -30,16 +39,12 @@ import {
   useUserXp,
 } from "@/hooks/use-gamer";
 import { profileImagesService, type ImageBucket } from "@/services/profile-images";
-import {
-  favoriteGamesService,
-  gamePresenceService,
-  MAX_FAVORITE_GAMES,
-  preferencesService,
-} from "@/services/gamer";
+import { favoriteGamesService, MAX_FAVORITE_GAMES, preferencesService } from "@/services/gamer";
 import { profilesService } from "@/services/profiles";
 import type { AccentColor, TransparencyLevel, UserStatus } from "@/types";
 
 export const Route = createFileRoute("/_authenticated/settings_/profile")({
+  validateSearch: z.object({ section: z.string().optional() }),
   head: () => ({
     meta: [
       { title: "Seu perfil — LobbyX" },
@@ -76,6 +81,12 @@ const TRANSPARENCY_LABEL: Record<TransparencyLevel, string> = {
 };
 
 function ProfileSettingsPage() {
+  const search = Route.useSearch();
+  const section: SettingsSection = SETTINGS_SECTIONS.some(
+    (item) => item.id === search.section && item.id !== "voice",
+  )
+    ? (search.section as SettingsSection)
+    : "profile";
   const { profile, user, refreshProfile } = useAuth();
   const userId = user?.id;
   const queryClient = useQueryClient();
@@ -95,6 +106,7 @@ function ProfileSettingsPage() {
     bio: "",
     custom_status: "",
     avatar_url: "",
+    avatar_frame: "default" as AvatarFrameId,
     banner_url: "",
     status: "online" as UserStatus,
   });
@@ -107,6 +119,7 @@ function ProfileSettingsPage() {
       bio: profile.bio ?? "",
       custom_status: profile.custom_status ?? "",
       avatar_url: profile.avatar_url ?? "",
+      avatar_frame: normalizeAvatarFrame(profile.avatar_frame),
       banner_url: profile.banner_url ?? "",
       status: profile.status,
     });
@@ -119,12 +132,15 @@ function ProfileSettingsPage() {
         bio: form.bio,
         custom_status: form.custom_status,
         avatar_url: form.avatar_url,
+        ...(form.avatar_frame !== normalizeAvatarFrame(profile?.avatar_frame)
+          ? { avatar_frame: form.avatar_frame }
+          : {}),
         banner_url: form.banner_url,
         status: form.status,
       }),
     onSuccess: async () => {
       await refreshProfile();
-      await queryClient.invalidateQueries({ queryKey: ["members"] });
+      await queryClient.invalidateQueries();
       toast.success("Perfil atualizado.");
     },
     onError: (error) => {
@@ -132,7 +148,9 @@ function ProfileSettingsPage() {
       toast.error(
         message.includes("username_is_permanent")
           ? "Seu username é permanente e não pode ser alterado."
-          : "Não foi possível salvar o perfil.",
+          : /avatar_frame|schema cache/.test(message)
+            ? "As molduras ainda precisam ser ativadas no servidor. Tente novamente após a atualização."
+            : "Não foi possível salvar o perfil.",
       );
     },
   });
@@ -143,7 +161,9 @@ function ProfileSettingsPage() {
       url: await profileImagesService.upload(bucket, userId!, file),
     }),
     onSuccess: ({ bucket, url }) => {
-      setForm((f) => (bucket === "avatars" ? { ...f, avatar_url: url } : { ...f, banner_url: url }));
+      setForm((f) =>
+        bucket === "avatars" ? { ...f, avatar_url: url } : { ...f, banner_url: url },
+      );
       toast.success("Imagem enviada. Salve para aplicar.");
     },
     onError: (error) =>
@@ -155,12 +175,6 @@ function ProfileSettingsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["favorite-games", userId] }),
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Não foi possível atualizar os jogos."),
-  });
-
-  const presenceMutation = useMutation({
-    mutationFn: async (action: () => Promise<void>) => action(),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["game-presence", userId] }),
-    onError: () => toast.error("Não foi possível atualizar o jogo atual."),
   });
 
   const prefsMutation = useMutation({
@@ -194,30 +208,15 @@ function ProfileSettingsPage() {
   const availableGames = games.filter((g) => !favorites.some((f) => f.game_id === g.id));
 
   return (
-    <main className="bg-hero-glow min-h-screen px-4 py-10">
-      <div className="mx-auto max-w-5xl">
-        <Button asChild variant="ghost" size="sm" className="mb-6">
-          <Link to="/app">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar para o app
-          </Link>
-        </Button>
-
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold">Seu perfil</h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Seu perfil único no LobbyX. XP, níveis e badges são concedidos pelo sistema.
-            </p>
-          </div>
-          <Button asChild variant="secondary" size="sm">
-            <Link to="/settings/voice">Voz e áudio</Link>
-          </Button>
-        </div>
-
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
-          {/* ------------------------------------------------------- editor */}
-          <div className="space-y-6">
+    <SettingsShell active={section}>
+      {section === "account" && <AccountSettings />}
+      {(["games", "privacy", "system"] as string[]).includes(section) && (
+        <DesktopPermissions mode={section as "games" | "privacy" | "system"} />
+      )}
+      <div className={section === "profile" ? "grid gap-6 xl:grid-cols-[1fr_280px]" : "max-w-3xl"}>
+        {/* ------------------------------------------------------- editor */}
+        <div className="space-y-6">
+          {section === "profile" && (
             <section className="glass-panel p-6">
               <h2 className="mb-4 text-base font-semibold">Identidade</h2>
               <form onSubmit={handleSubmit} className="space-y-5">
@@ -335,67 +334,56 @@ function ProfileSettingsPage() {
                   </Select>
                 </div>
 
+                <fieldset className="space-y-3">
+                  <legend className="text-sm font-semibold">Moldura do avatar</legend>
+                  <p className="text-muted-foreground text-xs">
+                    Escolha uma moldura e salve seu perfil para aplicar.
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {AVATAR_FRAMES.map((frame) => (
+                      <label
+                        key={frame.id}
+                        className={
+                          "relative flex cursor-pointer flex-col items-center gap-3 rounded-xl border px-3 py-5 transition-colors " +
+                          (form.avatar_frame === frame.id
+                            ? "border-primary bg-primary/10"
+                            : "border-border bg-surface hover:bg-surface-elevated")
+                        }
+                      >
+                        <input
+                          type="radio"
+                          name="avatar-frame"
+                          value={frame.id}
+                          checked={form.avatar_frame === frame.id}
+                          onChange={() =>
+                            setForm((current) => ({ ...current, avatar_frame: frame.id }))
+                          }
+                          className="absolute right-3 top-3 accent-[var(--color-primary)]"
+                        />
+                        <Avatar frame={frame.id} className="my-2 h-16 w-16">
+                          <AvatarImage src={form.avatar_url || undefined} alt="" />
+                          <AvatarFallback>
+                            {form.display_name.slice(0, 2).toUpperCase() || "LX"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-semibold">{frame.name}</span>
+                        <span className="text-muted-foreground text-center text-xs">
+                          {frame.description}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
                 <Button type="submit" disabled={saveProfile.isPending}>
                   {saveProfile.isPending ? "Salvando..." : "Salvar perfil"}
                 </Button>
               </form>
             </section>
+          )}
 
-            {/* ------------------------------------------------ game presence */}
-            <section className="glass-panel p-6">
-              <h2 className="mb-1 text-base font-semibold">Jogo atual</h2>
-              <p className="text-muted-foreground mb-4 text-xs">
-                Seleção manual. Integrações com plataformas externas chegam depois.
-              </p>
-              {presence?.status === "playing" && presence.game && (
-                <p className="text-primary mb-3 flex items-center gap-2 text-sm">
-                  <Gamepad2 className="h-4 w-4" /> Jogando {presence.game.name}
-                </p>
-              )}
-              <div className="flex flex-wrap gap-2">
-                <Select
-                  value={presence?.game_id ?? ""}
-                  onValueChange={(value) =>
-                    presenceMutation.mutate(() =>
-                      gamePresenceService.set(userId!, value, "playing"),
-                    )
-                  }
-                >
-                  <SelectTrigger className="w-56">
-                    <SelectValue placeholder="Escolher jogo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {games.map((game) => (
-                      <SelectItem key={game.id} value={game.id}>
-                        {game.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={!presence?.game_id || presenceMutation.isPending}
-                  onClick={() =>
-                    presenceMutation.mutate(() =>
-                      gamePresenceService.set(userId!, presence!.game_id!, "playing"),
-                    )
-                  }
-                >
-                  Começar jogo
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={presenceMutation.isPending}
-                  onClick={() => presenceMutation.mutate(() => gamePresenceService.stop(userId!))}
-                >
-                  Parar jogo
-                </Button>
-              </div>
-            </section>
-
-            {/* ----------------------------------------------- favorite games */}
+          {/* ----------------------------------------------- favorite games */}
+          {section === "favorites" && (
             <section className="glass-panel p-6">
               <h2 className="mb-1 text-base font-semibold">Jogos favoritos</h2>
               <p className="text-muted-foreground mb-4 text-xs">
@@ -474,29 +462,33 @@ function ProfileSettingsPage() {
                 </div>
               )}
             </section>
+          )}
 
-            {/* ------------------------------------------------ personalization */}
+          {/* ------------------------------------------------ personalization */}
+          {(section === "appearance" || section === "accessibility") && (
             <section className="glass-panel p-6">
               <h2 className="mb-4 text-base font-semibold">Personalização visual</h2>
               <div className="space-y-5">
-                <div className="space-y-2">
-                  <Label>Cor de destaque</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {ACCENTS.map((accent) => (
-                      <button
-                        key={accent.value}
-                        type="button"
-                        data-accent={accent.value}
-                        aria-label={accent.label}
-                        aria-pressed={prefs?.accent_color === accent.value}
-                        onClick={() => prefsMutation.mutate({ accent_color: accent.value })}
-                        className={`bg-brand-gradient h-9 w-9 rounded-lg transition-transform hover:scale-110 ${
-                          prefs?.accent_color === accent.value ? "ring-foreground ring-2" : ""
-                        }`}
-                      />
-                    ))}
+                {section === "appearance" && (
+                  <div className="space-y-2">
+                    <Label>Cor de destaque</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {ACCENTS.map((accent) => (
+                        <button
+                          key={accent.value}
+                          type="button"
+                          data-accent={accent.value}
+                          aria-label={accent.label}
+                          aria-pressed={prefs?.accent_color === accent.value}
+                          onClick={() => prefsMutation.mutate({ accent_color: accent.value })}
+                          className={`bg-brand-gradient h-9 w-9 rounded-lg transition-transform hover:scale-110 ${
+                            prefs?.accent_color === accent.value ? "ring-foreground ring-2" : ""
+                          }`}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <ToggleRow
                   label="Glow neon"
@@ -508,38 +500,37 @@ function ProfileSettingsPage() {
                   checked={prefs?.animations_enabled ?? true}
                   onChange={(v) => prefsMutation.mutate({ animations_enabled: v })}
                 />
-                <ToggleRow
-                  label="Sons de interface"
-                  checked={prefs?.sounds_enabled ?? false}
-                  onChange={(v) => prefsMutation.mutate({ sounds_enabled: v })}
-                />
 
-                <div className="space-y-2">
-                  <Label htmlFor="transparency">Transparência</Label>
-                  <Select
-                    value={prefs?.transparency_level ?? "medium"}
-                    onValueChange={(value) =>
-                      prefsMutation.mutate({ transparency_level: value as TransparencyLevel })
-                    }
-                  >
-                    <SelectTrigger id="transparency" className="w-56">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TRANSPARENCIES.map((level) => (
-                        <SelectItem key={level} value={level}>
-                          {TRANSPARENCY_LABEL[level]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {section === "appearance" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="transparency">Transparência</Label>
+                    <Select
+                      value={prefs?.transparency_level ?? "medium"}
+                      onValueChange={(value) =>
+                        prefsMutation.mutate({ transparency_level: value as TransparencyLevel })
+                      }
+                    >
+                      <SelectTrigger id="transparency" className="w-56">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TRANSPARENCIES.map((level) => (
+                          <SelectItem key={level} value={level}>
+                            {TRANSPARENCY_LABEL[level]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
             </section>
-          </div>
+          )}
+        </div>
 
-          {/* -------------------------------------------------------- preview */}
-          <aside className="lg:sticky lg:top-10 lg:self-start">
+        {/* -------------------------------------------------------- preview */}
+        {section === "profile" && (
+          <aside className="xl:sticky xl:top-6 xl:self-start">
             <div className="glass-panel overflow-hidden">
               <div
                 className="bg-brand-gradient h-24 w-full bg-cover bg-center"
@@ -547,7 +538,10 @@ function ProfileSettingsPage() {
               />
               <div className="p-5">
                 <div className="relative -mt-12 w-fit">
-                  <Avatar className="border-surface glow-ring h-20 w-20 border-4">
+                  <Avatar
+                    frame={form.avatar_frame}
+                    className="border-surface glow-ring h-20 w-20 border-4"
+                  >
                     <AvatarImage src={form.avatar_url || undefined} alt="" />
                     <AvatarFallback className="bg-secondary text-lg">
                       {form.display_name.slice(0, 2).toUpperCase() || "??"}
@@ -590,9 +584,9 @@ function ProfileSettingsPage() {
               </div>
             </div>
           </aside>
-        </div>
+        )}
       </div>
-    </main>
+    </SettingsShell>
   );
 }
 
@@ -608,7 +602,7 @@ function ToggleRow({
   return (
     <div className="flex items-center justify-between">
       <Label>{label}</Label>
-      <Switch checked={checked} onCheckedChange={onChange} />
+      <Switch aria-label={label} checked={checked} onCheckedChange={onChange} />
     </div>
   );
 }

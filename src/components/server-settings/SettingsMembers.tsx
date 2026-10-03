@@ -89,7 +89,7 @@ export function SettingsMembers({
           const currentRoleIds = member.roles.map((r) => r.id);
           return (
             <li key={member.id} className="flex items-center gap-3 p-3">
-              <Avatar className="ring-border h-9 w-9 ring-1">
+              <Avatar frame={member.profile?.avatar_frame} className="ring-border h-9 w-9 ring-1">
                 <AvatarImage src={member.profile?.avatar_url ?? undefined} alt="" />
                 <AvatarFallback className="bg-surface-elevated text-xs">
                   {name.slice(0, 2).toUpperCase()}

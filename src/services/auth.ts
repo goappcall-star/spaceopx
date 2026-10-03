@@ -8,6 +8,28 @@ export interface SignUpInput {
 }
 
 export const authService = {
+  async signInWithGoogle(destination: string) {
+    // Require the onboarding migration before starting OAuth; never silently
+    // accept an automatically generated Google username on an older backend.
+    const readiness = await supabase.rpc("google_registration_ready");
+    if (readiness.error || readiness.data !== true) throw new Error("google_registration_not_configured");
+    localStorage.setItem("lobbyx:auth-destination", destination);
+    const origin = window.location.protocol === "lobbyx:" ? "lobbyx://app" : window.location.origin;
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: origin + "/auth-callback", skipBrowserRedirect: true, queryParams: { prompt: "select_account" } },
+    });
+    if (error) throw error;
+    if (!data.url) throw new Error("missing_oauth_url");
+    // Electron intercepts this navigation and opens the system browser.
+    window.location.assign(data.url);
+  },
+
+  async completeRegistration(username: string) {
+    const { error } = await supabase.rpc("complete_registration", { chosen_username: username });
+    if (error) throw error;
+  },
+
   async signUp({ email, password, username, displayName }: SignUpInput) {
     const { data, error } = await supabase.auth.signUp({
       email,

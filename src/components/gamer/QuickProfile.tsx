@@ -1,3 +1,4 @@
+import { LiveGameActivity } from "./LiveGameActivity";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, Gamepad2, MessageSquare, Phone, UserCheck, UserPlus, X } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
@@ -98,7 +99,7 @@ function QuickProfileCard({
   onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {
   const { data, isLoading } = usePublicProfile(userId);
-  const { statusOf } = useGlobalPresence();
+  const { statusOf, games } = useGlobalPresence();
 
   if (isLoading || !data) {
     return (
@@ -121,7 +122,7 @@ function QuickProfileCard({
       />
       <div className="px-4 pb-4">
         <div className="relative -mt-8 w-fit">
-          <Avatar className="border-surface glow-ring h-16 w-16 border-4">
+          <Avatar frame={profile.avatar_frame} className="border-surface glow-ring h-16 w-16 border-4">
             <AvatarImage src={profile.avatar_url ?? undefined} alt="" />
             <AvatarFallback className="bg-secondary">
               {profile.display_name.slice(0, 2).toUpperCase()}
@@ -140,7 +141,8 @@ function QuickProfileCard({
           <StatusDot status={status} className="h-2.5 w-2.5" />
           {STATUS_LABEL[status]}
         </p>
-        {presence?.game && (
+        <LiveGameActivity userId={profile.id} />
+        {presence?.game && !games[profile.id] && (
           <p className="text-primary mt-1 flex items-center gap-1.5 text-xs">
             <Gamepad2 className="h-3.5 w-3.5" /> {presence.game.name}
           </p>
@@ -204,6 +206,7 @@ function QuickProfileCard({
             display_name: profile.display_name,
             username: profile.username,
             avatar_url: profile.avatar_url,
+            avatar_frame: profile.avatar_frame,
           }}
           onDone={onDone}
           onStartDirect={onStartDirect}
@@ -220,7 +223,7 @@ function QuickActions({
   onStartDirect,
 }: {
   userId: string;
-  peer: { id: string; display_name: string; username: string; avatar_url: string | null };
+  peer: { avatar_frame?: string | undefined; id: string; display_name: string; username: string; avatar_url: string | null };
   onDone: () => void;
   onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {

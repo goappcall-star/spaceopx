@@ -84,7 +84,7 @@ export const MessageItem = memo(function MessageItem({
           </span>
         ) : (
           <QuickProfile userId={message.author_id} side="right">
-            <Avatar className="ring-border hover:ring-primary/60 h-9 w-9 cursor-pointer ring-1 transition">
+            <Avatar frame={message.author?.avatar_frame} className="ring-border hover:ring-primary/60 h-9 w-9 cursor-pointer ring-1 transition">
               <AvatarImage src={message.author?.avatar_url ?? undefined} alt="" />
               <AvatarFallback className="bg-surface-elevated text-xs">
                 {name.slice(0, 2).toUpperCase()}

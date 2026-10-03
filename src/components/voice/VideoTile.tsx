@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 export interface TileData {
   userId: string;
   name: string;
+  avatarFrame?: string | undefined;
   avatarUrl?: string | null;
   stream: MediaStream | null;
   kind: "camera" | "screen";

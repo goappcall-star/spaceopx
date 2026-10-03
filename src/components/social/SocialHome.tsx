@@ -228,6 +228,7 @@ export function SocialHome({
                     <Row
                       key={request.friendshipId}
                       userId={request.profile.id}
+                      avatarFrame={request.profile.avatar_frame}
                       avatarUrl={request.profile.avatar_url}
                       name={request.profile.display_name}
                       username={request.profile.username}
@@ -274,6 +275,7 @@ export function SocialHome({
                     <Row
                       key={request.friendshipId}
                       userId={request.profile.id}
+                      avatarFrame={request.profile.avatar_frame}
                       avatarUrl={request.profile.avatar_url}
                       name={request.profile.display_name}
                       username={request.profile.username}
@@ -312,7 +314,7 @@ export function SocialHome({
                       onClick={() => onOpenConversation(conversation.id)}
                       className="glass-panel hover:bg-surface-hover/60 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors"
                     >
-                      <Avatar className="h-10 w-10">
+                      <Avatar frame={conversation.type === "group" ? undefined : conversation.otherProfile?.avatar_frame} className="h-10 w-10">
                         <AvatarImage
                           src={
                             (conversation.type === "group"
@@ -394,11 +396,12 @@ function FriendList({
             <Row
               key={friend.friendshipId}
               userId={friend.profile.id}
+              avatarFrame={friend.profile.avatar_frame}
               avatarUrl={friend.profile.avatar_url}
               name={friend.profile.display_name}
               username={friend.profile.username}
               status={statusOf(friend.profile.id)}
-              presenceNode={<GamePresenceLine presence={friend.presence} withLabel />}
+              presenceNode={<GamePresenceLine userId={friend.profile.id} presence={friend.presence} withLabel />}
               onStartDirect={onStartDirect}
               actions={
                 <>
@@ -544,6 +547,7 @@ function Empty({ text }: { text: string }) {
 function Row({
   userId,
   avatarUrl,
+  avatarFrame,
   name,
   username,
   status,
@@ -553,6 +557,7 @@ function Row({
 }: {
   userId: string;
   avatarUrl: string | null;
+  avatarFrame?: string | undefined;
   name: string;
   username: string;
   status: UserStatus;
@@ -570,7 +575,7 @@ function Row({
       >
         <button type="button" className="flex min-w-0 flex-1 items-center gap-3 text-left">
           <div className="relative shrink-0">
-            <Avatar className="ring-border h-10 w-10 ring-1">
+            <Avatar frame={avatarFrame} className="ring-border h-10 w-10 ring-1">
               <AvatarImage src={avatarUrl ?? undefined} alt="" />
               <AvatarFallback className="bg-surface-elevated text-xs">
                 {name.slice(0, 2).toUpperCase()}

@@ -27,6 +27,7 @@ export type MediaPermission = "unknown" | "granted" | "denied" | "unavailable";
 interface VoiceContextValue {
   connectionState: VoiceConnectionState;
   activeChannelId: string | null;
+  activeServerId: string | null;
   /** channel_id -> participants, for the whole server (sidebar rendering). */
   participantsByChannel: Record<string, VoiceParticipant[]>;
   muted: boolean;
@@ -80,6 +81,13 @@ export function VoiceProviderRoot({
 }) {
   const [connectionState, setConnectionState] = useState<VoiceConnectionState>("disconnected");
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
+  const [activeServerId, setActiveServerId] = useState<string | null>(null);
+  const presenceServerId = activeServerId ?? serverId;
+  const voiceServerRef = useRef<string | null>(null);
+  const channelServerRef = useRef<string | null>(null);
+  const [observedParticipants, setObservedParticipants] = useState<
+    Record<string, VoiceParticipant[]>
+  >({});
   const [participantsByChannel, setParticipants] = useState<Record<string, VoiceParticipant[]>>({});
   const [muted, setMuted] = useState(false);
   const [deafened, setDeafened] = useState(false);
@@ -110,7 +118,6 @@ export function VoiceProviderRoot({
   const lifecycleQueueRef = useRef<Promise<void>>(Promise.resolve());
   const lifecycleGenerationRef = useRef(0);
   const pendingJoinChannelRef = useRef<string | null>(null);
-  const previousServerRef = useRef<string | null>(serverId);
   const stateRef = useRef({ activeChannelId, muted, deafened, speaking, cameraOn, screenOn });
   stateRef.current = { activeChannelId, muted, deafened, speaking, cameraOn, screenOn };
 
@@ -131,16 +138,17 @@ export function VoiceProviderRoot({
     const channel = channelRef.current;
     if (!channel || !subscribedRef.current || !userId) return;
 
-    const snapshot = { ...stateRef.current, voiceSessionId: sessionIdRef.current };
     publishQueueRef.current = publishQueueRef.current
       .catch(() => undefined)
       .then(async () => {
         // The provider may have switched servers while this update waited.
         if (channelRef.current !== channel || !subscribedRef.current) return;
+        const snapshot = { ...stateRef.current, voiceSessionId: sessionIdRef.current };
         if (!snapshot.activeChannelId) {
           await channel.untrack();
           return;
         }
+        if (voiceServerRef.current !== channelServerRef.current) return;
         await channel.track({
           user_id: userId,
           channel_id: snapshot.activeChannelId,
@@ -169,16 +177,17 @@ export function VoiceProviderRoot({
   // The presence payload is republished whenever the channel (re)subscribes,
   // so a socket reconnect restores our slot instead of silently dropping it.
   useEffect(() => {
-    if (!serverId || !userId) {
+    if (!presenceServerId || !userId) {
       setParticipants({});
       return;
     }
 
-    const channel = supabase.channel(`voice:${serverId}`, {
+    const channel = supabase.channel(`voice:${presenceServerId}`, {
       config: { presence: { key: userId } },
     });
 
     const sync = () => {
+      if (channelRef.current !== channel) return;
       const state = channel.presenceState<VoicePresenceMeta>();
       const next: Record<string, VoiceParticipant[]> = {};
       for (const entries of Object.values(state)) {
@@ -190,6 +199,13 @@ export function VoiceProviderRoot({
           undefined,
         );
         if (!entry?.channel_id) continue;
+        // Never resurrect this tab's old slot while its untrack is in flight.
+        if (
+          entry.user_id === userId &&
+          entry.voice_session_id === sessionIdRef.current &&
+          !stateRef.current.activeChannelId
+        )
+          continue;
         next[entry.channel_id] = [
           ...(next[entry.channel_id] ?? []),
           {
@@ -222,29 +238,35 @@ export function VoiceProviderRoot({
       setParticipants(next);
     };
 
-    channel
-      .on("presence", { event: "sync" }, sync)
-      .on("presence", { event: "join" }, sync)
-      .on("presence", { event: "leave" }, sync)
-      .subscribe((status) => {
-        // A late CLOSED/TIMED_OUT callback from the previous server must not
-        // disable publishing on the replacement subscription.
-        if (channelRef.current !== channel) return;
-        if (status === "SUBSCRIBED") {
-          subscribedRef.current = true;
-          publishNow();
-        } else {
-          subscribedRef.current = false;
-        }
-      });
+    channelServerRef.current = presenceServerId;
+    channelRef.current = channel;
+    channel.on("presence", { event: "sync" }, sync).subscribe((status) => {
+      // A late CLOSED/TIMED_OUT callback from the previous server must not
+      // disable publishing on the replacement subscription.
+      if (channelRef.current !== channel) return;
+      if (status === "SUBSCRIBED") {
+        subscribedRef.current = true;
+        publishNow();
+      } else {
+        subscribedRef.current = false;
+      }
+    });
     channelRef.current = channel;
 
     const releaseOnUnload = () => {
       void channel.untrack();
     };
     window.addEventListener("pagehide", releaseOnUnload);
+    // Restore an occupancy entry lost during a temporary signaling interruption.
+    const heartbeat = setInterval(publishNow, 15000);
+    const restorePresence = () => publishNow();
+    window.addEventListener("pageshow", restorePresence);
+    window.addEventListener("online", restorePresence);
 
     return () => {
+      clearInterval(heartbeat);
+      window.removeEventListener("pageshow", restorePresence);
+      window.removeEventListener("online", restorePresence);
       window.removeEventListener("pagehide", releaseOnUnload);
       if (channelRef.current === channel) {
         channelRef.current = null;
@@ -252,7 +274,36 @@ export function VoiceProviderRoot({
       }
       void channel.untrack().finally(() => supabase.removeChannel(channel));
     };
-  }, [serverId, userId, publishNow]);
+  }, [presenceServerId, userId, publishNow]);
+
+  // Browsing another server observes its rooms without moving our call.
+  useEffect(() => {
+    setObservedParticipants({});
+    if (!serverId || serverId === presenceServerId || !userId) return;
+    let disposed = false;
+    const channel = supabase.channel(`voice:${serverId}`, {
+      config: { presence: { key: userId } },
+    });
+    channel
+      .on("presence", { event: "sync" }, () => {
+        if (disposed) return;
+        const next: Record<string, VoiceParticipant[]> = {};
+        for (const entries of Object.values(channel.presenceState<VoicePresenceMeta>())) {
+          const entry = entries.reduce<VoicePresenceMeta | undefined>(
+            (latest, item) =>
+              !latest || (item.updated_at ?? 0) > (latest.updated_at ?? 0) ? item : latest,
+            undefined,
+          );
+          if (entry?.channel_id) (next[entry.channel_id] ??= []).push(entry);
+        }
+        setObservedParticipants(next);
+      })
+      .subscribe();
+    return () => {
+      disposed = true;
+      void supabase.removeChannel(channel);
+    };
+  }, [serverId, presenceServerId, userId]);
 
   // Every state change publishes at once; only the noisy `speaking` flag is
   // coalesced, because tracking on each speech burst floods the realtime
@@ -319,6 +370,8 @@ export function VoiceProviderRoot({
     // exact current presence slot before another session is allowed to start.
     lifecycleGenerationRef.current += 1;
     const disconnecting = detachCurrent();
+    voiceServerRef.current = null;
+    setActiveServerId(null);
     lifecycleQueueRef.current = lifecycleQueueRef.current
       .catch(() => undefined)
       .then(async () => {
@@ -328,17 +381,9 @@ export function VoiceProviderRoot({
     return lifecycleQueueRef.current;
   }, [detachCurrent]);
 
-  // Switching servers owns the full voice lifecycle: leave the previous room
-  // before the new server can publish or negotiate with its participants.
-  useEffect(() => {
-    const previous = previousServerRef.current;
-    previousServerRef.current = serverId;
-    if (previous && previous !== serverId && stateRef.current.activeChannelId) void leave();
-  }, [serverId, leave]);
-
   const join = useCallback(
     (channelId: string) => {
-      if (!userId) return Promise.resolve();
+      if (!userId || !serverId) return Promise.resolve();
       if (
         pendingJoinChannelRef.current === channelId ||
         (stateRef.current.activeChannelId === channelId && providerRef.current)
@@ -359,6 +404,8 @@ export function VoiceProviderRoot({
           // Every entry is a distinct voice session. Presence from a previous
           // entry can no longer be mistaken for, or clean up, this one.
           sessionIdRef.current = crypto.randomUUID();
+          voiceServerRef.current = serverId;
+          setActiveServerId(serverId);
           stateRef.current = {
             ...stateRef.current,
             activeChannelId: channelId,
@@ -420,6 +467,8 @@ export function VoiceProviderRoot({
             if (!isCurrent()) return;
             providerRef.current = null;
             stateRef.current = { ...stateRef.current, activeChannelId: null };
+            voiceServerRef.current = null;
+            setActiveServerId(null);
             setActiveChannelId(null);
             schedulePublish(true);
             setConnectionState("error");
@@ -431,6 +480,7 @@ export function VoiceProviderRoot({
     },
     [
       detachCurrent,
+      serverId,
       userId,
       refreshDevices,
       schedulePublish,
@@ -597,11 +647,35 @@ export function VoiceProviderRoot({
     [],
   );
 
+  // Media and occupancy use different sockets. A live media track is evidence
+  // that a peer is still in our room while occupancy is being resynchronized.
+  const displayedParticipants = useMemo(() => {
+    if (!activeChannelId) return participantsByChannel;
+    const room = [...(participantsByChannel[activeChannelId] ?? [])];
+    for (const [id, media] of Object.entries(remoteMedia)) {
+      if (room.some((participant) => participant.user_id === id)) continue;
+      const live = [media.audio, media.camera, media.screen].some((stream) =>
+        stream?.getTracks().some((track) => track.readyState === "live"),
+      );
+      if (live)
+        room.push({
+          user_id: id,
+          muted: false,
+          deafened: false,
+          speaking: false,
+          camera: Boolean(media.camera),
+          screen: Boolean(media.screen),
+        });
+    }
+    return { ...participantsByChannel, [activeChannelId]: room };
+  }, [participantsByChannel, activeChannelId, remoteMedia]);
+
   const value = useMemo<VoiceContextValue>(
     () => ({
       connectionState,
       activeChannelId,
-      participantsByChannel,
+      activeServerId,
+      participantsByChannel: { ...observedParticipants, ...displayedParticipants },
       muted,
       deafened,
       cameraOn,
@@ -634,6 +708,9 @@ export function VoiceProviderRoot({
       connectionState,
       activeChannelId,
       participantsByChannel,
+      displayedParticipants,
+      activeServerId,
+      observedParticipants,
       muted,
       deafened,
       cameraOn,

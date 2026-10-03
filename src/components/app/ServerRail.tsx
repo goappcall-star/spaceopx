@@ -5,6 +5,8 @@ import { Logo } from "@/components/brand/Logo";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { Server } from "@/types";
+import { ServerContextMenu, type ServerMenuAction } from "./ServerContextMenu";
+import type { ServerPreferences } from "@/hooks/use-server-preferences";
 
 interface Props {
   servers: Server[];
@@ -14,6 +16,9 @@ interface Props {
   socialActive: boolean;
   onSelectSocial: () => void;
   socialBadge?: number;
+  getPreferences: (serverId: string) => ServerPreferences;
+  onUpdatePreferences: (serverId: string, patch: Partial<ServerPreferences>) => void;
+  onServerAction: (action: ServerMenuAction, server: Server) => void;
 }
 
 function initials(name: string) {
@@ -33,6 +38,9 @@ export function ServerRail({
   socialActive,
   onSelectSocial,
   socialBadge = 0,
+  getPreferences,
+  onUpdatePreferences,
+  onServerAction,
 }: Props) {
   return (
     <nav
@@ -58,52 +66,63 @@ export function ServerRail({
         {servers.map((server) => {
           const active = server.id === activeServerId;
           return (
-            <Tooltip key={server.id}>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => onSelect(server.id)}
-                  aria-current={active ? "true" : undefined}
-                  className="group relative flex h-12 w-12 items-center justify-center"
-                >
-                  {/* Left activity pill */}
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "absolute -left-3 w-1 rounded-r-full transition-all duration-200",
-                      active
-                        ? "bg-primary h-7 shadow-[0_0_12px_-1px_color-mix(in_oklab,var(--color-primary)_85%,transparent)]"
-                        : "bg-foreground/45 h-0 group-hover:h-3.5",
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "flex h-12 w-12 items-center justify-center overflow-hidden text-sm font-semibold transition-all duration-200",
-                      active
-                        ? "border-primary/50 text-foreground rounded-xl border shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-primary)_35%,transparent),0_10px_28px_-14px_color-mix(in_oklab,var(--color-primary)_90%,transparent)]"
-                        : "bg-surface-elevated text-surface-foreground hover:bg-surface-hover hover:text-foreground rounded-2xl hover:rounded-xl",
-                    )}
-                    style={
-                      active && !server.icon_url
-                        ? { backgroundImage: "var(--gradient-brand)" }
-                        : undefined
-                    }
-                  >
-                    {server.icon_url ? (
-                      <img
-                        src={server.icon_url}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        loading="lazy"
+            <ServerContextMenu
+              key={server.id}
+              server={server}
+              preferences={getPreferences(server.id)}
+              onUpdate={(patch) => onUpdatePreferences(server.id, patch)}
+              onAction={onServerAction}
+            >
+              <div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => onSelect(server.id)}
+                      aria-label={server.name}
+                      aria-current={active ? "true" : undefined}
+                      className="group relative flex h-12 w-12 items-center justify-center"
+                    >
+                      {/* Left activity pill */}
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "absolute -left-3 w-1 rounded-r-full transition-all duration-200",
+                          active
+                            ? "bg-primary h-7 shadow-[0_0_12px_-1px_color-mix(in_oklab,var(--color-primary)_85%,transparent)]"
+                            : "bg-foreground/45 h-0 group-hover:h-3.5",
+                        )}
                       />
-                    ) : (
-                      initials(server.name)
-                    )}
-                  </span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">{server.name}</TooltipContent>
-            </Tooltip>
+                      <span
+                        className={cn(
+                          "flex h-12 w-12 items-center justify-center overflow-hidden text-sm font-semibold transition-all duration-200",
+                          active
+                            ? "border-primary/50 text-foreground rounded-xl border shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-primary)_35%,transparent),0_10px_28px_-14px_color-mix(in_oklab,var(--color-primary)_90%,transparent)]"
+                            : "bg-surface-elevated text-surface-foreground hover:bg-surface-hover hover:text-foreground rounded-2xl hover:rounded-xl",
+                        )}
+                        style={
+                          active && !server.icon_url
+                            ? { backgroundImage: "var(--gradient-brand)" }
+                            : undefined
+                        }
+                      >
+                        {server.icon_url ? (
+                          <img
+                            src={server.icon_url}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          initials(server.name)
+                        )}
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">{server.name}</TooltipContent>
+                </Tooltip>
+              </div>
+            </ServerContextMenu>
           );
         })}
       </div>

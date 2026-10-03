@@ -18,6 +18,7 @@ dist-ssr
 
 # Wrangler / Cloudflare
 .wrangler/
+.vercel/
 .dev.vars
 
 # Editor directories and files
@@ -30,3 +31,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+desktop/web/
+
+# Local environment and generated installers
+.env
+.env.*
+!.env.example
+*.exe
+*.blockmap
+

@@ -2,6 +2,14 @@
 @source "../src";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: "Nunito Sans";
+  src: url("/fonts/NunitoSans.ttf") format("truetype");
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /*
@@ -12,6 +20,7 @@
 @theme inline {
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-friend: "Nunito Sans", "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   --radius-sm: calc(var(--radius) - 4px);
@@ -396,4 +405,16 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* Dedicated settings navigation, with independent scrolling on desktop. */
+.settings-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); }
+.settings-sidebar { padding: 32px 16px; }
+.settings-content .glass-panel { background: var(--color-surface); box-shadow: none; backdrop-filter: none; border-color: var(--color-border); }
+.settings-content section + section { margin-top: 24px; }
+@media (max-width: 767px) {
+ .settings-layout { grid-template-columns: minmax(0, 1fr); }
+ .settings-sidebar { padding: 16px; }
+ .settings-sidebar nav { display: flex; gap: 12px; overflow-x: auto; max-height: 220px; }
+ .settings-sidebar nav > div { min-width: 190px; }
 }

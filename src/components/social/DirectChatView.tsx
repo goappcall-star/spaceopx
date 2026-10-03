@@ -1,3 +1,4 @@
+import { useGlobalPresence } from "@/hooks/use-global-presence";
 import { Gamepad2, LogOut, Phone, Users, Video } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -27,7 +28,14 @@ interface Props {
 
 const GROUP_WINDOW_MS = 5 * 60 * 1000;
 
-export function DirectChatView({ conversation, userId, displayName, onOpenProfile, onLeft }: Props) {
+export function DirectChatView({
+  conversation,
+  userId,
+  displayName,
+  onOpenProfile,
+  onLeft,
+}: Props) {
+  const { statusOf } = useGlobalPresence();
   const [replyTo, setReplyTo] = useState<DirectMessageWithMeta | null>(null);
   const [membersOpen, setMembersOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -46,7 +54,19 @@ export function DirectChatView({ conversation, userId, displayName, onOpenProfil
   const { typingNames, notifyTyping } = useTyping(conversation.id, userId, displayName);
 
   const other = conversation.otherProfile ?? null;
-  const { startCall, status: callStatus, busyUsers } = useCall();
+  const {
+    startCall,
+    startGroupCall,
+    status: callStatus,
+    busyUsers,
+    peer,
+    groupConversationId,
+  } = useCall();
+  const inThisCall =
+    ["outgoing", "connecting", "active", "reconnecting", "waiting"].includes(callStatus) &&
+    (groupConversationId
+      ? groupConversationId === conversation.id
+      : conversation.type === "direct" && peer?.id === other?.id);
   const callBusy = callStatus !== "idle" && callStatus !== "ended";
   const peerBusy = other ? !!busyUsers[other.id] : false;
   const isGroup = conversation.type === "group";
@@ -69,125 +89,154 @@ export function DirectChatView({ conversation, userId, displayName, onOpenProfil
 
   return (
     <>
-      <header className="border-border bg-background/70 relative z-10 flex h-14 shrink-0 items-center gap-3 border-b px-5 backdrop-blur-xl">
-        <button
-          type="button"
-          onClick={() => (isGroup ? setMembersOpen(true) : other && onOpenProfile(other.id))}
-          className="flex min-w-0 items-center gap-3 text-left"
-        >
-          <span className="relative">
-            <Avatar className="ring-border h-8 w-8 ring-1">
-              <AvatarImage src={(isGroup ? conversation.avatar_url : other?.avatar_url) ?? undefined} alt="" />
-              <AvatarFallback className="bg-surface-elevated text-[11px]">
-                {title.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            {!isGroup && other && (
-              <StatusDot
-                status={other.status as UserStatus}
-                className="border-background absolute -right-0.5 -bottom-0.5 h-3 w-3 border-2"
-              />
-            )}
-          </span>
-          <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold tracking-tight">{title}</span>
-            <span className="text-muted-foreground block truncate text-[11px]">
-              {isGroup ? `${conversation.member_count} participantes` : `@${other?.username ?? "?"}`}
+      {!inThisCall && (
+        <header className="border-border bg-background/70 relative z-10 flex h-14 shrink-0 items-center gap-3 border-b px-5 backdrop-blur-xl">
+          <button
+            type="button"
+            onClick={() => (isGroup ? setMembersOpen(true) : other && onOpenProfile(other.id))}
+            className="flex min-w-0 items-center gap-3 text-left"
+          >
+            <span className="relative">
+              <Avatar frame={isGroup ? undefined : other?.avatar_frame} className="ring-border h-8 w-8 ring-1">
+                <AvatarImage
+                  src={(isGroup ? conversation.avatar_url : other?.avatar_url) ?? undefined}
+                  alt=""
+                />
+                <AvatarFallback className="bg-surface-elevated text-[11px]">
+                  {title.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {!isGroup && other && (
+                <StatusDot
+                  status={statusOf(other.id)}
+                  className="border-background absolute -right-0.5 -bottom-0.5 h-3 w-3 border-2"
+                />
+              )}
             </span>
-          </span>
-        </button>
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-semibold tracking-tight">{title}</span>
+              <span className="text-muted-foreground block truncate text-[11px]">
+                {isGroup
+                  ? `${conversation.member_count} participantes`
+                  : `@${other?.username ?? "?"}`}
+              </span>
+            </span>
+          </button>
 
-        {!isGroup && other?.custom_status && (
-          <span className="text-muted-foreground hidden truncate text-xs md:inline">
-            <Gamepad2 className="mr-1 inline h-3 w-3" />
-            {other.custom_status}
-          </span>
-        )}
-
-        <div className="ml-auto flex items-center gap-1">
-          {!isGroup && other && (
-            <>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    disabled={callBusy || peerBusy}
-                    aria-label="Chamada de voz"
-                    onClick={() =>
-                      void startCall(
-                        {
-                          id: other.id,
-                          display_name: other.display_name,
-                          username: other.username,
-                          avatar_url: other.avatar_url ?? null,
-                        },
-                        false,
-                      )
-                    }
-                  >
-                    <Phone className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {peerBusy ? "Em chamada" : "Chamada de voz"}
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    disabled={callBusy || peerBusy}
-                    aria-label="Chamada de vídeo"
-                    onClick={() =>
-                      void startCall(
-                        {
-                          id: other.id,
-                          display_name: other.display_name,
-                          username: other.username,
-                          avatar_url: other.avatar_url ?? null,
-                        },
-                        true,
-                      )
-                    }
-                  >
-                    <Video className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {peerBusy ? "Em chamada" : "Chamada de vídeo"}
-                </TooltipContent>
-              </Tooltip>
-            </>
+          {!isGroup && other?.custom_status && (
+            <span className="text-muted-foreground hidden truncate text-xs md:inline">
+              <Gamepad2 className="mr-1 inline h-3 w-3" />
+              {other.custom_status}
+            </span>
           )}
-          {isGroup && (
-            <>
-              <Button size="sm" variant="ghost" onClick={() => setMembersOpen(true)}>
-                <Users className="mr-1.5 h-4 w-4" />
-                Membros
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-destructive"
-                onClick={async () => {
-                  try {
-                    await conversationsService.leave(conversation.id);
-                    toast.success("Você saiu do grupo.");
-                    onLeft();
-                  } catch (error) {
-                    toast.error((error as Error).message);
+
+          <div className="ml-auto flex items-center gap-1">
+            {!isGroup && other && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      disabled={callBusy || peerBusy}
+                      aria-label="Chamada de voz"
+                      onClick={() =>
+                        void startCall(
+                          {
+                            id: other.id,
+                            display_name: other.display_name,
+                            username: other.username,
+                            avatar_url: other.avatar_url ?? null,
+                          },
+                          false,
+                        )
+                      }
+                    >
+                      <Phone className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{peerBusy ? "Em chamada" : "Chamada de voz"}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      disabled={callBusy || peerBusy}
+                      aria-label="Chamada de vídeo"
+                      onClick={() =>
+                        void startCall(
+                          {
+                            id: other.id,
+                            display_name: other.display_name,
+                            username: other.username,
+                            avatar_url: other.avatar_url ?? null,
+                          },
+                          true,
+                        )
+                      }
+                    >
+                      <Video className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{peerBusy ? "Em chamada" : "Chamada de vídeo"}</TooltipContent>
+                </Tooltip>
+              </>
+            )}
+            {isGroup && (
+              <>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={callBusy || members.length === 0}
+                  onClick={() =>
+                    void startGroupCall(
+                      conversation.id,
+                      title,
+                      members.flatMap((member) =>
+                        member.profile
+                          ? [
+                              {
+                                id: member.profile.id,
+                                display_name: member.profile.display_name,
+                                username: member.profile.username,
+                                avatar_url: member.profile.avatar_url,
+                              },
+                            ]
+                          : [],
+                      ),
+                    )
                   }
-                }}
-              >
-                <LogOut className="mr-1.5 h-4 w-4" />
-                Sair
-              </Button>
-            </>
-          )}
-        </div>
-      </header>
+                >
+                  <Phone className="mr-1.5 h-4 w-4" />
+                  Entrar na chamada
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setMembersOpen(true)}>
+                  <Users className="mr-1.5 h-4 w-4" />
+                  Membros
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive"
+                  onClick={async () => {
+                    try {
+                      await conversationsService.leave(conversation.id);
+                      toast.success("Você saiu do grupo.");
+                      onLeft();
+                    } catch (error) {
+                      toast.error((error as Error).message);
+                    }
+                  }}
+                >
+                  <LogOut className="mr-1.5 h-4 w-4" />
+                  Sair
+                </Button>
+              </>
+            )}
+          </div>
+        </header>
+      )}
 
       <div ref={scrollRef} className="scrollbar-slim bg-ambient flex-1 overflow-y-auto py-4">
         {loading && (
@@ -206,7 +255,12 @@ export function DirectChatView({ conversation, userId, displayName, onOpenProfil
 
         {!loading && hasMore && (
           <div className="flex justify-center pb-2">
-            <Button size="sm" variant="ghost" onClick={() => void loadOlder()} disabled={loadingMore}>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => void loadOlder()}
+              disabled={loadingMore}
+            >
               {loadingMore ? "Carregando..." : "Carregar mensagens anteriores"}
             </Button>
           </div>
@@ -247,7 +301,9 @@ export function DirectChatView({ conversation, userId, displayName, onOpenProfil
       <div className="text-muted-foreground flex h-5 items-center gap-1.5 px-6 text-xs">
         {typingNames.length > 0 && (
           <span className="truncate">
-            <span className="text-foreground font-medium">{typingNames.slice(0, 3).join(", ")}</span>{" "}
+            <span className="text-foreground font-medium">
+              {typingNames.slice(0, 3).join(", ")}
+            </span>{" "}
             {typingNames.length === 1 ? "está digitando..." : "estão digitando..."}
           </span>
         )}

@@ -1,4 +1,5 @@
 import { ConnectedVoiceBar } from "@/components/voice/ConnectedVoiceBar";
+import { DownloadWindows } from "@/components/brand/DownloadWindows";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Copy, LogOut, Repeat, Settings } from "lucide-react";
@@ -77,6 +78,9 @@ export function UserBar() {
   return (
     <>
       <ConnectedVoiceBar />
+      <div className="px-2.5">
+        <DownloadWindows compact />
+      </div>
       <div className="border-border bg-rail flex items-center gap-2 border-t px-2.5 py-2.5">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Gamepad2, Trophy, Users, Video } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
+import { DownloadWindows } from "@/components/brand/DownloadWindows";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -81,10 +82,11 @@ function Landing() {
           </h1>
           <p className="text-muted-foreground mt-5 max-w-xl text-lg">
             LobbyX reúne sua comunidade em lobbies com chat em tempo real, canais de voz, vídeo,
-            compartilhamento de tela, amizades, mensagens privadas e um perfil gamer com XP,
-            níveis e badges.
+            compartilhamento de tela, amizades, mensagens privadas e um perfil gamer com XP, níveis
+            e badges.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
+            <DownloadWindows />
             <Button asChild size="lg">
               <Link to={isAuthenticated ? "/app" : "/register"}>
                 {isAuthenticated ? "Abrir meus servidores" : "Começar agora"}
@@ -94,6 +96,7 @@ function Landing() {
               <Link to="/login">Já tenho conta</Link>
             </Button>
           </div>
+          <p className="text-muted-foreground mt-3 text-xs">Disponível para Windows 64 bits.</p>
         </section>
 
         <section className="mt-20 grid gap-4 sm:grid-cols-3">

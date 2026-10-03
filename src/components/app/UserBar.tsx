@@ -78,7 +78,7 @@ export function UserBar() {
   return (
     <>
       <ConnectedVoiceBar />
-      <div className="px-2.5">
+      <div className="px-2.5 py-1">
         <DownloadWindows compact />
       </div>
       <div className="border-border bg-rail flex items-center gap-2 border-t px-2.5 py-2.5">

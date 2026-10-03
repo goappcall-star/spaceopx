@@ -190,9 +190,15 @@ export function VoiceRoom({ channel, members, me, userId }: Props) {
             </ul>
           </div>
         ) : (
-          <ul className={cn("mx-auto grid max-w-5xl gap-3", gridClass(cameraTiles.length))}>
+          <ul className={cn("mx-auto grid w-full max-w-7xl gap-3", gridClass(cameraTiles.length))}>
             {cameraTiles.map((tile) => (
-              <li key={tile.userId} className="aspect-video">
+              <li
+                key={tile.userId}
+                className={cn(
+                  "aspect-video min-w-0",
+                  cameraTiles.length === 3 && "last:sm:col-span-2 last:sm:mx-auto last:sm:w-1/2",
+                )}
+              >
                 <VideoTile
                   tile={tile}
                   className="h-full w-full"

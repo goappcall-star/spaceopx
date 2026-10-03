@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { UserBar } from "@/components/app/UserBar";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useVoice } from "@/hooks/use-voice";
 import { cn } from "@/lib/utils";
@@ -271,27 +272,46 @@ export function ChannelSidebar({
                     )}
                   </button>
                   {participants.length > 0 && (
-                    <ul className="border-border/60 mt-0.5 mb-1 ml-4 space-y-0.5 border-l pl-3">
+                    <ul className="mt-1 mb-2 ml-6 space-y-1">
                       {participants.map((participant) => (
                         <li
                           key={participant.user_id}
                           className={cn(
-                            "flex items-center gap-1.5 truncate py-0.5 text-xs transition-colors",
-                            participant.speaking
-                              ? "text-success font-medium"
+                            "flex items-center gap-2 rounded-md px-2 py-1 text-xs transition-colors duration-150",
+                            participant.speaking && !participant.muted
+                              ? "bg-surface-active text-foreground font-medium"
                               : "text-muted-foreground",
                           )}
                         >
-                          <span
-                            aria-hidden
+                          <Avatar
+                            frame={
+                              members.find((member) => member.user_id === participant.user_id)
+                                ?.profile?.avatar_frame
+                            }
                             className={cn(
-                              "h-1.5 w-1.5 shrink-0 rounded-full",
-                              participant.speaking
-                                ? "bg-success animate-pulse"
-                                : "bg-muted-foreground/50",
+                              "h-6 w-6 ring-2 ring-offset-2 ring-offset-surface transition-shadow duration-150",
+                              participant.speaking && !participant.muted
+                                ? "ring-green-500"
+                                : "ring-transparent",
                             )}
-                          />
-                          <span className="truncate">{memberName(participant.user_id)}</span>
+                          >
+                            <AvatarImage
+                              src={
+                                members.find((member) => member.user_id === participant.user_id)
+                                  ?.profile?.avatar_url ?? undefined
+                              }
+                              alt=""
+                            />
+                            <AvatarFallback className="text-[9px]">
+                              {memberName(participant.user_id).slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="min-w-0 flex-1 truncate">
+                            {memberName(participant.user_id)}
+                          </span>
+                          {participant.speaking && !participant.muted && (
+                            <span className="sr-only">Falando</span>
+                          )}
                           <span className="ml-auto flex shrink-0 items-center gap-1 text-[10px]">
                             {participant.screen && <span title="Compartilhando tela">🖥️</span>}
                             {participant.camera && <span title="Câmera ligada">🎥</span>}

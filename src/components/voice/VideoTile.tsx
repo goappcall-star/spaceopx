@@ -1,4 +1,4 @@
-import { MicOff, MonitorUp, VideoOff, Volume2 } from "lucide-react";
+import { MicOff, MonitorUp, Volume2 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Slider } from "@/components/ui/slider";
@@ -29,12 +29,13 @@ interface Props {
 
 export function VideoTile({ tile, volume, onVolumeChange, className, large }: Props) {
   const showVideo = !!tile.stream;
+  const isSpeaking = tile.speaking && !tile.muted && tile.kind === "camera";
 
   return (
     <div
       className={cn(
-        "border-border bg-surface group relative overflow-hidden rounded-xl border transition-all",
-        tile.speaking && tile.kind === "camera" && "border-primary/70 glow-soft",
+        "border-transparent bg-surface group relative overflow-hidden rounded-xl border-2 transition-colors duration-150",
+        isSpeaking && "border-green-500 shadow-[0_0_16px_rgba(34,197,94,0.18)]",
         className,
       )}
     >
@@ -48,10 +49,11 @@ export function VideoTile({ tile, volume, onVolumeChange, className, large }: Pr
       ) : (
         <div className="bg-surface-elevated flex h-full w-full flex-col items-center justify-center gap-2 p-4">
           <Avatar
+            frame={tile.avatarFrame}
             className={cn(
-              large ? "h-24 w-24" : "h-16 w-16",
-              "ring-2 transition-all",
-              tile.speaking ? "ring-primary" : "ring-border",
+              large ? "h-24 w-24" : "h-20 w-20",
+              "ring-2 ring-offset-4 ring-offset-surface-elevated transition-shadow duration-150",
+              isSpeaking ? "ring-green-500" : "ring-transparent",
             )}
           >
             <AvatarImage src={tile.avatarUrl ?? undefined} alt="" />
@@ -59,19 +61,17 @@ export function VideoTile({ tile, volume, onVolumeChange, className, large }: Pr
               {tile.name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <span className="text-muted-foreground flex items-center gap-1 text-[11px]">
-            <VideoOff className="h-3 w-3" /> câmera desligada
-          </span>
         </div>
       )}
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 bg-gradient-to-t from-black/70 to-transparent px-2.5 py-2">
         <div className="min-w-0">
-          <p className="truncate text-xs font-semibold text-white">
+          <p className="max-w-full truncate rounded-md bg-black/60 px-2 py-1 text-xs font-medium text-white">
             {tile.name}
             {tile.isSelf && " (você)"}
             {tile.kind === "screen" && " · tela"}
           </p>
+          {isSpeaking && <span className="sr-only">Falando</span>}
           {tile.gameLabel && (
             <p className="truncate text-[10px] text-white/70">🎮 {tile.gameLabel}</p>
           )}
@@ -85,7 +85,7 @@ export function VideoTile({ tile, volume, onVolumeChange, className, large }: Pr
       </div>
 
       {!tile.isSelf && onVolumeChange && tile.kind === "camera" && (
-        <div className="pointer-events-auto absolute inset-x-2 top-2 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="pointer-events-auto absolute inset-x-2 top-2 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
           <Volume2 className="h-3.5 w-3.5 shrink-0 text-white/80" />
           <Slider
             value={[volume ?? 100]}

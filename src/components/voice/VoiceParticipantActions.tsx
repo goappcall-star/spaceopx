@@ -2,7 +2,6 @@ import { useRef, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { QuickProfileCard } from "@/components/gamer/QuickProfile";
-import { useProfileDialog } from "@/components/gamer/ProfileDialog";
 import { useAuth } from "@/hooks/use-auth";
 import { useOptionalCall } from "@/hooks/use-call";
 import { useVoice } from "@/hooks/use-voice";
@@ -47,7 +46,6 @@ export function VoiceParticipantActions({
   const [note, setNote] = useState("");
   const { user } = useAuth();
   const self = user?.id === userId;
-  const { openProfile } = useProfileDialog();
   const call = useOptionalCall();
   const voice = useVoice();
   const query = useQueryClient();
@@ -90,10 +88,24 @@ export function VoiceParticipantActions({
                 tabIndex={0}
                 aria-label={`Ações de ${name}`}
                 className="h-full cursor-pointer rounded-md outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                onContextMenu={(event) => {
-                  event.preventDefault();
+                onPointerDown={(event) => {
+                  if (event.button === 0) event.preventDefault();
+                }}
+                onClick={() => {
                   setMenuOpen(false);
                   setProfileOpen(true);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setMenuOpen(false);
+                    setProfileOpen(true);
+                  }
+                }}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                  setProfileOpen(false);
+                  setMenuOpen(true);
                 }}
               >
                 {children}
@@ -101,17 +113,6 @@ export function VoiceParticipantActions({
             </DropdownMenuTrigger>
           </PopoverAnchor>
           <DropdownMenuContent side="right" align="start" className="w-60">
-            <DropdownMenuItem
-              onSelect={() => {
-                setMenuOpen(false);
-                setProfileOpen(true);
-              }}
-            >
-              Perfil resumido
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => openProfile(userId)}>
-              Perfil completo
-            </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() =>
                 void run(

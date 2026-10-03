@@ -1,4 +1,5 @@
 import { LiveGameActivity } from "./LiveGameActivity";
+import { useProfileDialog } from "./ProfileDialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, Gamepad2, MessageSquare, Phone, UserCheck, UserPlus, X } from "lucide-react";
 import { useRef, useState, type ReactNode } from "react";
@@ -99,6 +100,7 @@ export function QuickProfileCard({
   onStartDirect?: ((conversationId: string) => void) | undefined;
 }) {
   const { data, isLoading } = usePublicProfile(userId);
+  const { openProfile } = useProfileDialog();
   const { statusOf, games } = useGlobalPresence();
 
   if (isLoading || !data) {
@@ -121,7 +123,16 @@ export function QuickProfileCard({
         style={profile.banner_url ? { backgroundImage: `url(${profile.banner_url})` } : undefined}
       />
       <div className="px-4 pb-4">
-        <div className="relative -mt-8 w-fit">
+        <button
+          type="button"
+          aria-label={`Abrir perfil completo de ${profile.display_name}`}
+          title="Ver perfil completo"
+          className="relative -mt-8 block w-fit rounded-full cursor-pointer outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          onClick={() => {
+            onDone();
+            openProfile(userId);
+          }}
+        >
           <Avatar
             frame={profile.avatar_frame}
             className="border-surface glow-ring h-16 w-16 border-4"
@@ -135,7 +146,7 @@ export function QuickProfileCard({
             status={status}
             className="border-surface absolute right-0 bottom-0 h-4 w-4 border-2"
           />
-        </div>
+        </button>
 
         <p className="mt-2 text-base leading-tight font-semibold">{profile.display_name}</p>
         <p className="text-muted-foreground font-mono text-xs">@{profile.username}</p>

@@ -365,8 +365,6 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
                   {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                 </CallButton>
 
-                <NoiseSuppressionToggle />
-
                 <CallButton
                   label={cameraOn ? "Desligar câmera" : "Ligar câmera"}
                   active={cameraOn}
@@ -385,6 +383,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
                   <MonitorUp className="h-5 w-5" />
                 </CallButton>
 
+                <NoiseSuppressionToggle />
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button

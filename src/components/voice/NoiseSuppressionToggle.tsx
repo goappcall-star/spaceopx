@@ -5,7 +5,7 @@ import { useAudioSettings } from "@/hooks/use-audio-settings";
 import { NOISE_MODE_LABELS } from "@/services/audio-processing";
 import { NoiseModeSelect, NoiseProcessingFeedback } from "./NoiseModeSelect";
 
-export function NoiseSuppressionToggle() {
+export function NoiseSuppressionToggle({ compact = false }: { compact?: boolean }) {
   const { settings, noiseProcessing } = useAudioSettings();
   const fallback = Object.values(noiseProcessing).some((status) => status.fallback);
   const label = `Supressão de ruído: ${NOISE_MODE_LABELS[settings.noiseSuppression]}${fallback ? " (usando padrão)" : ""}`;
@@ -15,6 +15,7 @@ export function NoiseSuppressionToggle() {
         <Button
           type="button"
           size="icon"
+          className={compact ? "h-8 w-8 shrink-0" : undefined}
           variant={settings.noiseSuppression !== "off" ? "secondary" : "ghost"}
           aria-label={label}
           title={label}
@@ -24,7 +25,7 @@ export function NoiseSuppressionToggle() {
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 space-y-3">
+      <PopoverContent side="top" className="w-72 space-y-3">
         <p className="text-sm font-semibold">Supressão de ruído</p>
         <NoiseModeSelect />
         <NoiseProcessingFeedback />

@@ -684,7 +684,20 @@ export function VoiceProviderRoot({
     if (!activeChannelId) return participantsByChannel;
     const room = [...(participantsByChannel[activeChannelId] ?? [])];
     const self = room.find((participant) => participant.user_id === userId);
-    if (self) room[room.indexOf(self)] = { ...self, speaking: speaking && !muted && pttActive };
+    // Presence sync is asynchronous and may not emit after a quick re-entry.
+    // The active local session is authoritative even before its next sync.
+    if (userId) {
+      const local = {
+        user_id: userId,
+        muted: muted || !pttActive,
+        deafened,
+        speaking: speaking && !muted && pttActive,
+        camera: cameraOn,
+        screen: screenOn,
+      };
+      if (self) room[room.indexOf(self)] = local;
+      else room.push(local);
+    }
     for (const [id, media] of Object.entries(remoteMedia)) {
       if (room.some((participant) => participant.user_id === id)) continue;
       const live = [media.audio, media.camera, media.screen].some((stream) =>
@@ -701,7 +714,18 @@ export function VoiceProviderRoot({
         });
     }
     return { ...participantsByChannel, [activeChannelId]: room };
-  }, [participantsByChannel, activeChannelId, remoteMedia, userId, speaking, muted, pttActive]);
+  }, [
+    participantsByChannel,
+    activeChannelId,
+    remoteMedia,
+    userId,
+    speaking,
+    muted,
+    deafened,
+    cameraOn,
+    screenOn,
+    pttActive,
+  ]);
 
   const value = useMemo<VoiceContextValue>(
     () => ({

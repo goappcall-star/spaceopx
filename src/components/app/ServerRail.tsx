@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import { Plus, Users } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -12,6 +11,7 @@ interface Props {
   servers: Server[];
   activeServerId: string | null;
   onSelect: (serverId: string) => void;
+  onHome: () => void;
   onAdd: () => void;
   socialActive: boolean;
   onSelectSocial: () => void;
@@ -34,6 +34,7 @@ export function ServerRail({
   servers,
   activeServerId,
   onSelect,
+  onHome,
   onAdd,
   socialActive,
   onSelectSocial,
@@ -49,13 +50,14 @@ export function ServerRail({
     >
       <Tooltip>
         <TooltipTrigger asChild>
-          <Link
-            to="/app"
-            aria-label="LobbyX"
+          <button
+            type="button"
+            onClick={onHome}
+            aria-label="Início do LobbyX"
             className="group relative mb-1 flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-200 hover:rounded-xl"
           >
             <Logo compact />
-          </Link>
+          </button>
         </TooltipTrigger>
         <TooltipContent side="right">LobbyX</TooltipContent>
       </Tooltip>

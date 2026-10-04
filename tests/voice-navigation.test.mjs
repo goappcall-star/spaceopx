@@ -132,7 +132,10 @@ function fixture() {
     crypto: { randomUUID: () => Math.random().toString() },
     localStorage: { getItem: () => null },
     window: { addEventListener() {}, removeEventListener() {} },
-    setTimeout: (callback) => { timers.set(++timerId, callback); return timerId; },
+    setTimeout: (callback) => {
+      timers.set(++timerId, callback);
+      return timerId;
+    },
     clearTimeout: (id) => timers.delete(id),
     setInterval: () => 1,
     clearInterval() {},
@@ -167,10 +170,13 @@ test("Speech bursts publish without continually restarting the pending update", 
   f.render();
   const firstTimer = [...f.timers.keys()][0];
   assert.ok(firstTimer);
-  f.providers[0].callbacks.onSpeakingChange(false); f.render();
-  f.providers[0].callbacks.onSpeakingChange(true); f.render();
+  f.providers[0].callbacks.onSpeakingChange(false);
+  f.render();
+  f.providers[0].callbacks.onSpeakingChange(true);
+  f.render();
   assert.equal([...f.timers.keys()][0], firstTimer);
-  f.timers.get(firstTimer)(); f.timers.delete(firstTimer);
+  f.timers.get(firstTimer)();
+  f.timers.delete(firstTimer);
   await f.flush();
   assert.equal(f.channels[0].tracks.at(-1).speaking, true);
 });
@@ -217,4 +223,30 @@ test("Explicitly joining another server replaces the old call and clears its pre
     f.channels[0].tracks.some((p) => p.channel_id === "room-b"),
     false,
   );
+});
+
+test("Local participant survives repeated leave and re-entry without a presence sync", async () => {
+  const f = fixture();
+  f.channels[0].subscribed("SUBSCRIBED");
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await f.render().join("room-a");
+    await f.flush();
+    const joined = f.render();
+    assert.equal(joined.connectionState, "connected");
+    assert.equal(
+      joined.participantsByChannel["room-a"].filter((p) => p.user_id === "me").length,
+      1,
+    );
+    f.providers.at(-1).callbacks.onSpeakingChange(true);
+    assert.equal(
+      f.render().participantsByChannel["room-a"].find((p) => p.user_id === "me").speaking,
+      true,
+    );
+    await f.render().leave();
+    await f.flush();
+    assert.equal(
+      f.render().participantsByChannel["room-a"]?.some((p) => p.user_id === "me") ?? false,
+      false,
+    );
+  }
 });

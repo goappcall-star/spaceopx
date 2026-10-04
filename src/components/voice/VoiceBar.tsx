@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { NoiseSuppressionToggle } from "@/components/voice/NoiseSuppressionToggle";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useVoice } from "@/hooks/use-voice";
 import { cn } from "@/lib/utils";
@@ -82,6 +83,7 @@ export function VoiceBar({
           </p>
           <p className="text-muted-foreground truncate text-[11px]">🔊 {channelName}</p>
         </button>
+        <NoiseSuppressionToggle compact />
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

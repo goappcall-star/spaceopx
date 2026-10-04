@@ -107,8 +107,6 @@ export function VoiceControlBar() {
           )}
         </ControlButton>
 
-        <NoiseSuppressionToggle />
-
         {cameraAvailable && (
           <ControlButton
             label={
@@ -149,6 +147,7 @@ export function VoiceControlBar() {
 
         <span className="bg-border mx-1 h-7 w-px" aria-hidden />
 
+        <NoiseSuppressionToggle />
         <ControlButton label="Sair da chamada" danger onClick={() => void leave()}>
           <PhoneOff className="h-5 w-5" />
         </ControlButton>

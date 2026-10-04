@@ -1,5 +1,5 @@
 import { useSessionServer } from "@/components/call/SessionCommunications";
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { z } from "zod";
 import { Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -64,6 +64,7 @@ export const Route = createFileRoute("/_authenticated/app")({
 });
 
 function AppPage() {
+  const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { server: serverParam } = useSearch({ from: "/_authenticated/app" });
   const { data: servers = [], isLoading: loadingServers } = useMyServers();
@@ -229,6 +230,14 @@ function AppPage() {
               void handleServerAction(action, server);
             }}
             servers={servers}
+            onHome={() => {
+              void navigate({ to: "/app", search: {}, replace: true });
+              setView("servers");
+              setActiveServerId(null);
+              setActiveChannelId(null);
+              setActiveConversationId(null);
+              setVoiceReturn(null);
+            }}
             activeServerId={activeServerId}
             onSelect={(id) => {
               setView("servers");

@@ -2,13 +2,20 @@ import { ConnectedVoiceBar } from "@/components/voice/ConnectedVoiceBar";
 import { DownloadWindows } from "@/components/brand/DownloadWindows";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Copy, LogOut, Repeat, Settings } from "lucide-react";
+import { ChevronRight, Copy, LogOut, Repeat, Settings, UserRound } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { STATUS_LABEL, StatusDot } from "@/components/app/StatusDot";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useProfileDialog } from "@/components/gamer/ProfileDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
@@ -33,6 +40,7 @@ export function UserBar() {
   const queryClient = useQueryClient();
   const { myStatus, setStatus, connection } = useGlobalPresence();
   const [open, setOpen] = useState(false);
+  const { openProfile } = useProfileDialog();
 
   /** Full teardown so nothing leaks between accounts. */
   async function resetSession() {
@@ -114,12 +122,42 @@ export function UserBar() {
 
           <PopoverContent side="top" align="start" className="glass-panel w-64 p-3">
             <div className="flex items-center gap-2.5">
-              <Avatar frame={profile?.avatar_frame} className="ring-border h-10 w-10 ring-1">
-                <AvatarImage src={profile?.avatar_url ?? undefined} alt="" />
-                <AvatarFallback className="bg-surface-elevated text-xs">
-                  {profile?.display_name?.slice(0, 2).toUpperCase() ?? "??"}
-                </AvatarFallback>
-              </Avatar>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Opções do meu perfil"
+                    className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    <Avatar frame={profile?.avatar_frame} className="ring-border h-10 w-10 ring-1">
+                      <AvatarImage src={profile?.avatar_url ?? undefined} alt="" />
+                      <AvatarFallback className="bg-surface-elevated text-xs">
+                        {profile?.display_name?.slice(0, 2).toUpperCase() ?? "??"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="right" align="start">
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      if (profile) {
+                        setOpen(false);
+                        openProfile(profile.id);
+                      }
+                    }}
+                  >
+                    <UserRound className="mr-2 h-4 w-4" /> Abrir perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      setOpen(false);
+                      void navigate({ to: "/settings/profile" });
+                    }}
+                  >
+                    <Settings className="mr-2 h-4 w-4" /> Editar perfil
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{profile?.display_name ?? "—"}</p>
                 <p className="text-muted-foreground truncate font-mono text-[11px]">
@@ -138,23 +176,34 @@ export function UserBar() {
 
             <div className="border-border/70 my-3 border-t" />
 
-            <p className="text-caption mb-1.5">Status</p>
-            <div className="space-y-0.5">
-              {STATUS_OPTIONS.map((option) => (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <button
-                  key={option.value}
                   type="button"
-                  onClick={() => void setStatus(option.value)}
-                  className={cn(
-                    "hover:bg-surface-hover flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors",
-                    myStatus === option.value && "bg-surface-hover",
-                  )}
+                  className="hover:bg-surface-hover flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm"
+                  aria-label="Alterar status"
                 >
-                  <StatusDot status={option.value} className="h-2.5 w-2.5" />
-                  {option.label}
+                  <StatusDot status={myStatus} className="h-2.5 w-2.5" />
+                  <span className="flex-1">Status · {STATUS_LABEL[myStatus]}</span>
+                  <ChevronRight className="h-4 w-4" />
                 </button>
-              ))}
-            </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="right" align="start" className="w-48">
+                {STATUS_OPTIONS.map((option) => (
+                  <DropdownMenuItem
+                    key={option.value}
+                    onSelect={() => void setStatus(option.value)}
+                    className={cn(
+                      "hover:bg-surface-hover flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors",
+                      myStatus === option.value && "bg-surface-hover",
+                    )}
+                  >
+                    <StatusDot status={option.value} className="h-2.5 w-2.5" />
+                    {option.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <div className="border-border/70 my-3 border-t" />
 

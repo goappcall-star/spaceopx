@@ -43,6 +43,7 @@ export interface RemoteMedia {
 }
 
 export interface VoiceProviderEvents {
+  onRemoteSpeakingChange?: (speaking: Record<string, boolean>) => void;
   onNoiseProcessingChange?: (status: NoiseProcessingStatus) => void;
   onSpeakingChange?: (speaking: boolean) => void;
   onStateChange?: (state: "connecting" | "connected" | "reconnecting" | "error") => void;
@@ -155,6 +156,18 @@ class MeshVoiceProvider implements VoiceProvider {
 
   private muted = false;
   private speaking = false;
+  private remoteSpeaking: Record<string, boolean> = {};
+  private remoteDetectors = new Map<
+    string,
+    {
+      track: MediaStreamTrack;
+      source: MediaStreamAudioSourceNode;
+      analyser: AnalyserNode;
+      buffer: Uint8Array<ArrayBuffer>;
+      lastActivity: number;
+    }
+  >();
+  private detectionSink: GainNode | null = null;
   private devices: DeviceIds = {};
   private volumes = new Map<string, number>();
   private disposed = false;
@@ -268,6 +281,15 @@ class MeshVoiceProvider implements VoiceProvider {
     this.analyser = null;
     this.gainNode = null;
     stopStream(this.micStream);
+    for (const detector of this.remoteDetectors.values()) {
+      detector.source.disconnect();
+      detector.analyser.disconnect();
+    }
+    this.remoteDetectors.clear();
+    this.detectionSink?.disconnect();
+    this.detectionSink = null;
+    this.remoteSpeaking = {};
+    this.events.onRemoteSpeakingChange?.({});
     await this.audioPipeline?.dispose();
     this.audioPipeline = null;
     this.processedStream = null;
@@ -512,7 +534,71 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   private emitRemote() {
+    this.syncRemoteDetectors();
     this.events.onRemoteMedia?.({ ...this.remote });
+  }
+
+  private syncRemoteDetectors() {
+    const context = this.audioPipeline?.context;
+    if (!context || this.disposed) return;
+    for (const [id, detector] of this.remoteDetectors) {
+      const track = this.remote[id]?.audio?.getAudioTracks()[0];
+      if (track === detector.track && track.readyState === "live") continue;
+      detector.source.disconnect();
+      detector.analyser.disconnect();
+      this.remoteDetectors.delete(id);
+    }
+    for (const [id, media] of Object.entries(this.remote)) {
+      const track = media.audio?.getAudioTracks()[0];
+      if (!track || track.readyState !== "live" || this.remoteDetectors.has(id)) continue;
+      try {
+        // Analyse received microphone audio before playback volume/deafen.
+        // A silent sink keeps the graph running without playing audio twice.
+        if (!this.detectionSink) {
+          this.detectionSink = context.createGain();
+          this.detectionSink.gain.value = 0;
+          this.detectionSink.connect(context.destination);
+        }
+        const source = context.createMediaStreamSource(new MediaStream([track]));
+        const analyser = context.createAnalyser();
+        analyser.fftSize = 512;
+        source.connect(analyser);
+        analyser.connect(this.detectionSink);
+        this.remoteDetectors.set(id, {
+          track,
+          source,
+          analyser,
+          buffer: new Uint8Array(analyser.frequencyBinCount),
+          lastActivity: 0,
+        });
+      } catch {
+        // Presence remains available when a received track cannot be analysed.
+      }
+    }
+    this.detectRemoteSpeaking(performance.now());
+  }
+
+  private detectRemoteSpeaking(now: number) {
+    const next: Record<string, boolean> = {};
+    for (const [id, detector] of this.remoteDetectors) {
+      detector.analyser.getByteTimeDomainData(detector.buffer);
+      let peak = 0;
+      for (const value of detector.buffer) peak = Math.max(peak, Math.abs(value - 128));
+      if (detector.track.readyState === "live" && !detector.track.muted && peak > 8)
+        detector.lastActivity = now;
+      next[id] =
+        detector.track.readyState === "live" &&
+        !detector.track.muted &&
+        detector.lastActivity > 0 &&
+        now - detector.lastActivity < 240;
+    }
+    if (
+      Object.keys(next).length !== Object.keys(this.remoteSpeaking).length ||
+      Object.entries(next).some(([id, value]) => this.remoteSpeaking[id] !== value)
+    ) {
+      this.remoteSpeaking = next;
+      this.events.onRemoteSpeakingChange?.({ ...next });
+    }
   }
 
   /* ------------------------------------------------------------- signaling */
@@ -771,6 +857,7 @@ class MeshVoiceProvider implements VoiceProvider {
       let peak = 0;
       for (const value of buffer) peak = Math.max(peak, Math.abs(value - 128));
       const now = performance.now();
+      this.detectRemoteSpeaking(now);
       if (!this.muted && peak > 8) lastActivity = now;
       // Keep the ring visible across short pauses between syllables.
       const speaking = !this.muted && lastActivity > 0 && now - lastActivity < 240;

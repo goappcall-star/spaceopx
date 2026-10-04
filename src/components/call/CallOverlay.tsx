@@ -126,7 +126,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
             : (call.groupMedia[participant.id]?.camera ?? null),
         kind: "camera",
         isSelf: participant.id === profile.id,
-        speaking: false,
+        speaking: call.speakingUsers[participant.id] ?? false,
         muted: participant.id === profile.id && muted,
         screenSharing: false,
       }));
@@ -139,7 +139,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
         stream: remote?.camera ?? null,
         kind: "camera",
         isSelf: false,
-        speaking: false,
+        speaking: call.speakingUsers[peer.id] ?? false,
         muted: false,
         screenSharing: !!remote?.screen,
       },
@@ -151,7 +151,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
         stream: localCamera,
         kind: "camera",
         isSelf: true,
-        speaking: false,
+        speaking: call.speakingUsers[profile.id] ?? false,
         muted,
         screenSharing: screenOn,
       },
@@ -168,6 +168,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
     call.groupConversationId,
     call.participants,
     call.groupMedia,
+    call.speakingUsers,
   ]);
 
   const screenTile = useMemo<TileData | null>(() => {

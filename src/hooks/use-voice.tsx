@@ -94,6 +94,7 @@ export function VoiceProviderRoot({
   const [muted, setMuted] = useState(false);
   const [deafened, setDeafened] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [remoteSpeaking, setRemoteSpeaking] = useState<Record<string, boolean>>({});
   const [hiddenVideos, setHiddenVideos] = useState<Record<string, boolean>>({});
   const setVideoHidden = useCallback((id: string, hidden: boolean) => {
     setHiddenVideos((current) => ({ ...current, [id]: hidden }));
@@ -366,6 +367,7 @@ export function VoiceProviderRoot({
     schedulePublish(true);
     setActiveChannelId(null);
     setSpeaking(false);
+    setRemoteSpeaking({});
     setCameraOn(false);
     setScreenOn(false);
     setLocalCamera(null);
@@ -452,6 +454,9 @@ export function VoiceProviderRoot({
               },
               onSpeakingChange: (value) => {
                 if (isCurrent()) setSpeaking(value);
+              },
+              onRemoteSpeakingChange: (value) => {
+                if (isCurrent()) setRemoteSpeaking(value);
               },
               onRemoteMedia: (media) => {
                 if (isCurrent()) setRemoteMedia(media);
@@ -682,7 +687,10 @@ export function VoiceProviderRoot({
   // that a peer is still in our room while occupancy is being resynchronized.
   const displayedParticipants = useMemo(() => {
     if (!activeChannelId) return participantsByChannel;
-    const room = [...(participantsByChannel[activeChannelId] ?? [])];
+    const room = (participantsByChannel[activeChannelId] ?? []).map((participant) => ({
+      ...participant,
+      speaking: remoteSpeaking[participant.user_id] ?? participant.speaking,
+    }));
     const self = room.find((participant) => participant.user_id === userId);
     // Presence sync is asynchronous and may not emit after a quick re-entry.
     // The active local session is authoritative even before its next sync.
@@ -708,7 +716,7 @@ export function VoiceProviderRoot({
           user_id: id,
           muted: false,
           deafened: false,
-          speaking: false,
+          speaking: remoteSpeaking[id] ?? false,
           camera: Boolean(media.camera),
           screen: Boolean(media.screen),
         });
@@ -718,6 +726,7 @@ export function VoiceProviderRoot({
     participantsByChannel,
     activeChannelId,
     remoteMedia,
+    remoteSpeaking,
     userId,
     speaking,
     muted,

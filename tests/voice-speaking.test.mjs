@@ -44,3 +44,71 @@ test("Microphone analysis resumes audio, holds through syllable gaps, and never 
   await provider.disconnect();
   await f.pipeline.dispose();
 });
+
+test("Both receivers detect the other microphone, hold pauses, clear silence and release analysers", async () => {
+  let now = 100;
+  class Stream {
+    constructor(tracks) {
+      this.tracks = tracks;
+    }
+    getAudioTracks() {
+      return this.tracks;
+    }
+  }
+  const receivers = [];
+  for (const id of ["alice", "bob"]) {
+    let tick;
+    const f = pipelineFixture();
+    const changes = [];
+    const provider = loadVoiceProvider(f.exports, {
+      MediaStream: Stream,
+      performance: { now: () => now },
+      requestAnimationFrame: (callback) => {
+        tick = callback;
+        return 1;
+      },
+    });
+    provider.micStream = f.input;
+    provider.events = { onRemoteSpeakingChange: (value) => changes.push({ ...value }) };
+    await provider.startSpeakingDetection();
+    const remoteId = id === "alice" ? "bob" : "alice";
+    const track = { id: remoteId, kind: "audio", readyState: "live", muted: false };
+    provider.remote = { [remoteId]: { audio: new Stream([track]), camera: null, screen: null } };
+    provider.emitRemote();
+    const detector = provider.remoteDetectors.get(remoteId);
+    assert.ok(detector);
+    let peak = 20;
+    detector.analyser.getByteTimeDomainData = (buffer) => buffer.fill(128 + peak);
+    provider.setUserVolume(remoteId, 0);
+    tick();
+    assert.equal(
+      changes.at(-1)[remoteId],
+      true,
+      "received voice lights the other user even at playback volume zero",
+    );
+    peak = 0;
+    now += 100;
+    tick();
+    assert.equal(changes.at(-1)[remoteId], true);
+    now += 241;
+    tick();
+    assert.equal(changes.at(-1)[remoteId], false);
+    peak = 20;
+    tick();
+    track.muted = true;
+    tick();
+    assert.equal(changes.at(-1)[remoteId], false);
+    delete provider.remote[remoteId];
+    provider.emitRemote();
+    assert.equal(provider.remoteDetectors.size, 0);
+    assert.equal(detector.source.connections.length, 0);
+    assert.equal(Object.keys(changes.at(-1)).length, 0);
+    receivers.push({ provider, f });
+  }
+  for (const { provider, f } of receivers) {
+    await provider.disconnect();
+    assert.equal(provider.detectionSink, null);
+    assert.equal(provider.audioPipeline, null);
+    await f.pipeline.dispose();
+  }
+});

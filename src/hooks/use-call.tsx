@@ -43,6 +43,7 @@ export interface CallPeer {
 }
 
 interface CallContextValue {
+  speakingUsers: Record<string, boolean>;
   groupConversationId: string | null;
   participants: CallPeer[];
   groupMedia: Record<string, RemoteMedia>;
@@ -101,6 +102,7 @@ export function CallProviderRoot({
   const [peer, setPeer] = useState<CallPeer | null>(null);
   const [video, setVideo] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [speakingUsers, setSpeakingUsers] = useState<Record<string, boolean>>({});
   const [cameraOn, setCameraOn] = useState(false);
   const [screenOn, setScreenOn] = useState(false);
   const [localCamera, setLocalCamera] = useState<MediaStream | null>(null);
@@ -165,6 +167,7 @@ export function CallProviderRoot({
     setCameraOn(false);
     setScreenOn(false);
     setMuted(false);
+    setSpeakingUsers({});
     setGroupConversationId(null);
     setParticipants([]);
     setGroupMedia({});
@@ -262,6 +265,14 @@ export function CallProviderRoot({
       try {
         await provider.setNoiseSuppression(audioRef.current.noiseSuppression);
         await provider.connect(`call-${callId}`, userId!, {
+          onSpeakingChange: (value) => {
+            if (providerRef.current === provider)
+              setSpeakingUsers((current) => ({ ...current, [userId!]: value }));
+          },
+          onRemoteSpeakingChange: (value) => {
+            if (providerRef.current === provider)
+              setSpeakingUsers((current) => ({ ...value, [userId!]: current[userId!] ?? false }));
+          },
           onNoiseProcessingChange: (status) => {
             if (providerRef.current === provider) reportNoiseProcessing("call", status);
           },
@@ -432,6 +443,14 @@ export function CallProviderRoot({
       try {
         await provider.setNoiseSuppression(audioRef.current.noiseSuppression);
         await provider.connect(`group-call-${id}`, userId, {
+          onSpeakingChange: (value) => {
+            if (providerRef.current === provider)
+              setSpeakingUsers((current) => ({ ...current, [userId]: value }));
+          },
+          onRemoteSpeakingChange: (value) => {
+            if (providerRef.current === provider)
+              setSpeakingUsers((current) => ({ ...value, [userId]: current[userId] ?? false }));
+          },
           onNoiseProcessingChange: (status) => {
             if (providerRef.current === provider) reportNoiseProcessing("call", status);
           },
@@ -595,6 +614,7 @@ export function CallProviderRoot({
 
   const value = useMemo<CallContextValue>(
     () => ({
+      speakingUsers,
       groupConversationId,
       participants,
       groupMedia,
@@ -621,6 +641,7 @@ export function CallProviderRoot({
       dismiss,
     }),
     [
+      speakingUsers,
       groupConversationId,
       participants,
       groupMedia,

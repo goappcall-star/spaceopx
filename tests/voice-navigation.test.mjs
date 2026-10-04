@@ -250,3 +250,30 @@ test("Local participant survives repeated leave and re-entry without a presence 
     );
   }
 });
+
+test("Received speaking updates reach remote participant tiles and clear on departure", async () => {
+  const f = fixture();
+  f.channels[0].subscribed("SUBSCRIBED");
+  await f.render().join("room-a");
+  await f.flush();
+  const events = f.providers[0].callbacks;
+  events.onRemoteMedia({
+    other: { audio: { getTracks: () => [{ readyState: "live" }] }, camera: null, screen: null },
+  });
+  events.onRemoteSpeakingChange({ other: true });
+  assert.equal(
+    f.render().participantsByChannel["room-a"].find((p) => p.user_id === "other").speaking,
+    true,
+  );
+  events.onRemoteSpeakingChange({ other: false });
+  assert.equal(
+    f.render().participantsByChannel["room-a"].find((p) => p.user_id === "other").speaking,
+    false,
+  );
+  events.onRemoteMedia({});
+  events.onRemoteSpeakingChange({});
+  assert.equal(
+    f.render().participantsByChannel["room-a"].some((p) => p.user_id === "other"),
+    false,
+  );
+});

@@ -113,6 +113,11 @@ export function CallProviderRoot({
   const groupPresenceRef = useRef<RealtimeChannel | null>(null);
 
   const providerRef = useRef<VoiceProvider | null>(null);
+  useEffect(() => {
+    void providerRef.current
+      ?.setNoiseSuppression(audioSettings.noiseSuppression)
+      .catch(() => toast.error("Não foi possível alterar a supressão de ruídos."));
+  }, [audioSettings.noiseSuppression, status]);
   const controlRef = useRef<RealtimeChannel | null>(null);
   const callIdRef = useRef<string | null>(null);
   const peerRef = useRef<CallPeer | null>(null);
@@ -153,7 +158,10 @@ export function CallProviderRoot({
     setGroupConversationId(null);
     setParticipants([]);
     setGroupMedia({});
-    await Promise.all([presence ? supabase.removeChannel(presence) : undefined, provider?.disconnect()]);
+    await Promise.all([
+      presence ? supabase.removeChannel(presence) : undefined,
+      provider?.disconnect(),
+    ]);
   }, []);
 
   const closeControl = useCallback(async (pending?: Promise<unknown>) => {
@@ -189,15 +197,20 @@ export function CallProviderRoot({
     setStatus("waiting");
     setRemote(null);
     providerRef.current?.syncPeers([]);
-    if (!graceRef.current) graceRef.current = createCallGracePeriod(() => {
-      if (["waiting"].includes(statusRef.current)) void finish(null);
-    });
+    if (!graceRef.current)
+      graceRef.current = createCallGracePeriod(() => {
+        if (["waiting"].includes(statusRef.current)) void finish(null);
+      });
     setAloneDeadline(graceRef.current.start());
   }, [finish]);
 
   /* ------------------------------------------------------------ presence */
 
-  const inCall = status === "active" || status === "connecting" || status === "reconnecting" || status === "waiting";
+  const inCall =
+    status === "active" ||
+    status === "connecting" ||
+    status === "reconnecting" ||
+    status === "waiting";
 
   useEffect(() => {
     if (!userId) return;
@@ -237,6 +250,7 @@ export function CallProviderRoot({
       statusRef.current = "connecting";
       setStatus("connecting");
       try {
+        await provider.setNoiseSuppression(audioRef.current.noiseSuppression);
         await provider.connect(`call-${callId}`, userId!, {
           onStateChange: (state) => {
             if (providerRef.current !== provider || ["waiting"].includes(statusRef.current)) return;
@@ -245,7 +259,8 @@ export function CallProviderRoot({
             else if (state === "connecting") setStatus("connecting");
           },
           onRemoteMedia: (media) => {
-            if (providerRef.current === provider && statusRef.current !== "waiting") setRemote(media[remoteId] ?? null);
+            if (providerRef.current === provider && statusRef.current !== "waiting")
+              setRemote(media[remoteId] ?? null);
           },
           onLocalMedia: ({ camera, screen }) => {
             if (providerRef.current !== provider) return;
@@ -257,7 +272,10 @@ export function CallProviderRoot({
           onScreenShareEnded: () => setScreenOn(false),
           onError: () => toast.error("Não foi possível acessar o microfone."),
         });
-        if (providerRef.current !== provider) { await provider.disconnect(); return; }
+        if (providerRef.current !== provider) {
+          await provider.disconnect();
+          return;
+        }
         if (["waiting"].includes(statusRef.current)) return;
         if (audioRef.current.inputDeviceId)
           await provider
@@ -318,7 +336,10 @@ export function CallProviderRoot({
           if (state === "SUBSCRIBED") resolve();
         });
       });
-      if (callIdRef.current !== callId) { await supabase.removeChannel(channel); return; }
+      if (callIdRef.current !== callId) {
+        await supabase.removeChannel(channel);
+        return;
+      }
       controlRef.current = channel;
     },
     [closeControl, finish, startMedia, video, waitAfterPeerLeft],
@@ -396,6 +417,7 @@ export function CallProviderRoot({
         );
       };
       try {
+        await provider.setNoiseSuppression(audioRef.current.noiseSuppression);
         await provider.connect(`group-call-${id}`, userId, {
           onStateChange: (state) => {
             if (providerRef.current !== provider) return;

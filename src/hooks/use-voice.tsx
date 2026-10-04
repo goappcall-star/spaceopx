@@ -437,6 +437,7 @@ export function VoiceProviderRoot({
             generation === lifecycleGenerationRef.current && providerRef.current === provider;
 
           try {
+            await provider.setNoiseSuppression(audioSettings.noiseSuppression);
             await provider.connect(channelId, userId, {
               onStateChange: (state) => {
                 if (isCurrent()) setConnectionState(state);
@@ -500,6 +501,7 @@ export function VoiceProviderRoot({
       schedulePublish,
       audioSettings.inputDeviceId,
       audioSettings.inputVolume,
+      audioSettings.noiseSuppression,
     ],
   );
 
@@ -610,6 +612,12 @@ export function VoiceProviderRoot({
   useEffect(() => {
     providerRef.current?.setInputGain(audioSettings.inputVolume);
   }, [audioSettings.inputVolume, activeChannelId]);
+
+  useEffect(() => {
+    void providerRef.current
+      ?.setNoiseSuppression(audioSettings.noiseSuppression)
+      .catch(() => toast.error("Não foi possível alterar a supressão de ruídos."));
+  }, [audioSettings.noiseSuppression, activeChannelId]);
 
   useEffect(() => {
     if (!activeChannelId || !audioSettings.inputDeviceId) return;

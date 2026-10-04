@@ -21,6 +21,7 @@ export interface AudioSettings {
   outputVolume: number;
   inputMode: AudioInputMode;
   pttKey: string;
+  noiseSuppression: boolean;
 }
 
 export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
@@ -30,6 +31,7 @@ export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
   outputVolume: 100,
   inputMode: "open",
   pttKey: "KeyV",
+  noiseSuppression: true,
 };
 
 interface AudioSettingsContextValue {
@@ -73,6 +75,7 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
           outputVolume: prefs.output_volume ?? 100,
           inputMode: prefs.input_mode ?? "open",
           pttKey: prefs.ptt_key ?? "KeyV",
+          noiseSuppression: localStorage.getItem(`lobbyx:noise-suppression:${user.id}`) !== "false",
         });
         setLoaded(true);
       })
@@ -87,6 +90,11 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
       setSettings((prev) => {
         const next = { ...prev, ...patch };
         if (user) {
+          if (patch.noiseSuppression !== undefined)
+            localStorage.setItem(
+              `lobbyx:noise-suppression:${user.id}`,
+              String(next.noiseSuppression),
+            );
           if (saveTimer.current) clearTimeout(saveTimer.current);
           saveTimer.current = setTimeout(() => {
             void preferencesService

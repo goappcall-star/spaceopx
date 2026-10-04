@@ -70,6 +70,7 @@ export interface VoiceProvider {
   setDevices(devices: DeviceIds): Promise<void>;
   /** Input gain in percent (0-200) applied to the outgoing microphone. */
   setInputGain(percent: number): void;
+  setNoiseSuppression(enabled: boolean): Promise<void>;
 }
 
 /**
@@ -143,6 +144,7 @@ class MeshVoiceProvider implements VoiceProvider {
   private gainNode: GainNode | null = null;
   private processedStream: MediaStream | null = null;
   private inputGain = 1;
+  private noiseSuppression = true;
   private raf: number | null = null;
 
   private muted = false;
@@ -167,7 +169,7 @@ class MeshVoiceProvider implements VoiceProvider {
       this.micStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
-          noiseSuppression: true,
+          noiseSuppression: this.noiseSuppression,
           autoGainControl: true,
           ...(this.devices.microphoneId ? { deviceId: { exact: this.devices.microphoneId } } : {}),
         },
@@ -185,6 +187,7 @@ class MeshVoiceProvider implements VoiceProvider {
       throw error;
     }
 
+    await this.setNoiseSuppression(this.noiseSuppression);
     this.applyMuteToTracks();
     this.startSpeakingDetection();
 
@@ -707,7 +710,7 @@ class MeshVoiceProvider implements VoiceProvider {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
-          noiseSuppression: true,
+          noiseSuppression: this.noiseSuppression,
           autoGainControl: true,
           deviceId: { exact: devices.microphoneId },
         },
@@ -718,6 +721,7 @@ class MeshVoiceProvider implements VoiceProvider {
       }
       stopStream(this.micStream);
       this.micStream = stream;
+      await this.setNoiseSuppression(this.noiseSuppression);
       this.applyMuteToTracks();
       this.startSpeakingDetection();
       this.applyLocalTrack("mic", this.outgoingAudioTrack());
@@ -729,6 +733,13 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   /* ----------------------------------------------------- speaking detection */
+
+  async setNoiseSuppression(enabled: boolean) {
+    this.noiseSuppression = enabled;
+    const track = this.micStream?.getAudioTracks()[0];
+    if (track)
+      await track.applyConstraints({ ...track.getConstraints(), noiseSuppression: enabled });
+  }
 
   private startSpeakingDetection() {
     if (this.raf !== null) cancelAnimationFrame(this.raf);

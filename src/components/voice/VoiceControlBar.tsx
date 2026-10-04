@@ -15,6 +15,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DeviceSettingsDialog } from "@/components/voice/DeviceSettingsDialog";
+import { NoiseSuppressionToggle } from "@/components/voice/NoiseSuppressionToggle";
 import { useAudioSettings, keyLabel } from "@/hooks/use-audio-settings";
 import { useVoice } from "@/hooks/use-voice";
 import { cn } from "@/lib/utils";
@@ -105,6 +106,8 @@ export function VoiceControlBar() {
             <Mic className="h-5 w-5" />
           )}
         </ControlButton>
+
+        <NoiseSuppressionToggle />
 
         {cameraAvailable && (
           <ControlButton

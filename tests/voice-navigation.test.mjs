@@ -106,6 +106,7 @@ function fixture() {
           },
           syncPeers() {},
           setInputGain() {},
+          async setNoiseSuppression() {},
           setMuted() {},
         };
         providers.push(provider);

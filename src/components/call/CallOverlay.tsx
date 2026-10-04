@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { VideoTile, type TileData } from "@/components/voice/VideoTile";
+import { NoiseSuppressionToggle } from "@/components/voice/NoiseSuppressionToggle";
 import { useAuth } from "@/hooks/use-auth";
 import { useAudioSettings } from "@/hooks/use-audio-settings";
 import { useCall } from "@/hooks/use-call";
@@ -363,6 +364,8 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
                 >
                   {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                 </CallButton>
+
+                <NoiseSuppressionToggle />
 
                 <CallButton
                   label={cameraOn ? "Desligar câmera" : "Ligar câmera"}

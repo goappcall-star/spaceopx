@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { useAudioSettings, keyLabel } from "@/hooks/use-audio-settings";
 import { cn } from "@/lib/utils";
 
@@ -52,7 +53,12 @@ export function AudioSettingsPanel({ compact = false }: { compact?: boolean }) {
   const startTest = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: settings.inputDeviceId ? { deviceId: { exact: settings.inputDeviceId } } : true,
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: settings.noiseSuppression,
+          autoGainControl: true,
+          ...(settings.inputDeviceId ? { deviceId: { exact: settings.inputDeviceId } } : {}),
+        },
       });
       const AudioCtx =
         window.AudioContext ??
@@ -87,7 +93,11 @@ export function AudioSettingsPanel({ compact = false }: { compact?: boolean }) {
     } catch {
       toast.error("Não foi possível acessar o microfone.");
     }
-  }, [settings.inputDeviceId, settings.inputVolume, refreshDevices]);
+  }, [settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression, refreshDevices]);
+
+  useEffect(() => {
+    stopTest();
+  }, [settings.noiseSuppression, stopTest]);
 
   const testOutput = useCallback(async () => {
     try {
@@ -139,6 +149,23 @@ export function AudioSettingsPanel({ compact = false }: { compact?: boolean }) {
   return (
     <div className={cn("space-y-8", compact && "space-y-6")}>
       <section className="space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <Label htmlFor="noise-suppression">Supressão de ruídos</Label>
+            <p className="text-muted-foreground text-xs">
+              Reduz ruídos de fundo nas chamadas de servidores e privadas.
+            </p>
+          </div>
+          <Switch
+            id="noise-suppression"
+            checked={settings.noiseSuppression}
+            disabled={
+              typeof navigator === "undefined" ||
+              !navigator.mediaDevices?.getSupportedConstraints?.().noiseSuppression
+            }
+            onCheckedChange={(enabled) => update({ noiseSuppression: enabled })}
+          />
+        </div>
         <div className="flex items-center gap-2">
           <Mic className="text-primary h-4 w-4" />
           <h3 className="text-sm font-semibold tracking-wide uppercase">Entrada</h3>
@@ -187,7 +214,12 @@ export function AudioSettingsPanel({ compact = false }: { compact?: boolean }) {
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => (testing ? stopTest() : void startTest())}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => (testing ? stopTest() : void startTest())}
+            >
               {testing ? "Parar teste" : "🎙️ Testar microfone"}
             </Button>
           </div>

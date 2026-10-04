@@ -28,6 +28,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import { shouldExposeRemoteTrack } from "./remote-track";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import {
+  MicrophoneAudioPipeline,
+  type NoiseProcessingStatus,
+  type NoiseSuppressionMode,
+} from "./audio-processing";
 
 export type MediaKind = "mic" | "camera" | "screen";
 
@@ -38,6 +43,7 @@ export interface RemoteMedia {
 }
 
 export interface VoiceProviderEvents {
+  onNoiseProcessingChange?: (status: NoiseProcessingStatus) => void;
   onSpeakingChange?: (speaking: boolean) => void;
   onStateChange?: (state: "connecting" | "connected" | "reconnecting" | "error") => void;
   onError?: (error: Error) => void;
@@ -50,7 +56,7 @@ export interface VoiceProviderEvents {
 }
 
 export interface DeviceIds {
-  microphoneId?: string;
+  microphoneId?: string | null;
   cameraId?: string;
 }
 
@@ -70,7 +76,7 @@ export interface VoiceProvider {
   setDevices(devices: DeviceIds): Promise<void>;
   /** Input gain in percent (0-200) applied to the outgoing microphone. */
   setInputGain(percent: number): void;
-  setNoiseSuppression(enabled: boolean): Promise<void>;
+  setNoiseSuppression(mode: NoiseSuppressionMode): Promise<void>;
 }
 
 /**
@@ -139,12 +145,12 @@ class MeshVoiceProvider implements VoiceProvider {
   private cameraStream: MediaStream | null = null;
   private screenStream: MediaStream | null = null;
 
-  private audioContext: AudioContext | null = null;
+  private audioPipeline: MicrophoneAudioPipeline | null = null;
   private analyser: AnalyserNode | null = null;
   private gainNode: GainNode | null = null;
   private processedStream: MediaStream | null = null;
   private inputGain = 1;
-  private noiseSuppression = true;
+  private noiseSuppression: NoiseSuppressionMode = "standard";
   private raf: number | null = null;
 
   private muted = false;
@@ -169,7 +175,7 @@ class MeshVoiceProvider implements VoiceProvider {
       this.micStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
-          noiseSuppression: this.noiseSuppression,
+          noiseSuppression: this.noiseSuppression !== "off",
           autoGainControl: true,
           ...(this.devices.microphoneId ? { deviceId: { exact: this.devices.microphoneId } } : {}),
         },
@@ -187,9 +193,8 @@ class MeshVoiceProvider implements VoiceProvider {
       throw error;
     }
 
-    await this.setNoiseSuppression(this.noiseSuppression);
     this.applyMuteToTracks();
-    this.startSpeakingDetection();
+    await this.startSpeakingDetection();
 
     if (this.disposed) throw new DOMException("Voice session ended", "AbortError");
 
@@ -262,9 +267,10 @@ class MeshVoiceProvider implements VoiceProvider {
     this.raf = null;
     this.analyser = null;
     this.gainNode = null;
+    stopStream(this.micStream);
+    await this.audioPipeline?.dispose();
+    this.audioPipeline = null;
     this.processedStream = null;
-    await this.audioContext?.close().catch(() => undefined);
-    this.audioContext = null;
 
     for (const [id, peer] of this.peers) {
       this.closePeer(id, peer);
@@ -617,9 +623,9 @@ class MeshVoiceProvider implements VoiceProvider {
     this.applyMuteToTracks();
   }
 
-  /** Processed (gain-adjusted) mic track when the audio graph is up, raw track otherwise. */
+  /** Only the pipeline destination may be sent; never bypass DSP with the raw microphone. */
   private outgoingAudioTrack(): MediaStreamTrack | null {
-    return this.processedStream?.getAudioTracks()[0] ?? this.micStream?.getAudioTracks()[0] ?? null;
+    return this.processedStream?.getAudioTracks()[0] ?? null;
   }
 
   setInputGain(percent: number) {
@@ -628,6 +634,7 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   private applyMuteToTracks() {
+    this.audioPipeline?.setMuted(this.muted);
     this.micStream?.getAudioTracks().forEach((track) => {
       track.enabled = !this.muted;
     });
@@ -705,14 +712,18 @@ class MeshVoiceProvider implements VoiceProvider {
     const previous = this.devices;
     this.devices = { ...previous, ...devices };
 
-    if (devices.microphoneId && devices.microphoneId !== previous.microphoneId && this.micStream) {
+    if (
+      "microphoneId" in devices &&
+      (devices.microphoneId ?? null) !== (previous.microphoneId ?? null) &&
+      this.micStream
+    ) {
       const generation = ++this.microphoneGeneration;
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
-          noiseSuppression: this.noiseSuppression,
+          noiseSuppression: this.noiseSuppression !== "off",
           autoGainControl: true,
-          deviceId: { exact: devices.microphoneId },
+          ...(devices.microphoneId ? { deviceId: { exact: devices.microphoneId } } : {}),
         },
       });
       if (this.disposed || generation !== this.microphoneGeneration) {
@@ -721,9 +732,8 @@ class MeshVoiceProvider implements VoiceProvider {
       }
       stopStream(this.micStream);
       this.micStream = stream;
-      await this.setNoiseSuppression(this.noiseSuppression);
       this.applyMuteToTracks();
-      this.startSpeakingDetection();
+      await this.startSpeakingDetection();
       this.applyLocalTrack("mic", this.outgoingAudioTrack());
     }
 
@@ -734,37 +744,24 @@ class MeshVoiceProvider implements VoiceProvider {
 
   /* ----------------------------------------------------- speaking detection */
 
-  async setNoiseSuppression(enabled: boolean) {
-    this.noiseSuppression = enabled;
-    const track = this.micStream?.getAudioTracks()[0];
-    if (track)
-      await track.applyConstraints({ ...track.getConstraints(), noiseSuppression: enabled });
+  async setNoiseSuppression(mode: NoiseSuppressionMode) {
+    this.noiseSuppression = mode;
+    await this.audioPipeline?.setMode(mode);
   }
 
-  private startSpeakingDetection() {
+  private async startSpeakingDetection() {
     if (this.raf !== null) cancelAnimationFrame(this.raf);
-    void this.audioContext?.close().catch(() => undefined);
-
-    const AudioCtx =
-      window.AudioContext ??
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtx || !this.micStream) return;
-
-    this.audioContext = new AudioCtx();
-    // Browsers may suspend a context created after the microphone permission prompt.
-    void this.audioContext.resume().catch(() => undefined);
-    const source = this.audioContext.createMediaStreamSource(this.micStream);
-    this.gainNode = this.audioContext.createGain();
-    this.gainNode.gain.value = this.inputGain;
-    this.analyser = this.audioContext.createAnalyser();
-    this.analyser.fftSize = 512;
-    source.connect(this.gainNode);
-    this.gainNode.connect(this.analyser);
-
-    // Peers receive the gain-adjusted signal, never the raw device track.
-    const destination = this.audioContext.createMediaStreamDestination();
-    this.gainNode.connect(destination);
-    this.processedStream = destination.stream;
+    if (!this.micStream || this.disposed) return;
+    this.audioPipeline ??= new MicrophoneAudioPipeline((status) => {
+      if (!this.disposed) this.events.onNoiseProcessingChange?.(status);
+    });
+    const pipeline = this.audioPipeline;
+    pipeline.attachMicrophone(this.micStream);
+    pipeline.setGain(this.inputGain * 100);
+    pipeline.setMuted(this.muted);
+    this.gainNode = pipeline.gain;
+    this.analyser = pipeline.analyser;
+    this.processedStream = pipeline.stream;
 
     const buffer = new Uint8Array(this.analyser.frequencyBinCount);
     let lastActivity = 0;
@@ -784,6 +781,7 @@ class MeshVoiceProvider implements VoiceProvider {
       this.raf = requestAnimationFrame(tick);
     };
     this.raf = requestAnimationFrame(tick);
+    await pipeline.setMode(this.noiseSuppression);
   }
 }
 

@@ -112,10 +112,15 @@ export function VoiceProviderRoot({
     update: updateAudioSettings,
     devices,
     refreshDevices: refreshSharedDevices,
+    reportNoiseProcessing,
   } = useAudioSettings();
   const [pttHeld, setPttHeld] = useState(false);
 
   const providerRef = useRef<VoiceProvider | null>(null);
+  useEffect(() => {
+    if (!activeChannelId) reportNoiseProcessing("voice", null);
+    return () => reportNoiseProcessing("voice", null);
+  }, [activeChannelId, reportNoiseProcessing]);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const subscribedRef = useRef(false);
   const publishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -439,6 +444,9 @@ export function VoiceProviderRoot({
           try {
             await provider.setNoiseSuppression(audioSettings.noiseSuppression);
             await provider.connect(channelId, userId, {
+              onNoiseProcessingChange: (status) => {
+                if (isCurrent()) reportNoiseProcessing("voice", status);
+              },
               onStateChange: (state) => {
                 if (isCurrent()) setConnectionState(state);
               },
@@ -502,6 +510,7 @@ export function VoiceProviderRoot({
       audioSettings.inputDeviceId,
       audioSettings.inputVolume,
       audioSettings.noiseSuppression,
+      reportNoiseProcessing,
     ],
   );
 
@@ -620,7 +629,7 @@ export function VoiceProviderRoot({
   }, [audioSettings.noiseSuppression, activeChannelId]);
 
   useEffect(() => {
-    if (!activeChannelId || !audioSettings.inputDeviceId) return;
+    if (!activeChannelId) return;
     void providerRef.current
       ?.setDevices({ microphoneId: audioSettings.inputDeviceId })
       .catch(() => undefined);

@@ -1,0 +1,21 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import ts from "typescript";
+import vm from "node:vm";
+test("Noise mode migrates the old toggle, separates users, and tolerates blocked storage", () => {
+  const values = new Map(), exports = {};
+  const context = { exports, localStorage: { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) } };
+  const source = fs.readFileSync(new URL("../src/services/noise-preference.ts", import.meta.url), "utf8");
+  vm.runInNewContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, context);
+  assert.equal(exports.readNoiseMode("a"), "standard");
+  values.set("lobbyx:noise-suppression:a", "false");
+  assert.equal(exports.readNoiseMode("a"), "off");
+  exports.saveNoiseMode("a", "advanced");
+  assert.equal(exports.readNoiseMode("a"), "advanced");
+  assert.equal(exports.readNoiseMode("b"), "standard");
+  context.localStorage.getItem = () => { throw Error("blocked"); };
+  context.localStorage.setItem = () => { throw Error("blocked"); };
+  assert.equal(exports.readNoiseMode("a"), "standard");
+  assert.doesNotThrow(() => exports.saveNoiseMode("a", "off"));
+});

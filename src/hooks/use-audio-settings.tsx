@@ -13,6 +13,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { preferencesService } from "@/services/gamer";
 import { listMediaDevices, type MediaDeviceList } from "@/services/voice";
 import type { AudioInputMode } from "@/types";
+import type { NoiseProcessingStatus, NoiseSuppressionMode } from "@/services/audio-processing";
+import { readNoiseMode, saveNoiseMode } from "@/services/noise-preference";
 
 export interface AudioSettings {
   inputDeviceId: string | null;
@@ -21,7 +23,7 @@ export interface AudioSettings {
   outputVolume: number;
   inputMode: AudioInputMode;
   pttKey: string;
-  noiseSuppression: boolean;
+  noiseSuppression: NoiseSuppressionMode;
 }
 
 export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
@@ -31,7 +33,7 @@ export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
   outputVolume: 100,
   inputMode: "open",
   pttKey: "KeyV",
-  noiseSuppression: true,
+  noiseSuppression: "standard",
 };
 
 interface AudioSettingsContextValue {
@@ -41,6 +43,8 @@ interface AudioSettingsContextValue {
   refreshDevices: () => Promise<void>;
   supportsOutputSelection: boolean;
   loaded: boolean;
+  noiseProcessing: Record<string, NoiseProcessingStatus>;
+  reportNoiseProcessing: (session: string, status: NoiseProcessingStatus | null) => void;
 }
 
 const AudioSettingsContext = createContext<AudioSettingsContextValue | undefined>(undefined);
@@ -56,6 +60,18 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
     outputs: [],
   });
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [noiseProcessing, setNoiseProcessing] = useState<Record<string, NoiseProcessingStatus>>({});
+  const reportNoiseProcessing = useCallback(
+    (session: string, status: NoiseProcessingStatus | null) => {
+      setNoiseProcessing((prev) => {
+        const next = { ...prev };
+        if (status) next[session] = status;
+        else delete next[session];
+        return next;
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -75,7 +91,7 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
           outputVolume: prefs.output_volume ?? 100,
           inputMode: prefs.input_mode ?? "open",
           pttKey: prefs.ptt_key ?? "KeyV",
-          noiseSuppression: localStorage.getItem(`lobbyx:noise-suppression:${user.id}`) !== "false",
+          noiseSuppression: readNoiseMode(user.id),
         });
         setLoaded(true);
       })
@@ -90,11 +106,7 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
       setSettings((prev) => {
         const next = { ...prev, ...patch };
         if (user) {
-          if (patch.noiseSuppression !== undefined)
-            localStorage.setItem(
-              `lobbyx:noise-suppression:${user.id}`,
-              String(next.noiseSuppression),
-            );
+          if (patch.noiseSuppression !== undefined) saveNoiseMode(user.id, next.noiseSuppression);
           if (saveTimer.current) clearTimeout(saveTimer.current);
           saveTimer.current = setTimeout(() => {
             void preferencesService
@@ -134,8 +146,26 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
     typeof window !== "undefined" && "setSinkId" in HTMLMediaElement.prototype;
 
   const value = useMemo<AudioSettingsContextValue>(
-    () => ({ settings, update, devices, refreshDevices, supportsOutputSelection, loaded }),
-    [settings, update, devices, refreshDevices, supportsOutputSelection, loaded],
+    () => ({
+      settings,
+      update,
+      devices,
+      refreshDevices,
+      supportsOutputSelection,
+      loaded,
+      noiseProcessing,
+      reportNoiseProcessing,
+    }),
+    [
+      settings,
+      update,
+      devices,
+      refreshDevices,
+      supportsOutputSelection,
+      loaded,
+      noiseProcessing,
+      reportNoiseProcessing,
+    ],
   );
 
   return <AudioSettingsContext.Provider value={value}>{children}</AudioSettingsContext.Provider>;

@@ -91,7 +91,7 @@ export function CallProviderRoot({
   profile: Profile | null | undefined;
   children: ReactNode;
 }) {
-  const { settings: audioSettings } = useAudioSettings();
+  const { settings: audioSettings, reportNoiseProcessing } = useAudioSettings();
   const audioRef = useRef(audioSettings);
   audioRef.current = audioSettings;
   const [status, setStatus] = useState<CallStatus>("idle");
@@ -113,6 +113,16 @@ export function CallProviderRoot({
   const groupPresenceRef = useRef<RealtimeChannel | null>(null);
 
   const providerRef = useRef<VoiceProvider | null>(null);
+  useEffect(() => {
+    if (!["active", "reconnecting"].includes(status)) return;
+    void providerRef.current
+      ?.setDevices({ microphoneId: audioSettings.inputDeviceId })
+      .catch(() => toast.error("Não foi possível trocar o microfone."));
+  }, [audioSettings.inputDeviceId, status]);
+  useEffect(() => {
+    if (["idle", "ended", "waiting"].includes(status)) reportNoiseProcessing("call", null);
+  }, [status, reportNoiseProcessing]);
+  useEffect(() => () => reportNoiseProcessing("call", null), [reportNoiseProcessing]);
   useEffect(() => {
     void providerRef.current
       ?.setNoiseSuppression(audioSettings.noiseSuppression)
@@ -252,6 +262,9 @@ export function CallProviderRoot({
       try {
         await provider.setNoiseSuppression(audioRef.current.noiseSuppression);
         await provider.connect(`call-${callId}`, userId!, {
+          onNoiseProcessingChange: (status) => {
+            if (providerRef.current === provider) reportNoiseProcessing("call", status);
+          },
           onStateChange: (state) => {
             if (providerRef.current !== provider || ["waiting"].includes(statusRef.current)) return;
             if (state === "connected") setStatus("active");
@@ -298,7 +311,7 @@ export function CallProviderRoot({
         await finish("failed");
       }
     },
-    [userId, finish],
+    [userId, finish, reportNoiseProcessing],
   );
 
   /* ------------------------------------------------------------- control */
@@ -419,6 +432,9 @@ export function CallProviderRoot({
       try {
         await provider.setNoiseSuppression(audioRef.current.noiseSuppression);
         await provider.connect(`group-call-${id}`, userId, {
+          onNoiseProcessingChange: (status) => {
+            if (providerRef.current === provider) reportNoiseProcessing("call", status);
+          },
           onStateChange: (state) => {
             if (providerRef.current !== provider) return;
             if (state === "error") {
@@ -456,7 +472,7 @@ export function CallProviderRoot({
         await finish("failed");
       }
     },
-    [userId, me, finish],
+    [userId, me, finish, reportNoiseProcessing],
   );
 
   const startCall = useCallback(

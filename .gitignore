@@ -32,6 +32,9 @@ dist-ssr
 *.sln
 *.sw?
 desktop/web/
+public/audio/rnnoise-*.js
+public/audio/LICENSE-rnnoise-wasm.txt
+src/generated/audio-worklet.ts
 
 # Local environment and generated installers
 .env

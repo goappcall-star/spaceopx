@@ -12,7 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
+import { NoiseModeSelect, NoiseProcessingFeedback } from "@/components/voice/NoiseModeSelect";
+import { MicrophoneAudioPipeline } from "@/services/audio-processing";
 import { useAudioSettings, keyLabel } from "@/hooks/use-audio-settings";
 import { cn } from "@/lib/utils";
 
@@ -31,19 +32,35 @@ function LevelMeter({ level }: { level: number }) {
 
 /** Input/output hardware, volumes and input mode — persisted in user preferences. */
 export function AudioSettingsPanel({ compact = false }: { compact?: boolean }) {
-  const { settings, update, devices, refreshDevices, supportsOutputSelection } = useAudioSettings();
+  const {
+    settings,
+    update,
+    devices,
+    refreshDevices,
+    supportsOutputSelection,
+    reportNoiseProcessing,
+  } = useAudioSettings();
   const [testing, setTesting] = useState(false);
   const [level, setLevel] = useState(0);
   const [capturingKey, setCapturingKey] = useState(false);
   const testRef = useRef<{ stop: () => void } | null>(null);
+  const testGeneration = useRef(0);
 
   useEffect(() => {
     void refreshDevices();
   }, [refreshDevices]);
 
-  useEffect(() => () => testRef.current?.stop(), []);
+  useEffect(
+    () => () => {
+      testGeneration.current++;
+      testRef.current?.stop();
+      reportNoiseProcessing("test", null);
+    },
+    [reportNoiseProcessing],
+  );
 
   const stopTest = useCallback(() => {
+    testGeneration.current++;
     testRef.current?.stop();
     testRef.current = null;
     setTesting(false);
@@ -51,26 +68,31 @@ export function AudioSettingsPanel({ compact = false }: { compact?: boolean }) {
   }, []);
 
   const startTest = useCallback(async () => {
+    const generation = ++testGeneration.current;
+    setTesting(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
-          noiseSuppression: settings.noiseSuppression,
+          noiseSuppression: settings.noiseSuppression !== "off",
           autoGainControl: true,
           ...(settings.inputDeviceId ? { deviceId: { exact: settings.inputDeviceId } } : {}),
         },
       });
-      const AudioCtx =
-        window.AudioContext ??
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const ctx = new AudioCtx();
-      const source = ctx.createMediaStreamSource(stream);
-      const gain = ctx.createGain();
-      gain.gain.value = settings.inputVolume / 100;
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 512;
-      source.connect(gain);
-      gain.connect(analyser);
+      if (generation !== testGeneration.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      let pipeline: MicrophoneAudioPipeline;
+      try {
+        pipeline = new MicrophoneAudioPipeline((status) => reportNoiseProcessing("test", status));
+      } catch (error) {
+        stream.getTracks().forEach((track) => track.stop());
+        throw error;
+      }
+      pipeline.attachMicrophone(stream);
+      pipeline.setGain(settings.inputVolume);
+      const analyser = pipeline.analyser;
       const buffer = new Uint8Array(analyser.frequencyBinCount);
       let raf = 0;
       const tick = () => {
@@ -80,24 +102,35 @@ export function AudioSettingsPanel({ compact = false }: { compact?: boolean }) {
         setLevel(Math.min(1, peak / 60));
         raf = requestAnimationFrame(tick);
       };
-      raf = requestAnimationFrame(tick);
       testRef.current = {
         stop: () => {
           cancelAnimationFrame(raf);
           stream.getTracks().forEach((track) => track.stop());
-          void ctx.close().catch(() => undefined);
+          void pipeline.dispose();
+          reportNoiseProcessing("test", null);
         },
       };
-      setTesting(true);
+      await pipeline.setMode(settings.noiseSuppression);
+      if (generation !== testGeneration.current) return;
+      raf = requestAnimationFrame(tick);
       void refreshDevices();
     } catch {
+      if (generation !== testGeneration.current) return;
+      stopTest();
       toast.error("Não foi possível acessar o microfone.");
     }
-  }, [settings.inputDeviceId, settings.inputVolume, settings.noiseSuppression, refreshDevices]);
+  }, [
+    settings.inputDeviceId,
+    settings.inputVolume,
+    settings.noiseSuppression,
+    refreshDevices,
+    reportNoiseProcessing,
+    stopTest,
+  ]);
 
   useEffect(() => {
     stopTest();
-  }, [settings.noiseSuppression, stopTest]);
+  }, [settings.noiseSuppression, settings.inputDeviceId, stopTest]);
 
   const testOutput = useCallback(async () => {
     try {
@@ -151,21 +184,20 @@ export function AudioSettingsPanel({ compact = false }: { compact?: boolean }) {
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <Label htmlFor="noise-suppression">Supressão de ruídos</Label>
+            <Label htmlFor="noise-suppression">Supressão de ruído</Label>
             <p className="text-muted-foreground text-xs">
               Reduz ruídos de fundo nas chamadas de servidores e privadas.
             </p>
           </div>
-          <Switch
-            id="noise-suppression"
-            checked={settings.noiseSuppression}
-            disabled={
-              typeof navigator === "undefined" ||
-              !navigator.mediaDevices?.getSupportedConstraints?.().noiseSuppression
-            }
-            onCheckedChange={(enabled) => update({ noiseSuppression: enabled })}
-          />
+          <div className="w-36 shrink-0">
+            <NoiseModeSelect id="noise-suppression" />
+          </div>
         </div>
+        <p className="text-muted-foreground text-xs">
+          Avançada processa sua voz neste dispositivo. Pode reduzir ruídos de fundo, mas outras
+          vozes ainda podem ser ouvidas.
+        </p>
+        <NoiseProcessingFeedback />
         <div className="flex items-center gap-2">
           <Mic className="text-primary h-4 w-4" />
           <h3 className="text-sm font-semibold tracking-wide uppercase">Entrada</h3>

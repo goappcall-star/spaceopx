@@ -5,6 +5,9 @@
 //     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { buildAudioWorklet } from "./scripts/build-audio-worklet.mjs";
+
+await buildAudioWorklet();
 
 export default defineConfig({
   tanstackStart: {

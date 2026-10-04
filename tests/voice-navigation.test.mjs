@@ -58,6 +58,7 @@ function fixture() {
     devices: [],
     update() {},
     refreshDevices() {},
+    reportNoiseProcessing() {},
   };
   const supabase = {
     channel(topic) {
@@ -106,6 +107,7 @@ function fixture() {
           },
           syncPeers() {},
           setInputGain() {},
+          async setDevices() {},
           async setNoiseSuppression() {},
           setMuted() {},
         };

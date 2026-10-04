@@ -1,32 +1,34 @@
 import { AudioLines } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAudioSettings } from "@/hooks/use-audio-settings";
+import { NOISE_MODE_LABELS } from "@/services/audio-processing";
+import { NoiseModeSelect, NoiseProcessingFeedback } from "./NoiseModeSelect";
 
 export function NoiseSuppressionToggle() {
-  const { settings, update } = useAudioSettings();
-  const supported =
-    typeof navigator !== "undefined" &&
-    !!navigator.mediaDevices?.getSupportedConstraints?.().noiseSuppression;
-  const label = supported
-    ? `Supressão de ruídos: ${settings.noiseSuppression ? "ativada" : "desativada"}`
-    : "Supressão de ruídos indisponível neste navegador";
+  const { settings, noiseProcessing } = useAudioSettings();
+  const fallback = Object.values(noiseProcessing).some((status) => status.fallback);
+  const label = `Supressão de ruído: ${NOISE_MODE_LABELS[settings.noiseSuppression]}${fallback ? " (usando padrão)" : ""}`;
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
+    <Popover>
+      <PopoverTrigger asChild>
         <Button
           type="button"
           size="icon"
-          variant={settings.noiseSuppression ? "secondary" : "ghost"}
+          variant={settings.noiseSuppression !== "off" ? "secondary" : "ghost"}
           aria-label={label}
-          aria-pressed={settings.noiseSuppression}
-          disabled={!supported}
-          onClick={() => update({ noiseSuppression: !settings.noiseSuppression })}
+          title={label}
         >
-          <AudioLines className={settings.noiseSuppression ? "text-primary h-5 w-5" : "h-5 w-5"} />
+          <AudioLines
+            className={settings.noiseSuppression !== "off" ? "text-primary h-5 w-5" : "h-5 w-5"}
+          />
         </Button>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 space-y-3">
+        <p className="text-sm font-semibold">Supressão de ruído</p>
+        <NoiseModeSelect />
+        <NoiseProcessingFeedback />
+      </PopoverContent>
+    </Popover>
   );
 }

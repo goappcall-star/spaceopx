@@ -7,6 +7,62 @@ import vm from "node:vm";
 import ts from "typescript";
 const require = createRequire(import.meta.url);
 const { createUpdateController } = require("../desktop/updater.cjs");
+test("Updater cleanup after window destruction never reads destroyed BrowserWindow", async () => {
+  const exports = {},
+    contents = new EventEmitter(),
+    updater = new EventEmitter();
+  const handlers = new Map();
+  let destroyed = false,
+    contentsDestroyed = false,
+    pendingResolve;
+  contents.isDestroyed = () => contentsDestroyed;
+  contents.send = () => {
+    if (contentsDestroyed) throw Error("Object has been destroyed");
+  };
+  contents.mainFrame = { url: "lobbyx://app" };
+  updater.checkForUpdates = () =>
+    new Promise((resolve) => {
+      pendingResolve = resolve;
+    });
+  vm.runInNewContext(fs.readFileSync(new URL("../desktop/updater.cjs", import.meta.url), "utf8"), {
+    exports,
+    process: { platform: "win32" },
+    console,
+    require: () => ({ autoUpdater: updater }),
+  });
+  const window = {
+    isDestroyed: () => destroyed,
+    get webContents() {
+      if (destroyed) throw Error("Object has been destroyed");
+      return contents;
+    },
+  };
+  const stop = exports.installUpdater({
+    app: { isPackaged: true, getVersion: () => "0.1.25" },
+    window,
+    ipcMain: {
+      handle: (key, fn) => handlers.set(key, fn),
+      removeHandler: (key) => handlers.delete(key),
+    },
+    trusted: (url) => url === "lobbyx://app",
+  });
+  assert.equal(contents.listenerCount("did-start-loading"), 1);
+  const activityHandler = handlers.get("desktop:update-activity");
+  contentsDestroyed = true;
+  assert.doesNotThrow(() => updater.emit("download-progress", { percent: 15 }));
+  destroyed = true;
+  assert.throws(
+    () => activityHandler({ sender: contents, senderFrame: contents.mainFrame }, false),
+    /Forbidden/,
+  );
+  assert.doesNotThrow(stop);
+  assert.doesNotThrow(stop);
+  assert.equal(contents.listenerCount("did-start-loading"), 0);
+  assert.equal(updater.listenerCount("download-progress"), 0);
+  assert.equal(handlers.size, 0);
+  pendingResolve({ downloadPromise: Promise.reject(Error("Late download error")) });
+  await new Promise((resolve) => setImmediate(resolve));
+});
 function fixture() {
   const updater = new EventEmitter(),
     states = [];

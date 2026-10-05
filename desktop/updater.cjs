@@ -101,10 +101,15 @@ exports.createUpdateController = ({ updater, version, publish, now = Date.now })
 
 exports.installUpdater = ({ app, window, ipcMain, trusted }) => {
   if (!app.isPackaged || process.platform !== "win32") return () => {};
+  // BrowserWindow.webContents throws after the window's "closed" event.
+  // Keep the original emitter for cleanup instead of reading the destroyed window.
+  const contents = window.webContents;
   let controller;
   const valid = (event) =>
-    event.sender === window.webContents &&
-    event.senderFrame === window.webContents.mainFrame &&
+    !window.isDestroyed() &&
+    !contents.isDestroyed() &&
+    event.sender === contents &&
+    event.senderFrame === contents.mainFrame &&
     trusted(event.senderFrame.url);
   const handlers = [];
   try {
@@ -113,7 +118,8 @@ exports.installUpdater = ({ app, window, ipcMain, trusted }) => {
       updater: autoUpdater,
       version: app.getVersion(),
       publish: (state) => {
-        if (!window.isDestroyed()) window.webContents.send("desktop:update-state", state);
+        if (!window.isDestroyed() && !contents.isDestroyed())
+          contents.send("desktop:update-state", state);
       },
     });
     for (const [channel, handler] of [
@@ -128,7 +134,7 @@ exports.installUpdater = ({ app, window, ipcMain, trusted }) => {
       });
       handlers.push(channel);
     }
-    window.webContents.on("did-start-loading", controller.resetActivity);
+    contents.on("did-start-loading", controller.resetActivity);
     // Non-blocking: update failures never flow into the application's startup catch.
     void controller.check();
   } catch {
@@ -136,8 +142,7 @@ exports.installUpdater = ({ app, window, ipcMain, trusted }) => {
   }
   return () => {
     controller?.dispose();
-    if (controller)
-      window.webContents.removeListener("did-start-loading", controller.resetActivity);
+    if (controller) contents.removeListener("did-start-loading", controller.resetActivity);
     for (const channel of handlers) ipcMain.removeHandler(channel);
   };
 };

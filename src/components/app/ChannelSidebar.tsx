@@ -15,6 +15,7 @@ import { CreateChannelDialog } from "@/components/app/CreateChannelDialog";
 
 import { CategoryManager } from "@/components/app/CategoryManager";
 import { useServerCategories } from "@/hooks/use-categories";
+import { useSidebarDrag } from "@/hooks/use-sidebar-drag";
 import { UserBar } from "@/components/app/UserBar";
 import { VoiceParticipantActions } from "@/components/voice/VoiceParticipantActions";
 import { Button } from "@/components/ui/button";
@@ -127,6 +128,14 @@ export function ChannelSidebar({
   const client = useQueryClient();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const { data: categories = [], error: categoryError } = useServerCategories(server.id);
+  const drag = useSidebarDrag(server.id, canManage, channels, categories, (id) => {
+    setCollapsed((previous) => {
+      const next = new Set(previous);
+      next.delete(id);
+      return next;
+    });
+    if (id === "") setVoiceOpen(true);
+  });
 
   const textChannels = channels.filter(
     (c) =>
@@ -222,7 +231,17 @@ export function ChannelSidebar({
   const defaultHeader = (label: string, items: Channel[], open: boolean, toggle: () => void) => (
     <ContextMenu>
       <ContextMenuTrigger asChild onContextMenu={(event) => event.stopPropagation()}>
-        <div>
+        <div
+          {...(label === "Canais de voz" ? drag.zone(null) : {})}
+          className={cn(
+            label === "Canais de voz" &&
+              drag.source?.kind === "channel" &&
+              "rounded-lg border border-dashed border-primary/40",
+            label === "Canais de voz" &&
+              drag.target?.id === null &&
+              "bg-primary/15 ring-2 ring-primary",
+          )}
+        >
           <CategoryHeader
             label={label}
             count={items.length}
@@ -330,7 +349,12 @@ export function ChannelSidebar({
               channel,
               <button
                 type="button"
+                {...drag.draggable("channel", channel.id)}
+                title={
+                  canManage ? "Clique e arraste para mover o canal para outra categoria" : undefined
+                }
                 onClick={() => {
+                  if (drag.suppressClick()) return;
                   onSelectChannel(channel.id);
                   if (voiceChannelId !== channel.id) void join(channel.id);
                 }}
@@ -504,7 +528,23 @@ export function ChannelSidebar({
             </p>
           )}
           {categories.map((category) => (
-            <div key={category.id} className="mb-3">
+            <div
+              key={category.id}
+              {...drag.zone(category.id)}
+              data-testid={`category-drop-${category.id}`}
+              className={cn(
+                "relative mb-3 rounded-lg",
+                drag.source?.kind === "channel" && "border border-dashed border-primary/30",
+                drag.source?.kind === "channel" &&
+                  drag.target?.id === category.id &&
+                  "bg-primary/15 ring-2 ring-primary",
+                drag.source?.kind === "category" &&
+                  drag.target?.id === category.id &&
+                  (drag.target.after
+                    ? "after:absolute after:bottom-0 after:inset-x-0 after:h-0.5 after:bg-primary"
+                    : "before:absolute before:top-0 before:inset-x-0 before:h-0.5 before:bg-primary"),
+              )}
+            >
               <SidebarCategoryMenu
                 category={category}
                 preferences={preferences}
@@ -543,7 +583,25 @@ export function ChannelSidebar({
                 createChannel={() => setCreatingChannelIn(category.id)}
                 copy={() => void copy(category.id)}
               >
-                <div>
+                <div
+                  data-category-header
+                  {...drag.draggable("category", category.id)}
+                  onClickCapture={(event) => {
+                    if (drag.suppressClick()) {
+                      event.preventDefault();
+                      event.stopPropagation();
+                    }
+                  }}
+                  className={cn(
+                    canManage && "cursor-grab active:cursor-grabbing",
+                    drag.source?.kind === "category" &&
+                      drag.source.id === category.id &&
+                      "opacity-50",
+                  )}
+                  title={
+                    canManage ? "Clique e arraste para mudar a posição da categoria" : undefined
+                  }
+                >
                   <CategoryHeader
                     label={category.name}
                     count={channels.filter((c) => c.category_id === category.id).length}
@@ -605,6 +663,14 @@ export function ChannelSidebar({
               Convidar pessoas
             </Button>
           )}
+          {drag.saving && (
+            <p className="px-2 py-2 text-xs text-muted-foreground" role="status">
+              Salvando posição…
+            </p>
+          )}
+          <p className="sr-only" aria-live="polite">
+            {drag.announcement}
+          </p>
         </div>
       </SidebarBlankMenu>
 

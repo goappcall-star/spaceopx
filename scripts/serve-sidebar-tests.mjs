@@ -5,7 +5,12 @@ import path from "node:path";
 const server = await createServer({
   configFile: false,
   plugins: [react(), tailwind()],
-  resolve: { alias: { "@": path.resolve("src") } },
+  resolve: {
+    alias: {
+      "@/services/categories": path.resolve("tests/sidebar/drag-service.ts"),
+      "@": path.resolve("src"),
+    },
+  },
   server: { host: "127.0.0.1", port: 5183, strictPort: true },
 });
 await server.listen();

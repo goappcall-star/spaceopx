@@ -1,6 +1,18 @@
-/* Bounded SVG effects: no blur filters, videos, RAF loops or animated box shadows. */
+/* Bounded SVG effects; sword cuts use a small static glow filter and CSS dash motion. */
 .lx-anime-frame {
   overflow: visible;
+}
+.lx-sword-stroke {
+  stroke-dashoffset: var(--cut-offset);
+  animation: lx-sword-travel 3.2s linear infinite;
+}
+@keyframes lx-sword-travel {
+  from {
+    stroke-dashoffset: var(--cut-offset);
+  }
+  to {
+    stroke-dashoffset: calc(var(--cut-offset) - 1000px);
+  }
 }
 .lx-frame-art {
   transform-origin: 150px 200px;

@@ -9,11 +9,12 @@
  *   only created once both ends can actually receive signaling (broadcast has no
  *   history — an offer sent too early is simply lost)
  * - one RTCPeerConnection per remote participant (full mesh, fine for small rooms)
- * - EXACTLY ONE side (the lexicographically greater user id) creates the three
+ * - EXACTLY ONE side (the lexicographically greater user id) creates the four
  *   m-lines, in a fixed order, so both ends agree on their meaning:
  *     mid 0 -> microphone audio
  *     mid 1 -> camera video
  *     mid 2 -> screen share video
+ *     mid 3 -> screen share audio (independent of microphone)
  *   The answering side binds those mids to its own slots and sends on them.
  *   Camera and screen share are therefore transmitted simultaneously and are
  *   never confused with one another.
@@ -34,12 +35,13 @@ import {
   type NoiseSuppressionMode,
 } from "./audio-processing";
 
-export type MediaKind = "mic" | "camera" | "screen";
+export type MediaKind = "mic" | "camera" | "screen" | "screenAudio";
 
 export interface RemoteMedia {
   audio: MediaStream | null;
   camera: MediaStream | null;
   screen: MediaStream | null;
+  screenAudio: MediaStream | null;
 }
 
 export interface VoiceProviderEvents {
@@ -63,6 +65,7 @@ export interface DeviceIds {
 
 export interface VoiceProvider {
   readonly transmitsAudio: boolean;
+  readonly screenShareHasAudio: boolean;
   connect(channelId: string, userId: string, events: VoiceProviderEvents): Promise<void>;
   disconnect(): Promise<void>;
   /** Reconcile the mesh with the presence-derived participant list. */
@@ -121,9 +124,10 @@ interface Peer {
     mic: RTCRtpTransceiver | null;
     camera: RTCRtpTransceiver | null;
     screen: RTCRtpTransceiver | null;
+    screenAudio: RTCRtpTransceiver | null;
   };
   /** Stable per-kind remote streams — never recreated, so <audio>/<video> keep playing. */
-  streams: { mic: MediaStream; camera: MediaStream; screen: MediaStream };
+  streams: { mic: MediaStream; camera: MediaStream; screen: MediaStream; screenAudio: MediaStream };
   /** Candidates that arrived before the remote description was applied. */
   pendingCandidates: RTCIceCandidateInit[];
   state: RTCPeerConnectionState;
@@ -133,6 +137,9 @@ interface Peer {
 
 class MeshVoiceProvider implements VoiceProvider {
   readonly transmitsAudio = true;
+  get screenShareHasAudio() {
+    return !!this.screenStream?.getAudioTracks().some((track) => track.readyState === "live");
+  }
 
   private events: VoiceProviderEvents = {};
   private userId = "";
@@ -370,8 +377,9 @@ class MeshVoiceProvider implements VoiceProvider {
           mic: pc.addTransceiver("audio", { direction: "sendrecv" }),
           camera: pc.addTransceiver("video", { direction: "sendrecv" }),
           screen: pc.addTransceiver("video", { direction: "sendrecv" }),
+          screenAudio: pc.addTransceiver("audio", { direction: "sendrecv" }),
         }
-      : { mic: null, camera: null, screen: null };
+      : { mic: null, camera: null, screen: null, screenAudio: null };
 
     const peer: Peer = {
       id: remoteId,
@@ -382,7 +390,12 @@ class MeshVoiceProvider implements VoiceProvider {
       makingOffer: false,
       ignoreOffer: false,
       transceivers,
-      streams: { mic: new MediaStream(), camera: new MediaStream(), screen: new MediaStream() },
+      streams: {
+        mic: new MediaStream(),
+        camera: new MediaStream(),
+        screen: new MediaStream(),
+        screenAudio: new MediaStream(),
+      },
       pendingCandidates: [],
       state: "new",
       restartTimer: null,
@@ -394,6 +407,7 @@ class MeshVoiceProvider implements VoiceProvider {
       void transceivers.mic?.sender.replaceTrack(this.localTrack("mic"));
       void transceivers.camera?.sender.replaceTrack(this.localTrack("camera"));
       void transceivers.screen?.sender.replaceTrack(this.localTrack("screen"));
+      void transceivers.screenAudio?.sender.replaceTrack(this.localTrack("screenAudio"));
     }
 
     pc.onicecandidate = ({ candidate }) => {
@@ -485,7 +499,10 @@ class MeshVoiceProvider implements VoiceProvider {
     // Fall back to mid ordering (remote-created transceivers).
     if (transceiver.mid === "0") return "mic";
     if (transceiver.mid === "1") return "camera";
+    if (peer.transceivers.screenAudio && transceiver === peer.transceivers.screenAudio)
+      return "screenAudio";
     if (transceiver.mid === "2") return "screen";
+    if (transceiver.mid === "3") return "screenAudio";
     return null;
   }
 
@@ -493,6 +510,7 @@ class MeshVoiceProvider implements VoiceProvider {
   private localTrack(kind: MediaKind): MediaStreamTrack | null {
     if (kind === "mic") return this.outgoingAudioTrack();
     if (kind === "camera") return this.cameraStream?.getVideoTracks()[0] ?? null;
+    if (kind === "screenAudio") return this.screenStream?.getAudioTracks()[0] ?? null;
     return this.screenStream?.getVideoTracks()[0] ?? null;
   }
 
@@ -513,7 +531,9 @@ class MeshVoiceProvider implements VoiceProvider {
             ? "camera"
             : transceiver.mid === "2"
               ? "screen"
-              : null;
+              : transceiver.mid === "3"
+                ? "screenAudio"
+                : null;
       if (!kind || peer.transceivers[kind]) continue;
       peer.transceivers[kind] = transceiver;
       try {
@@ -526,7 +546,12 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   private updateRemote(userId: string, kind: MediaKind, stream: MediaStream | null) {
-    const current = this.remote[userId] ?? { audio: null, camera: null, screen: null };
+    const current = this.remote[userId] ?? {
+      audio: null,
+      camera: null,
+      screen: null,
+      screenAudio: null,
+    };
     const key = kind === "mic" ? "audio" : kind;
     if (current[key] === stream) return;
     this.remote = { ...this.remote, [userId]: { ...current, [key]: stream } };
@@ -640,6 +665,31 @@ class MeshVoiceProvider implements VoiceProvider {
       existing.remoteSessionId !== payload.from_session
     ) {
       this.closePeer(payload.from, existing);
+    }
+
+    if (payload.screenStopped) {
+      this.updateRemote(payload.from, "screen", null);
+      this.updateRemote(payload.from, "screenAudio", null);
+      return;
+    }
+    if (payload.screenStarted) {
+      const peer = this.peers.get(payload.from);
+      if (peer) {
+        for (const kind of ["screen", "screenAudio"] as const) {
+          const stream = peer.streams[kind];
+          const track = stream.getTracks()[0];
+          this.updateRemote(
+            payload.from,
+            kind,
+            (kind !== "screenAudio" || payload.screenHasAudio) &&
+              track &&
+              shouldExposeRemoteTrack(kind, track)
+              ? stream
+              : null,
+          );
+        }
+      }
+      return;
     }
 
     if (payload.hello) {
@@ -767,8 +817,15 @@ class MeshVoiceProvider implements VoiceProvider {
     const generation = ++this.screenGeneration;
     const stream = await navigator.mediaDevices.getDisplayMedia({
       video: { frameRate: { ideal: 15, max: 30 } },
-      audio: false,
-    });
+      audio: {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+        restrictOwnAudio: true,
+      },
+      systemAudio: "include",
+      selfBrowserSurface: "exclude",
+    } as DisplayMediaStreamOptions);
     if (this.disposed || generation !== this.screenGeneration) {
       stopStream(stream);
       throw new DOMException("Voice session ended", "AbortError");
@@ -777,10 +834,17 @@ class MeshVoiceProvider implements VoiceProvider {
     this.screenStream = stream;
     const track = stream.getVideoTracks()[0] ?? null;
     track?.addEventListener("ended", () => {
+      if (this.screenStream !== stream) return;
       this.stopScreenShare();
       this.events.onScreenShareEnded?.();
     });
     this.applyLocalTrack("screen", track);
+    const audioTrack = stream.getAudioTracks()[0] ?? null;
+    audioTrack?.addEventListener("ended", () => {
+      if (this.screenStream === stream) this.applyLocalTrack("screenAudio", null);
+    });
+    this.applyLocalTrack("screenAudio", audioTrack);
+    this.broadcast({ screenStarted: true, screenHasAudio: !!audioTrack });
     this.events.onLocalMedia?.({ camera: this.cameraStream, screen: stream });
   }
 
@@ -790,6 +854,8 @@ class MeshVoiceProvider implements VoiceProvider {
     stopStream(this.screenStream);
     this.screenStream = null;
     this.applyLocalTrack("screen", null);
+    this.applyLocalTrack("screenAudio", null);
+    this.broadcast({ screenStopped: true });
     this.events.onLocalMedia?.({ camera: this.cameraStream, screen: null });
   }
 
@@ -879,6 +945,9 @@ interface SignalPayload {
   to: string;
   hello?: boolean;
   bye?: boolean;
+  screenStopped?: boolean;
+  screenStarted?: boolean;
+  screenHasAudio?: boolean;
   description?: RTCSessionDescriptionInit;
   candidate?: RTCIceCandidateInit;
 }

@@ -73,10 +73,12 @@
   --color-sidebar-border: var(--border);
   --color-sidebar-ring: var(--ring);
 
-  --shadow-glow: 0 0 0 1px color-mix(in oklab, var(--primary) 28%, transparent),
+  --shadow-glow:
+    0 0 0 1px color-mix(in oklab, var(--primary) 28%, transparent),
     0 12px 40px -12px color-mix(in oklab, var(--primary) 35%, transparent);
   --shadow-panel: 0 24px 60px -30px oklch(0.05 0.02 250 / 0.9);
-  --shadow-elevated: 0 1px 0 0 color-mix(in oklab, white 5%, transparent) inset,
+  --shadow-elevated:
+    0 1px 0 0 color-mix(in oklab, white 5%, transparent) inset,
     0 18px 40px -24px oklch(0.02 0.02 250 / 0.95);
   --shadow-overlay: 0 32px 90px -30px oklch(0.02 0.02 250 / 0.95);
 
@@ -114,7 +116,6 @@
     background-position: 200% 0;
   }
 }
-
 
 :root,
 .dark {
@@ -162,14 +163,16 @@
   --input: oklch(0.285 0.024 264);
   --ring: oklch(0.79 0.135 195);
 
-  --gradient-hero: radial-gradient(
+  --gradient-hero:
+    radial-gradient(
       1000px 520px at 12% -10%,
       color-mix(in oklab, var(--primary) 16%, transparent),
       transparent 60%
     ),
     radial-gradient(760px 420px at 92% 8%, oklch(0.62 0.16 292 / 0.14), transparent 62%);
   --gradient-brand: linear-gradient(135deg, oklch(0.82 0.13 192), oklch(0.68 0.15 270));
-  --gradient-ambient: radial-gradient(
+  --gradient-ambient:
+    radial-gradient(
       900px 500px at 8% -12%,
       color-mix(in oklab, var(--primary) 14%, transparent),
       transparent 62%
@@ -177,11 +180,76 @@
     radial-gradient(700px 460px at 100% 110%, oklch(0.62 0.16 292 / 0.12), transparent 60%);
 }
 
-
 /* ------------------------------------------------------- Accent color themes
  * Applied via data-accent on <html> (see AppearanceSync). Components must never
  * hardcode neon colors — they consume --primary / --gradient-brand.
  */
+:root.light {
+  --background: oklch(0.98 0.006 264);
+  --background-secondary: oklch(0.955 0.008 264);
+  --background-tertiary: oklch(0.925 0.012 264);
+  --foreground: oklch(0.24 0.028 264);
+  --surface: oklch(0.995 0.003 264);
+  --surface-elevated: oklch(0.955 0.012 264);
+  --surface-hover: oklch(0.925 0.018 264);
+  --surface-active: oklch(0.89 0.028 264);
+  --surface-foreground: oklch(0.35 0.028 264);
+  --rail: oklch(0.94 0.016 264);
+  --card: oklch(0.995 0.003 264);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.995 0.003 264);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.46 0.09 195);
+  --primary-hover: color-mix(in oklab, var(--primary) 88%, black);
+  --primary-foreground: white;
+  --secondary: oklch(0.925 0.018 264);
+  --secondary-foreground: var(--foreground);
+  --muted: oklch(0.94 0.01 264);
+  --muted-foreground: oklch(0.46 0.022 264);
+  --accent: oklch(0.92 0.025 264);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.5 0.18 22);
+  --success: oklch(0.46 0.13 155);
+  --warning: oklch(0.47 0.11 78);
+  --border: oklch(0.83 0.018 264);
+  --border-hover: oklch(0.72 0.025 264);
+  --input: var(--border);
+  --ring: var(--primary);
+  --shadow-panel: 0 24px 60px -30px oklch(0.3 0.02 250 / 0.18);
+  --shadow-elevated: 0 12px 32px -18px oklch(0.3 0.02 250 / 0.2);
+  --shadow-overlay: 0 24px 70px -24px oklch(0.3 0.02 250 / 0.25);
+  --gradient-brand: linear-gradient(135deg, oklch(0.46 0.09 192), oklch(0.48 0.15 270));
+}
+:root.light[data-accent="neon_cyan"] {
+  --primary: oklch(0.46 0.09 195);
+  --ring: var(--primary);
+  --gradient-brand: linear-gradient(135deg, oklch(0.46 0.09 192), oklch(0.48 0.15 270));
+}
+:root.light[data-accent="neon_red"] {
+  --primary: oklch(0.5 0.18 22);
+  --ring: var(--primary);
+  --gradient-brand: linear-gradient(135deg, oklch(0.5 0.18 25), oklch(0.48 0.16 350));
+}
+:root.light[data-accent="neon_purple"] {
+  --primary: oklch(0.48 0.18 300);
+  --ring: var(--primary);
+  --gradient-brand: linear-gradient(135deg, oklch(0.48 0.18 305), oklch(0.46 0.16 268));
+}
+:root.light[data-accent="neon_blue"] {
+  --primary: oklch(0.48 0.17 258);
+  --ring: var(--primary);
+  --gradient-brand: linear-gradient(135deg, oklch(0.48 0.17 258), oklch(0.46 0.16 292));
+}
+:root.light[data-accent="neon_green"] {
+  --primary: oklch(0.46 0.13 145);
+  --ring: var(--primary);
+  --gradient-brand: linear-gradient(135deg, oklch(0.46 0.13 148), oklch(0.44 0.09 178));
+}
+:root.light[data-accent="neon_orange"] {
+  --primary: oklch(0.48 0.12 62);
+  --ring: var(--primary);
+  --gradient-brand: linear-gradient(135deg, oklch(0.48 0.12 66), oklch(0.46 0.15 32));
+}
 [data-accent="neon_cyan"] {
   --primary: oklch(0.79 0.135 195);
   --ring: oklch(0.79 0.135 195);
@@ -240,7 +308,6 @@
   --glass-alpha: 0.66;
 }
 
-
 @layer base {
   * {
     border-color: var(--color-border);
@@ -248,6 +315,9 @@
 
   html {
     color-scheme: dark;
+  }
+  html.light {
+    color-scheme: light;
   }
 
   body {
@@ -346,7 +416,7 @@
 }
 
 @utility hairline-t {
-  border-top: 1px solid color-mix(in oklab, white 6%, transparent);
+  border-top: 1px solid var(--color-border);
 }
 
 /* Left accent marker used by active channels / servers. */
@@ -377,7 +447,7 @@
   background-image: linear-gradient(
     90deg,
     transparent,
-    color-mix(in oklab, white 6%, transparent),
+    color-mix(in oklab, var(--color-foreground) 6%, transparent),
     transparent
   );
   background-size: 200% 100%;
@@ -408,13 +478,36 @@
 }
 
 /* Dedicated settings navigation, with independent scrolling on desktop. */
-.settings-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); }
-.settings-sidebar { padding: 32px 16px; }
-.settings-content .glass-panel { background: var(--color-surface); box-shadow: none; backdrop-filter: none; border-color: var(--color-border); }
-.settings-content section + section { margin-top: 24px; }
+.settings-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+}
+.settings-sidebar {
+  padding: 32px 16px;
+}
+.settings-content .glass-panel {
+  background: var(--color-surface);
+  box-shadow: none;
+  backdrop-filter: none;
+  border-color: var(--color-border);
+}
+.settings-content section + section {
+  margin-top: 24px;
+}
 @media (max-width: 767px) {
- .settings-layout { grid-template-columns: minmax(0, 1fr); }
- .settings-sidebar { padding: 16px; }
- .settings-sidebar nav { display: flex; gap: 12px; overflow-x: auto; max-height: 220px; }
- .settings-sidebar nav > div { min-width: 190px; }
+  .settings-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settings-sidebar {
+    padding: 16px;
+  }
+  .settings-sidebar nav {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    max-height: 220px;
+  }
+  .settings-sidebar nav > div {
+    min-width: 190px;
+  }
 }

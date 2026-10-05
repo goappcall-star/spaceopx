@@ -1,4 +1,5 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { categoriesService } from "@/services/categories";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -35,13 +36,19 @@ export function CreateChannelDialog({
   const [name, setName] = useState("");
   const [type, setType] = useState<ChannelType>(defaultType);
   const [saving, setSaving] = useState(false);
+  const [categoryId, setCategoryId] = useState("");
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories", serverId],
+    queryFn: () => categoriesService.list(serverId),
+    enabled: open,
+  });
   const queryClient = useQueryClient();
 
   async function submit() {
     if (!name.trim()) return;
     setSaving(true);
     try {
-      const channel = await channelsService.create(serverId, name, type);
+      const channel = await channelsService.create(serverId, name, type, categoryId || null);
       await queryClient.invalidateQueries({ queryKey: ["channels", serverId] });
       onCreated?.(channel.id);
       onOpenChange(false);
@@ -97,6 +104,22 @@ export function CreateChannelDialog({
         </div>
 
         <DialogFooter>
+          <div className="mr-auto space-y-1">
+            <Label htmlFor="new-channel-category">Categoria</Label>
+            <select
+              id="new-channel-category"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
+            >
+              <option value="">Sem categoria</option>
+              {categories.map((category) => (
+                <option value={category.id} key={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>

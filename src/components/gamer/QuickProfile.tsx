@@ -119,7 +119,7 @@ export function QuickProfileCard({
   return (
     <div className="max-h-[70vh] overflow-y-auto">
       <div
-        className="bg-brand-gradient h-16 w-full bg-cover bg-center"
+        className="bg-brand-gradient h-32 w-full bg-cover bg-center sm:h-36"
         style={profile.banner_url ? { backgroundImage: `url(${profile.banner_url})` } : undefined}
       />
       <div className="px-4 pb-4">
@@ -127,7 +127,7 @@ export function QuickProfileCard({
           type="button"
           aria-label={`Abrir perfil completo de ${profile.display_name}`}
           title="Ver perfil completo"
-          className="relative -mt-8 block w-fit rounded-full cursor-pointer outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          className="relative -mt-20 mb-6 block w-fit rounded-full cursor-pointer outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           onClick={() => {
             onDone();
             openProfile(userId);

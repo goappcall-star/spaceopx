@@ -83,11 +83,14 @@ function ProfileDialogBody({
   return (
     <div className="max-h-[80vh] overflow-y-auto">
       <div
-        className="bg-brand-gradient h-28 w-full bg-cover bg-center"
+        className="bg-brand-gradient h-44 w-full bg-cover bg-center sm:h-52"
         style={profile.banner_url ? { backgroundImage: `url(${profile.banner_url})` } : undefined}
       />
       <div className="px-6 pb-6">
-        <Avatar frame={profile.avatar_frame} className="border-surface glow-ring -mt-10 h-20 w-20 border-4">
+        <Avatar
+          frame={profile.avatar_frame}
+          className="border-surface glow-ring -mt-24 mb-8 h-20 w-20 border-4"
+        >
           <AvatarImage src={profile.avatar_url ?? undefined} alt="" />
           <AvatarFallback className="bg-secondary text-lg">
             {profile.display_name.slice(0, 2).toUpperCase()}

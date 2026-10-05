@@ -1,6 +1,8 @@
 import { ChevronDown, Hash, Plus, Settings, UserPlus, Volume2 } from "lucide-react";
 import { useState } from "react";
 
+import { CategoryManager } from "@/components/app/CategoryManager";
+import { useServerCategories } from "@/hooks/use-categories";
 import { UserBar } from "@/components/app/UserBar";
 import { VoiceParticipantActions } from "@/components/voice/VoiceParticipantActions";
 import { Button } from "@/components/ui/button";
@@ -101,6 +103,9 @@ export function ChannelSidebar({
   const { participantsByChannel, activeChannelId: voiceChannelId, join } = useVoice();
   const [textOpen, setTextOpen] = useState(true);
   const [voiceOpen, setVoiceOpen] = useState(true);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const { data: categories = [], error: categoryError } = useServerCategories(server.id);
 
   const textChannels = channels.filter(
     (c) =>
@@ -116,14 +121,178 @@ export function ChannelSidebar({
     return member?.nickname ?? member?.profile?.display_name ?? "Usuário";
   };
 
+  const renderText = (textChannels: Channel[]) => (
+    <ul className="space-y-0.5">
+      {textChannels.length === 0 && (
+        <li className="text-muted-foreground px-2 py-1 text-xs">Nenhum canal de texto.</li>
+      )}
+      {textChannels.map((channel) => {
+        const active = channel.id === activeChannelId;
+        const unread =
+          unreadChannelIds.has(channel.id) &&
+          !active &&
+          !preferences.mutedChannels.includes(channel.id);
+        return (
+          <li key={channel.id}>
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => onSelectChannel(channel.id)}
+                  className={cn(
+                    "group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all duration-150",
+                    active
+                      ? "accent-marker bg-surface-active text-foreground font-medium"
+                      : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
+                    unread && "text-foreground font-semibold",
+                  )}
+                >
+                  <Hash
+                    className={cn(
+                      "h-4 w-4 shrink-0 transition-colors",
+                      active ? "text-primary" : "text-muted-foreground/70",
+                    )}
+                  />
+                  <span className="truncate">{channel.name}</span>
+                  {unread && (
+                    <span className="bg-primary ml-auto h-2 w-2 shrink-0 rounded-full shadow-[0_0_8px_0_color-mix(in_oklab,var(--color-primary)_80%,transparent)]" />
+                  )}
+                </button>
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <ContextMenuCheckboxItem
+                  checked={preferences.mutedChannels.includes(channel.id)}
+                  onCheckedChange={() => onToggleMuteChannel(channel.id)}
+                >
+                  Silenciar canal
+                </ContextMenuCheckboxItem>
+              </ContextMenuContent>
+            </ContextMenu>
+          </li>
+        );
+      })}
+    </ul>
+  );
+  const renderVoice = (voiceChannels: Channel[]) => (
+    <ul className="space-y-0.5">
+      {voiceChannels.length === 0 && (
+        <li className="text-muted-foreground px-2 py-1 text-xs">Nenhum canal de voz.</li>
+      )}
+      {voiceChannels.map((channel) => {
+        const participants = participantsByChannel[channel.id] ?? [];
+        const active = channel.id === activeChannelId;
+        const connectedHere = voiceChannelId === channel.id;
+        return (
+          <li key={channel.id}>
+            <button
+              type="button"
+              onClick={() => {
+                onSelectChannel(channel.id);
+                if (voiceChannelId !== channel.id) void join(channel.id);
+              }}
+              className={cn(
+                "group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all duration-150",
+                active
+                  ? "accent-marker bg-surface-active text-foreground font-medium"
+                  : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
+              )}
+            >
+              <Volume2
+                className={cn(
+                  "h-4 w-4 shrink-0",
+                  connectedHere
+                    ? "text-success"
+                    : active
+                      ? "text-primary"
+                      : "text-muted-foreground/70",
+                )}
+              />
+              <span className="truncate">{channel.name}</span>
+              {participants.length > 0 && (
+                <span className="bg-surface-elevated text-muted-foreground ml-auto rounded-full px-1.5 py-px text-[10px] font-semibold">
+                  {participants.length}
+                </span>
+              )}
+            </button>
+            {participants.length > 0 && (
+              <ul className="mt-1 mb-2 ml-6 space-y-1">
+                {participants.map((participant) => (
+                  <li
+                    key={participant.user_id}
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-2 py-1 text-xs transition-colors duration-150",
+                      participant.speaking && !participant.muted
+                        ? "bg-surface-active text-foreground font-medium"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    <VoiceParticipantActions
+                      userId={participant.user_id}
+                      member={members.find((member) => member.user_id === participant.user_id)}
+                      onStartDirect={onStartDirect}
+                      onInvite={canInvite ? onInvite : undefined}
+                      onManageRoles={canManage ? onOpenSettings : undefined}
+                    >
+                      <div className="flex w-full items-center gap-2">
+                        <Avatar
+                          frame={
+                            members.find((member) => member.user_id === participant.user_id)
+                              ?.profile?.avatar_frame
+                          }
+                          className={cn(
+                            "h-6 w-6 ring-2 ring-offset-2 ring-offset-surface transition-shadow duration-150",
+                            participant.speaking && !participant.muted
+                              ? "ring-green-500"
+                              : "ring-transparent",
+                          )}
+                        >
+                          <AvatarImage
+                            src={
+                              members.find((member) => member.user_id === participant.user_id)
+                                ?.profile?.avatar_url ?? undefined
+                            }
+                            alt=""
+                          />
+                          <AvatarFallback className="text-[9px]">
+                            {memberName(participant.user_id).slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="min-w-0 flex-1 truncate">
+                          {memberName(participant.user_id)}
+                        </span>
+                        {participant.speaking && !participant.muted && (
+                          <span className="sr-only">Falando</span>
+                        )}
+                        <span className="ml-auto flex shrink-0 items-center gap-1 text-[10px]">
+                          {participant.screen && <span title="Compartilhando tela">🖥️</span>}
+                          {participant.camera && <span title="Câmera ligada">🎥</span>}
+                          {participant.muted && <span title="Mudo">🔇</span>}
+                        </span>
+                      </div>
+                    </VoiceParticipantActions>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+
   return (
     <aside className="bg-surface border-border relative z-20 flex w-64 shrink-0 flex-col border-r shadow-[6px_0_24px_-24px_rgba(0,0,0,0.9)]">
       {/* Server header */}
-      <div className="border-border relative overflow-hidden border-b px-4 py-3.5">
+      <div
+        className={cn(
+          "border-border relative overflow-hidden border-b px-4 py-3.5",
+          server.banner_url && "min-h-40 flex items-end",
+        )}
+      >
         {server.banner_url ? (
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-45"
+            className="pointer-events-none absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${server.banner_url})` }}
           />
         ) : null}
@@ -132,7 +301,12 @@ export function ChannelSidebar({
           className="pointer-events-none absolute inset-0 opacity-70"
           style={{ backgroundImage: "var(--gradient-ambient)" }}
         />
-        <div className="relative flex items-center gap-2">
+        <div
+          className={cn(
+            "relative flex w-full items-center gap-2",
+            server.banner_url && "rounded-lg bg-surface/95 p-2",
+          )}
+        >
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-sm font-semibold tracking-tight">{server.name}</h2>
             {server.description ? (
@@ -164,6 +338,46 @@ export function ChannelSidebar({
       </div>
 
       <div className="scrollbar-slim flex-1 overflow-y-auto px-2 py-2">
+        {canManage && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="mb-2 w-full justify-start"
+            onClick={() => setCategoriesOpen(true)}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Gerenciar categorias
+          </Button>
+        )}
+        {categoryError && canManage && (
+          <p className="text-muted-foreground mb-2 px-2 text-xs">
+            Categorias indisponíveis. A atualização do banco precisa ser aplicada.
+          </p>
+        )}
+        {categories.map((category) => (
+          <div key={category.id} className="mb-3">
+            <CategoryHeader
+              label={category.name}
+              count={channels.filter((c) => c.category_id === category.id).length}
+              open={!collapsed.has(category.id)}
+              onToggle={() =>
+                setCollapsed((previous) => {
+                  const next = new Set(previous);
+                  if (next.has(category.id)) next.delete(category.id);
+                  else next.add(category.id);
+                  return next;
+                })
+              }
+            />
+            {!collapsed.has(category.id) && (
+              <>
+                {renderText(textChannels.filter((c) => c.category_id === category.id))}
+                {renderVoice(voiceChannels.filter((c) => c.category_id === category.id))}
+              </>
+            )}
+          </div>
+        ))}
+
         <CategoryHeader
           label="Canais de texto"
           count={textChannels.length}
@@ -171,58 +385,12 @@ export function ChannelSidebar({
           onToggle={() => setTextOpen((v) => !v)}
           {...(canManage ? { action: { label: "Criar canal", onClick: onCreateChannel } } : {})}
         />
-        {textOpen && (
-          <ul className="space-y-0.5">
-            {textChannels.length === 0 && (
-              <li className="text-muted-foreground px-2 py-1 text-xs">Nenhum canal de texto.</li>
-            )}
-            {textChannels.map((channel) => {
-              const active = channel.id === activeChannelId;
-              const unread =
-                unreadChannelIds.has(channel.id) &&
-                !active &&
-                !preferences.mutedChannels.includes(channel.id);
-              return (
-                <li key={channel.id}>
-                  <ContextMenu>
-                    <ContextMenuTrigger asChild>
-                      <button
-                        type="button"
-                        onClick={() => onSelectChannel(channel.id)}
-                        className={cn(
-                          "group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all duration-150",
-                          active
-                            ? "accent-marker bg-surface-active text-foreground font-medium"
-                            : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
-                          unread && "text-foreground font-semibold",
-                        )}
-                      >
-                        <Hash
-                          className={cn(
-                            "h-4 w-4 shrink-0 transition-colors",
-                            active ? "text-primary" : "text-muted-foreground/70",
-                          )}
-                        />
-                        <span className="truncate">{channel.name}</span>
-                        {unread && (
-                          <span className="bg-primary ml-auto h-2 w-2 shrink-0 rounded-full shadow-[0_0_8px_0_color-mix(in_oklab,var(--color-primary)_80%,transparent)]" />
-                        )}
-                      </button>
-                    </ContextMenuTrigger>
-                    <ContextMenuContent>
-                      <ContextMenuCheckboxItem
-                        checked={preferences.mutedChannels.includes(channel.id)}
-                        onCheckedChange={() => onToggleMuteChannel(channel.id)}
-                      >
-                        Silenciar canal
-                      </ContextMenuCheckboxItem>
-                    </ContextMenuContent>
-                  </ContextMenu>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        {textOpen &&
+          renderText(
+            textChannels.filter(
+              (c) => !c.category_id || !categories.some((cat) => cat.id === c.category_id),
+            ),
+          )}
 
         <div className="mt-3">
           <CategoryHeader
@@ -233,114 +401,12 @@ export function ChannelSidebar({
             {...(canManage ? { action: { label: "Criar canal", onClick: onCreateChannel } } : {})}
           />
         </div>
-        {voiceOpen && (
-          <ul className="space-y-0.5">
-            {voiceChannels.length === 0 && (
-              <li className="text-muted-foreground px-2 py-1 text-xs">Nenhum canal de voz.</li>
-            )}
-            {voiceChannels.map((channel) => {
-              const participants = participantsByChannel[channel.id] ?? [];
-              const active = channel.id === activeChannelId;
-              const connectedHere = voiceChannelId === channel.id;
-              return (
-                <li key={channel.id}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onSelectChannel(channel.id);
-                      if (voiceChannelId !== channel.id) void join(channel.id);
-                    }}
-                    className={cn(
-                      "group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all duration-150",
-                      active
-                        ? "accent-marker bg-surface-active text-foreground font-medium"
-                        : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
-                    )}
-                  >
-                    <Volume2
-                      className={cn(
-                        "h-4 w-4 shrink-0",
-                        connectedHere
-                          ? "text-success"
-                          : active
-                            ? "text-primary"
-                            : "text-muted-foreground/70",
-                      )}
-                    />
-                    <span className="truncate">{channel.name}</span>
-                    {participants.length > 0 && (
-                      <span className="bg-surface-elevated text-muted-foreground ml-auto rounded-full px-1.5 py-px text-[10px] font-semibold">
-                        {participants.length}
-                      </span>
-                    )}
-                  </button>
-                  {participants.length > 0 && (
-                    <ul className="mt-1 mb-2 ml-6 space-y-1">
-                      {participants.map((participant) => (
-                        <li
-                          key={participant.user_id}
-                          className={cn(
-                            "flex items-center gap-2 rounded-md px-2 py-1 text-xs transition-colors duration-150",
-                            participant.speaking && !participant.muted
-                              ? "bg-surface-active text-foreground font-medium"
-                              : "text-muted-foreground",
-                          )}
-                        >
-                          <VoiceParticipantActions
-                            userId={participant.user_id}
-                            member={members.find(
-                              (member) => member.user_id === participant.user_id,
-                            )}
-                            onStartDirect={onStartDirect}
-                            onInvite={canInvite ? onInvite : undefined}
-                            onManageRoles={canManage ? onOpenSettings : undefined}
-                          >
-                            <div className="flex w-full items-center gap-2">
-                              <Avatar
-                                frame={
-                                  members.find((member) => member.user_id === participant.user_id)
-                                    ?.profile?.avatar_frame
-                                }
-                                className={cn(
-                                  "h-6 w-6 ring-2 ring-offset-2 ring-offset-surface transition-shadow duration-150",
-                                  participant.speaking && !participant.muted
-                                    ? "ring-green-500"
-                                    : "ring-transparent",
-                                )}
-                              >
-                                <AvatarImage
-                                  src={
-                                    members.find((member) => member.user_id === participant.user_id)
-                                      ?.profile?.avatar_url ?? undefined
-                                  }
-                                  alt=""
-                                />
-                                <AvatarFallback className="text-[9px]">
-                                  {memberName(participant.user_id).slice(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="min-w-0 flex-1 truncate">
-                                {memberName(participant.user_id)}
-                              </span>
-                              {participant.speaking && !participant.muted && (
-                                <span className="sr-only">Falando</span>
-                              )}
-                              <span className="ml-auto flex shrink-0 items-center gap-1 text-[10px]">
-                                {participant.screen && <span title="Compartilhando tela">🖥️</span>}
-                                {participant.camera && <span title="Câmera ligada">🎥</span>}
-                                {participant.muted && <span title="Mudo">🔇</span>}
-                              </span>
-                            </div>
-                          </VoiceParticipantActions>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        {voiceOpen &&
+          renderVoice(
+            voiceChannels.filter(
+              (c) => !c.category_id || !categories.some((cat) => cat.id === c.category_id),
+            ),
+          )}
 
         {canInvite && (
           <Button variant="outline" size="sm" className="mt-4 w-full" onClick={onInvite}>
@@ -350,6 +416,16 @@ export function ChannelSidebar({
         )}
       </div>
 
+      {canManage && (
+        <CategoryManager
+          key={server.id}
+          serverId={server.id}
+          categories={categories}
+          channels={channels}
+          open={categoriesOpen}
+          onOpenChange={setCategoriesOpen}
+        />
+      )}
       <UserBar />
     </aside>
   );

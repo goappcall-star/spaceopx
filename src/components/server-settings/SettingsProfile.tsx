@@ -43,7 +43,7 @@ export function SettingsProfile({ server, readOnly }: { server: Server; readOnly
       <section className="space-y-3">
         <Label className="text-xs">Banner do servidor</Label>
         <div
-          className="border-border bg-surface-elevated relative flex h-32 items-end justify-end overflow-hidden rounded-xl border bg-cover bg-center"
+          className="border-border bg-surface-elevated relative flex h-44 sm:h-52 items-end justify-end overflow-hidden rounded-xl border bg-cover bg-center"
           style={server.banner_url ? { backgroundImage: `url(${server.banner_url})` } : undefined}
         >
           {!server.banner_url && (

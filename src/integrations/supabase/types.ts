@@ -132,6 +132,7 @@ export type Database = {
       }
       channels: {
         Row: {
+          category_id: string | null
           created_at: string
           description: string | null
           id: string
@@ -142,6 +143,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -152,6 +154,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -170,6 +173,12 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      server_categories: {
+        Row: { id: string; server_id: string; name: string; position: number; created_at: string }
+        Insert: { id?: string; server_id: string; name: string; position?: number; created_at?: string }
+        Update: { id?: string; server_id?: string; name?: string; position?: number; created_at?: string }
+        Relationships: [{ foreignKeyName: "server_categories_server_id_fkey"; columns: ["server_id"]; isOneToOne: false; referencedRelation: "servers"; referencedColumns: ["id"] }]
       }
       conversation_members: {
         Row: {

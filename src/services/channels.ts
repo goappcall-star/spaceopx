@@ -14,10 +14,20 @@ export const channelsService = {
   },
 
   /** Stage 1 only creates text channels; the schema already supports the rest. */
-  async create(serverId: string, name: string, type: ChannelType = "text"): Promise<Channel> {
+  async create(
+    serverId: string,
+    name: string,
+    type: ChannelType = "text",
+    categoryId?: string | null,
+  ): Promise<Channel> {
     const { data, error } = await supabase
       .from("channels")
-      .insert({ server_id: serverId, name: name.trim().toLowerCase(), type })
+      .insert({
+        server_id: serverId,
+        name: name.trim().toLowerCase(),
+        type,
+        ...(categoryId ? { category_id: categoryId } : {}),
+      })
       .select("*")
       .single();
     if (error) throw error;

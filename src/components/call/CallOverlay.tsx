@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { conversationsService } from "@/services/social";
 import { toast } from "sonner";
 import { SharedScreen } from "./SharedScreen";
+import { receivedAudioVolume } from "@/lib/audio-volume";
 
 function useElapsed(active: boolean) {
   const [seconds, setSeconds] = useState(0);
@@ -62,7 +63,7 @@ function CallAudio({ stream }: { stream: MediaStream | null }) {
       (HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> }) | null;
     if (!el) return;
     const volume = Number.isFinite(settings.outputVolume) ? settings.outputVolume : 100;
-    el.volume = Math.max(0, Math.min(1, volume / 100));
+    el.volume = receivedAudioVolume(100, volume, false);
     if (settings.outputDeviceId && typeof el.setSinkId === "function")
       void el.setSinkId(settings.outputDeviceId).catch(() => undefined);
   }, [settings.outputVolume, settings.outputDeviceId, stream]);
@@ -86,8 +87,12 @@ export function CallAudioPlayback() {
   return (
     <>
       <CallAudio stream={call.remote?.audio ?? null} />
+      <CallAudio stream={call.remote?.screenAudio ?? null} />
       {Object.entries(call.groupMedia).map(([id, media]) => (
         <CallAudio key={id} stream={media.audio} />
+      ))}
+      {Object.entries(call.groupMedia).map(([id, media]) => (
+        <CallAudio key={`${id}:screen`} stream={media.screenAudio} />
       ))}
     </>
   );

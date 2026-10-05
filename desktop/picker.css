@@ -1,1 +1,175 @@
-*{box-sizing:border-box}body{margin:0;background:#171b24;color:#f3f4f7;font:14px 'Segoe UI',sans-serif;display:flex;flex-direction:column;height:100vh}header{text-align:center;padding:22px 24px 18px}.symbol{color:#54dcdf;font-size:30px}h1{font-size:22px;margin:7px 0}p{color:#a9b0c0;margin:6px 0}nav{display:flex;gap:24px;margin:0 24px;border-bottom:1px solid #323847}button{font:inherit;cursor:pointer;color:inherit;border:0}.tab{background:none;padding:12px 2px;color:#a9b0c0;border-bottom:2px solid transparent}.tab.active{color:#65e4e7;border-color:#65e4e7}main{padding:20px 24px;overflow:auto;flex:1}#sources{display:grid;grid-template-columns:1fr 1fr;gap:18px}.source{background:none;padding:0;text-align:left;min-width:0}.preview{height:139px;display:flex;align-items:center;justify-content:center;background:#0c0f15;border:2px solid #343b4b;border-radius:9px;overflow:hidden}.preview img{width:100%;height:100%;object-fit:contain}.source:hover .preview{border-color:#8b94a8}.source[aria-pressed=true] .preview{border-color:#54dcdf;box-shadow:0 0 0 2px #54dcdf33}.name{display:flex;align-items:center;gap:6px;margin:8px 2px;font-size:12px}.name span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.name img{width:16px;height:16px}#empty{text-align:center;padding:25px 0}footer{display:flex;justify-content:space-between;background:#12161e;padding:18px 24px;border-top:1px solid #282e3b}footer button{padding:10px 20px;border-radius:6px;background:#303746}#share{background:#54dcdf;color:#102126;font-weight:600}#share:disabled{opacity:.35;cursor:not-allowed}button:focus-visible{outline:2px solid white;outline-offset:4px}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: #171b24;
+  color: #f3f4f7;
+  font:
+    14px "Segoe UI",
+    sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+header {
+  text-align: center;
+  padding: 22px 24px 18px;
+}
+.symbol {
+  color: #54dcdf;
+  font-size: 30px;
+}
+h1 {
+  font-size: 22px;
+  margin: 7px 0;
+}
+p {
+  color: #a9b0c0;
+  margin: 6px 0;
+}
+nav {
+  display: flex;
+  gap: 24px;
+  margin: 0 24px;
+  border-bottom: 1px solid #323847;
+}
+button {
+  font: inherit;
+  cursor: pointer;
+  color: inherit;
+  border: 0;
+}
+.tab {
+  background: none;
+  padding: 12px 2px;
+  color: #a9b0c0;
+  border-bottom: 2px solid transparent;
+}
+.tab.active {
+  color: #65e4e7;
+  border-color: #65e4e7;
+}
+main {
+  padding: 20px 24px;
+  overflow: auto;
+  flex: 1;
+}
+#sources {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.source {
+  background: none;
+  padding: 0;
+  text-align: left;
+  min-width: 0;
+}
+.preview {
+  height: 139px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0c0f15;
+  border: 2px solid #343b4b;
+  border-radius: 9px;
+  overflow: hidden;
+}
+.preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.source:hover .preview {
+  border-color: #8b94a8;
+}
+.source[aria-pressed="true"] .preview {
+  border-color: #54dcdf;
+  box-shadow: 0 0 0 2px #54dcdf33;
+}
+.name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 2px;
+  font-size: 12px;
+}
+.name span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.name img {
+  width: 16px;
+  height: 16px;
+}
+#empty {
+  text-align: center;
+  padding: 25px 0;
+}
+footer {
+  display: flex;
+  justify-content: space-between;
+  background: #12161e;
+  padding: 18px 24px;
+  border-top: 1px solid #282e3b;
+}
+footer button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  background: #303746;
+}
+#share {
+  background: #54dcdf;
+  color: #102126;
+  font-weight: 600;
+}
+#share:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+button:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 4px;
+}
+
+.audio-option {
+  padding: 8px 24px 12px;
+}
+.audio-option p {
+  font-size: 12px;
+}
+.audio-option input {
+  accent-color: #187a83;
+  margin-right: 8px;
+}
+[data-theme="light"] body {
+  background: #f7f8fc;
+  color: #202735;
+}
+[data-theme="light"] p,
+[data-theme="light"] .tab {
+  color: #535c6e;
+}
+[data-theme="light"] nav {
+  border-color: #cbd0dc;
+}
+[data-theme="light"] .tab.active {
+  color: #146c78;
+  border-color: #146c78;
+}
+[data-theme="light"] footer {
+  background: #ebedf4;
+  border-color: #cbd0dc;
+}
+[data-theme="light"] footer button {
+  background: #d7dce7;
+}
+[data-theme="light"] #share {
+  background: #146c78;
+  color: white;
+}
+[data-theme="light"] button:focus-visible {
+  outline-color: #146c78;
+}

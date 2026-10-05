@@ -1,6 +1,39 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src data:;"><title>Compartilhar tela</title><link rel="stylesheet" href="picker.css"></head>
-<body><header><div class="symbol" aria-hidden="true">▣</div><h1>Compartilhar tela</h1><p>Escolha o que seus amigos vão ver na chamada.</p></header>
-<nav aria-label="Tipo de compartilhamento"><button class="tab active" data-type="window" aria-pressed="true">Aplicativos</button><button class="tab" data-type="screen" aria-pressed="false">Telas</button></nav>
-<main><div id="sources" aria-label="Fontes disponíveis"></div><p id="empty" role="status">Carregando prévias…</p></main>
-<footer><button id="cancel">Cancelar</button><button id="share" disabled>Compartilhar</button></footer><script src="picker.js"></script></body></html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src data:;"
+    />
+    <title>Compartilhar tela</title>
+    <link rel="stylesheet" href="picker.css" />
+  </head>
+  <body>
+    <header>
+      <div class="symbol" aria-hidden="true">▣</div>
+      <h1>Compartilhar tela</h1>
+      <p>Escolha o que seus amigos vão ver na chamada.</p>
+    </header>
+    <nav aria-label="Tipo de compartilhamento">
+      <button class="tab active" data-type="window" aria-pressed="true">Aplicativos</button
+      ><button class="tab" data-type="screen" aria-pressed="false">Telas</button>
+    </nav>
+    <main>
+      <div id="sources" aria-label="Fontes disponíveis"></div>
+      <p id="empty" role="status">Carregando prévias…</p>
+    </main>
+    <section class="audio-option">
+      <label><input id="share-audio" type="checkbox" /> Compartilhar áudio do sistema</label>
+      <p id="audio-help">
+        Captura os sons do computador, mesmo ao escolher uma janela. O áudio do próprio LobbyX é
+        excluído quando a plataforma suporta.
+      </p>
+    </section>
+    <footer>
+      <button id="cancel">Cancelar</button><button id="share" disabled>Compartilhar</button>
+    </footer>
+    <script src="picker.js"></script>
+  </body>
+</html>

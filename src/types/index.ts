@@ -1,12 +1,7 @@
 export type UserStatus = "online" | "idle" | "dnd" | "offline";
 
 export type AccentColor =
-  | "neon_red"
-  | "neon_purple"
-  | "neon_blue"
-  | "neon_green"
-  | "neon_cyan"
-  | "neon_orange";
+  "neon_red" | "neon_purple" | "neon_blue" | "neon_green" | "neon_cyan" | "neon_orange";
 
 export type TransparencyLevel = "none" | "low" | "medium" | "high";
 
@@ -102,7 +97,6 @@ export interface UserPreferences {
   updated_at: string;
 }
 
-
 export type ServerVisibility = "public" | "private";
 
 export interface ServerInteractions {
@@ -124,7 +118,6 @@ export interface Server {
   interactions: ServerInteractions;
   created_at: string;
   updated_at: string;
-
 }
 
 export interface ServerMember {
@@ -167,6 +160,7 @@ export interface MemberRole {
 }
 
 export interface Channel {
+  category_id: string | null;
   id: string;
   server_id: string;
   name: string;
@@ -175,6 +169,14 @@ export interface Channel {
   position: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface ServerCategory {
+  id: string;
+  server_id: string;
+  name: string;
+  position: number;
+  created_at: string;
 }
 
 export interface ServerInvite {
@@ -269,11 +271,7 @@ export interface ChannelReadState {
 }
 
 export type VoiceConnectionState =
-  | "disconnected"
-  | "connecting"
-  | "connected"
-  | "reconnecting"
-  | "error";
+  "disconnected" | "connecting" | "connected" | "reconnecting" | "error";
 
 export interface VoiceParticipant {
   user_id: string;

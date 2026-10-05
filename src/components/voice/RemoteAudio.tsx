@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAudioSettings } from "@/hooks/use-audio-settings";
 import { useVoice } from "@/hooks/use-voice";
+import { receivedAudioVolume } from "@/lib/audio-volume";
 
 function AudioSink({
   stream,
@@ -44,13 +45,12 @@ function AudioSink({
     const el = ref.current;
     if (!el) return;
     const safe = Number.isFinite(volume) ? volume : 100;
-    el.volume = deafened ? 0 : Math.max(0, Math.min(1, safe / 100));
+    el.volume = receivedAudioVolume(safe, 100, deafened);
   }, [volume, deafened]);
 
   useEffect(() => {
     const el = ref.current as
-      | (HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> })
-      | null;
+      (HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> }) | null;
     if (!el || !outputId || typeof el.setSinkId !== "function") return;
     void el.setSinkId(outputId).catch(() => undefined);
   }, [outputId]);
@@ -68,18 +68,20 @@ export function RemoteAudio() {
   return (
     <>
       <div className="sr-only" aria-hidden>
-        {Object.entries(remoteMedia).map(([userId, media]) =>
-          media.audio ? (
-            <AudioSink
-              key={userId}
-              stream={media.audio}
-              volume={((volumes[userId] ?? 100) * settings.outputVolume) / 100}
-              deafened={deafened}
-              outputId={settings.outputDeviceId ?? undefined}
-              onBlocked={setBlocked}
-              unlockToken={unlockToken}
-            />
-          ) : null,
+        {Object.entries(remoteMedia).flatMap(([userId, media]) =>
+          [media.audio, media.screenAudio].map((stream, index) =>
+            stream ? (
+              <AudioSink
+                key={`${userId}:${index}`}
+                stream={stream}
+                volume={((volumes[userId] ?? 100) * settings.outputVolume) / 100}
+                deafened={deafened}
+                outputId={settings.outputDeviceId ?? undefined}
+                onBlocked={setBlocked}
+                unlockToken={unlockToken}
+              />
+            ) : null,
+          ),
         )}
       </div>
       {blocked && (

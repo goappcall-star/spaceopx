@@ -280,7 +280,7 @@ function AppPage() {
               members={members}
               unreadChannelIds={unread}
               canInvite={canManage || abilities.can("create_invite")}
-              canManage={canManage}
+              canManage={abilities.can("manage_channels")}
               canOpenSettings={abilities.canOpenSettings}
               onOpenSettings={() => setSettingsOpen(true)}
               onInvite={() => setInviteOpen(true)}

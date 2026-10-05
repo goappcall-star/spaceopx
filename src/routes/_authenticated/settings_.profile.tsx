@@ -1,4 +1,5 @@
 import { AVATAR_FRAMES, normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
+import { ThemeSelector } from "@/components/settings/ThemeSelector";
 import { z } from "zod";
 import {
   SettingsShell,
@@ -469,6 +470,7 @@ function ProfileSettingsPage() {
             <section className="glass-panel p-6">
               <h2 className="mb-4 text-base font-semibold">Personalização visual</h2>
               <div className="space-y-5">
+                {section === "appearance" && <ThemeSelector />}
                 {section === "appearance" && (
                   <div className="space-y-2">
                     <Label>Cor de destaque</Label>
@@ -533,11 +535,11 @@ function ProfileSettingsPage() {
           <aside className="xl:sticky xl:top-6 xl:self-start">
             <div className="glass-panel overflow-hidden">
               <div
-                className="bg-brand-gradient h-24 w-full bg-cover bg-center"
+                className="bg-brand-gradient h-44 w-full bg-cover bg-center sm:h-52"
                 style={form.banner_url ? { backgroundImage: `url(${form.banner_url})` } : undefined}
               />
               <div className="p-5">
-                <div className="relative -mt-12 w-fit">
+                <div className="relative -mt-28 mb-8 w-fit">
                   <Avatar
                     frame={form.avatar_frame}
                     className="border-surface glow-ring h-20 w-20 border-4"

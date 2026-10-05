@@ -577,6 +577,10 @@ export function VoiceProviderRoot({
     }
     try {
       await provider.startScreenShare();
+      if (!provider.screenShareHasAudio)
+        toast.info(
+          "Tela compartilhada sem áudio. Para transmitir som, habilite o áudio da aba ou do sistema na seleção, quando disponível.",
+        );
       setScreenOn(true);
     } catch (error) {
       const name = (error as DOMException)?.name;

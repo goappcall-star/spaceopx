@@ -15,4 +15,4 @@ if (generatedWeb !== expectedWeb) throw new Error('Unexpected desktop web direct
 await rm(generatedWeb, { recursive: true, force: true });
 await mkdir('desktop/web', { recursive: true });
 await cp('.output/public', 'desktop/web', { recursive: true });
-await writeFile('desktop/package.json', JSON.stringify({ name: 'lobbyx-desktop', version: '0.1.20', description: 'LobbyX para Windows', author: 'LobbyX', main: 'main.cjs' }, null, 2));
+await writeFile('desktop/package.json', JSON.stringify({ name: 'lobbyx-desktop', version: '0.1.21', description: 'LobbyX para Windows', author: 'LobbyX', main: 'main.cjs' }, null, 2));

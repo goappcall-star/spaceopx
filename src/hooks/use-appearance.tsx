@@ -2,6 +2,8 @@ import { useEffect } from "react";
 
 import { useAuth } from "@/hooks/use-auth";
 import { usePreferences } from "@/hooks/use-gamer";
+import { useTheme } from "@/hooks/use-theme";
+import { resolvedTheme } from "@/lib/theme";
 
 /**
  * Applies the user's visual preferences as data-attributes on <html>.
@@ -10,6 +12,20 @@ import { usePreferences } from "@/hooks/use-gamer";
 export function AppearanceSync() {
   const { user } = useAuth();
   const { data: prefs } = usePreferences(user?.id);
+  const { mode } = useTheme();
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const apply = () => {
+      const theme = resolvedTheme(mode, media.matches);
+      const root = document.documentElement;
+      root.classList.toggle("dark", theme === "dark");
+      root.classList.toggle("light", theme === "light");
+      root.style.colorScheme = theme;
+    };
+    apply();
+    media.addEventListener("change", apply);
+    return () => media.removeEventListener("change", apply);
+  }, [mode]);
 
   useEffect(() => {
     const root = document.documentElement;

@@ -6,10 +6,16 @@ import { readFile } from "node:fs/promises";
 await buildAudioWorklet();
 const root = process.cwd();
 const bundle = await rolldown({
-  input: "tests/audio/browser-harness.ts",
+  input: process.argv.includes("--screen")
+    ? "tests/audio/screen-harness.ts"
+    : "tests/audio/browser-harness.ts",
   plugins: [
     {
       name: "audio-test-aliases",
+      transform(code, id) {
+        if (id.replaceAll("\\", "/").endsWith("/services/voice.ts"))
+          return code.replaceAll("import.meta.env", "({})");
+      },
       resolveId(id) {
         if (id === "@/integrations/supabase/client")
           return path.resolve("tests/audio/supabase-fixture.ts");
@@ -47,4 +53,5 @@ const server = http.createServer(async (request, response) => {
     response.end("Not found");
   }
 });
-server.listen(5179, "127.0.0.1", () => console.log("Audio harness: http://127.0.0.1:5179/"));
+const port = process.argv.includes("--screen") ? 5182 : 5179;
+server.listen(port, "127.0.0.1", () => console.log(`Audio harness: http://127.0.0.1:${port}/`));

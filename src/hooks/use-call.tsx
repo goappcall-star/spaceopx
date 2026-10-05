@@ -588,6 +588,10 @@ export function CallProviderRoot({
     }
     try {
       await provider.startScreenShare();
+      if (!provider.screenShareHasAudio)
+        toast.info(
+          "Tela compartilhada sem áudio. Habilite o áudio da aba ou do sistema na seleção, quando disponível.",
+        );
       setScreenOn(true);
     } catch (error) {
       if ((error as DOMException)?.name === "NotAllowedError")

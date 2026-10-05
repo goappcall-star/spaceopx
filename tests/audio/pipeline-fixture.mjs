@@ -147,7 +147,17 @@ export function loadVoiceProvider(audioExports, additions = {}) {
       if (id === "./audio-processing") return audioExports;
       if (id === "@/integrations/supabase/client")
         return { supabase: { removeChannel: async () => undefined } };
-      if (id === "./remote-track") return {};
+      if (id === "./remote-track") {
+        const remoteEnvironment = { exports: {} };
+        vm.runInNewContext(
+          ts.transpileModule(
+            fs.readFileSync(new URL("../../src/services/remote-track.ts", import.meta.url), "utf8"),
+            { compilerOptions: { module: ts.ModuleKind.CommonJS } },
+          ).outputText,
+          remoteEnvironment,
+        );
+        return remoteEnvironment.exports;
+      }
       assert.fail(`Unexpected import ${id}`);
     },
     crypto: { randomUUID: () => "session" },

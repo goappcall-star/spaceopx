@@ -108,10 +108,10 @@ export function ProfileCosmeticPicker({
                   <div className="h-10 rounded-lg bg-muted/30" />
                 </div>
               ) : (
-                <div className="relative rounded-2xl bg-surface overflow-hidden border border-border">
+                <div className="relative rounded-2xl bg-surface overflow-visible border border-border mx-4 my-5">
                   <ProfileFrameDecoration value={selected} />
                   <div
-                    className="h-24 bg-brand-gradient bg-cover bg-center"
+                    className="h-24 rounded-t-2xl bg-brand-gradient bg-cover bg-center"
                     style={banner ? { backgroundImage: `url(${banner})` } : undefined}
                   />
                   <div className="p-5">

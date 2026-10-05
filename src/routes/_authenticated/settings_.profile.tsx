@@ -548,10 +548,10 @@ function ProfileSettingsPage() {
         {/* -------------------------------------------------------- preview */}
         {section === "profile" && (
           <aside className="xl:sticky xl:top-6 xl:self-start">
-            <div className="glass-panel relative overflow-hidden">
+            <div className="glass-panel relative overflow-visible">
               <ProfileFrameDecoration value={form.profile_frame} />
               <div
-                className="bg-brand-gradient relative h-44 w-full bg-cover bg-center sm:h-52"
+                className="bg-brand-gradient relative h-44 w-full rounded-t-2xl bg-cover bg-center sm:h-52"
                 style={form.banner_url ? { backgroundImage: `url(${form.banner_url})` } : undefined}
               >
                 <Button

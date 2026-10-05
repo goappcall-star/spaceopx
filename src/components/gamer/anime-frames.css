@@ -2,6 +2,50 @@
 .lx-anime-frame {
   overflow: visible;
 }
+.lx-frame-art {
+  transform-origin: 150px 200px;
+}
+[data-theme="crimson-flow"] .lx-frame-art {
+  animation: lx-art-flow 9s ease-in-out infinite;
+}
+[data-theme="shadow-rise"] .lx-frame-art {
+  animation: lx-art-rise 8s ease-in-out infinite;
+}
+[data-theme="celestial-energy"] .lx-frame-art {
+  animation: lx-art-power 5s ease-in-out infinite;
+}
+[data-theme="void-eye"] .lx-frame-art {
+  animation: lx-art-warp 10s ease-in-out infinite;
+}
+[data-theme="crimson-moon"] .lx-frame-art {
+  animation: lx-art-flow 13s ease-in-out infinite reverse;
+}
+[data-theme="neon-impact"] .lx-frame-art {
+  animation: lx-glitch 11s steps(1, end) infinite;
+}
+[data-theme="spirit-flame"] .lx-frame-art {
+  animation: lx-art-rise 6s ease-in-out infinite;
+}
+@keyframes lx-art-flow {
+  50% {
+    transform: skewX(0.4deg) translateY(-2px);
+  }
+}
+@keyframes lx-art-rise {
+  50% {
+    transform: translateY(-4px) scaleY(1.008);
+  }
+}
+@keyframes lx-art-power {
+  50% {
+    transform: scale(1.009, 1.005);
+  }
+}
+@keyframes lx-art-warp {
+  50% {
+    transform: skewY(0.45deg) scaleX(1.008);
+  }
+}
 .lx-wave {
   animation: lx-wave 14s linear infinite;
 }

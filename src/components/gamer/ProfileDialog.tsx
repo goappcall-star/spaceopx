@@ -44,7 +44,7 @@ export function ProfileDialogProvider({
     <ProfileDialogContext.Provider value={value}>
       {children}
       <Dialog open={Boolean(userId)} onOpenChange={(open) => !open && setUserId(null)}>
-        <DialogContent className="max-w-lg overflow-hidden p-0">
+        <DialogContent className="max-w-lg overflow-visible p-0">
           <ProfileDialogBody
             userId={userId}
             onStartDirect={(conversationId) => {
@@ -84,7 +84,7 @@ function ProfileDialogBody({
   return (
     <div className="relative rounded-2xl">
       <ProfileFrameDecoration value={profile.profile_frame} />
-      <div className="max-h-[80vh] overflow-y-auto">
+      <div className="max-h-[80vh] overflow-y-auto rounded-2xl">
         <div
           className="bg-brand-gradient h-44 w-full bg-cover bg-center sm:h-52"
           style={profile.banner_url ? { backgroundImage: `url(${profile.banner_url})` } : undefined}

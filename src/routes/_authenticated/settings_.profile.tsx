@@ -216,24 +216,6 @@ function ProfileSettingsPage() {
               <h2 className="mb-4 text-base font-semibold">Identidade</h2>
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="flex flex-wrap gap-3">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => avatarInput.current?.click()}
-                    disabled={uploadImage.isPending}
-                  >
-                    <Upload className="mr-2 h-4 w-4" /> Enviar avatar
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => bannerInput.current?.click()}
-                    disabled={uploadImage.isPending}
-                  >
-                    <Upload className="mr-2 h-4 w-4" /> Enviar banner
-                  </Button>
                   <input
                     ref={avatarInput}
                     type="file"
@@ -357,7 +339,7 @@ function ProfileSettingsPage() {
                   </div>
                 </fieldset>
 
-                <Button type="submit" disabled={saveProfile.isPending}>
+                <Button type="submit" disabled={saveProfile.isPending || uploadImage.isPending}>
                   {saveProfile.isPending ? "Salvando..." : "Salvar perfil"}
                 </Button>
               </form>
@@ -516,20 +498,45 @@ function ProfileSettingsPage() {
           <aside className="xl:sticky xl:top-6 xl:self-start">
             <div className="glass-panel overflow-hidden">
               <div
-                className="bg-brand-gradient h-44 w-full bg-cover bg-center sm:h-52"
+                className="bg-brand-gradient relative h-44 w-full bg-cover bg-center sm:h-52"
                 style={form.banner_url ? { backgroundImage: `url(${form.banner_url})` } : undefined}
-              />
+              >
+                <Button
+                  type="button"
+                  aria-label="Alterar banner"
+                  disabled={uploadImage.isPending}
+                  onClick={() => bannerInput.current?.click()}
+                  className="absolute top-3 right-3 h-9 w-9 rounded-full bg-black/60 text-white hover:bg-black/80"
+                  size="icon"
+                >
+                  <Upload className="h-4 w-4" />
+                </Button>
+              </div>
               <div className="p-5">
                 <div className="relative -mt-28 mb-8 w-fit">
-                  <Avatar
-                    frame={form.avatar_frame}
-                    className="border-surface glow-ring h-20 w-20 border-4"
+                  <button
+                    type="button"
+                    aria-label="Alterar avatar"
+                    disabled={uploadImage.isPending}
+                    onClick={() => avatarInput.current?.click()}
+                    className="group relative block rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60"
                   >
-                    <AvatarImage src={form.avatar_url || undefined} alt="" />
-                    <AvatarFallback className="bg-secondary text-lg">
-                      {form.display_name.slice(0, 2).toUpperCase() || "??"}
-                    </AvatarFallback>
-                  </Avatar>
+                    <Avatar
+                      frame={form.avatar_frame}
+                      className="border-surface glow-ring h-20 w-20 border-4"
+                    >
+                      <AvatarImage src={form.avatar_url || undefined} alt="" />
+                      <AvatarFallback className="bg-secondary text-lg">
+                        {form.display_name.slice(0, 2).toUpperCase() || "??"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                      <Upload className="h-5 w-5" />
+                    </span>
+                    <span className="absolute -top-1 -right-1 rounded-full bg-primary p-1 text-primary-foreground">
+                      <Upload className="h-3 w-3" />
+                    </span>
+                  </button>
                   <StatusDot
                     status={form.status}
                     playing={presence?.status === "playing"}

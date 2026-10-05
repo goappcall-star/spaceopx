@@ -11,6 +11,7 @@ import {
   SidebarChannelMenu,
 } from "@/components/app/SidebarContextMenus";
 import { EditChannelDialog } from "@/components/app/EditChannelDialog";
+import { ConfirmActionDialog } from "@/components/app/ConfirmActionDialog";
 import { CreateChannelDialog } from "@/components/app/CreateChannelDialog";
 
 import { CategoryManager } from "@/components/app/CategoryManager";
@@ -125,6 +126,11 @@ export function ChannelSidebar({
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null);
   const [creatingChannelIn, setCreatingChannelIn] = useState<string | null>(null);
   const client = useQueryClient();
+  const [confirmation, setConfirmation] = useState<{
+    title: string;
+    description: string;
+    action: () => Promise<unknown>;
+  } | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const { data: categories = [], error: categoryError } = useServerCategories(server.id);
   const drag = useSidebarDrag(server.id, canManage, channels, categories, (id) => {
@@ -169,8 +175,10 @@ export function ChannelSidebar({
         client.invalidateQueries({ queryKey: ["categories", server.id] }),
         client.invalidateQueries({ queryKey: ["channels", server.id] }),
       ]);
+      return true;
     } catch {
       toast.error("Não foi possível atualizar. Confira sua permissão de gerenciar canais.");
+      return false;
     }
   }
   async function copy(id: string) {
@@ -207,12 +215,11 @@ export function ChannelSidebar({
       toggleMute={() => onToggleMuteChannel(channel.id)}
       edit={() => setEditingChannel(channel)}
       remove={() => {
-        if (
-          window.confirm(
-            `Excluir o canal "${channel.name}"? As mensagens serão excluídas e esta ação não pode ser desfeita.`,
-          )
-        )
-          void run(() => channelsService.remove(server.id, channel.id));
+        setConfirmation({
+          title: `Excluir canal ${channel.name}?`,
+          description: "As mensagens deste canal serão excluídas. Esta ação não pode ser desfeita.",
+          action: () => channelsService.remove(server.id, channel.id),
+        });
       }}
       assign={(id) => void run(() => categoriesService.assignChannel(server.id, channel.id, id))}
       invite={canInvite ? onInvite : undefined}
@@ -566,12 +573,11 @@ export function ChannelSidebar({
                   setCategoriesOpen(true);
                 }}
                 remove={() => {
-                  if (
-                    window.confirm(
-                      `Excluir a categoria "${category.name}"? Seus canais serão mantidos sem categoria.`,
-                    )
-                  )
-                    void run(() => categoriesService.remove(server.id, category.id));
+                  setConfirmation({
+                    title: `Excluir categoria ${category.name}?`,
+                    description: "Seus canais serão mantidos e aparecerão em “Sem categoria”.",
+                    action: () => categoriesService.remove(server.id, category.id),
+                  });
                 }}
                 move={(where) => moveCategory(category, where)}
                 createChannel={() => setCreatingChannelIn(category.id)}
@@ -688,6 +694,14 @@ export function ChannelSidebar({
             if (!open) setCreatingChannelIn(null);
           }}
           onCreated={onSelectChannel}
+        />
+      )}
+      {confirmation && (
+        <ConfirmActionDialog
+          title={confirmation.title}
+          description={confirmation.description}
+          onConfirm={() => run(confirmation.action)}
+          onClose={() => setConfirmation(null)}
         />
       )}
       <UserBar />

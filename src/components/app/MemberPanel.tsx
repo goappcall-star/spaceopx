@@ -1,41 +1,62 @@
 import { StatusDot } from "@/components/app/StatusDot";
 import { GamePresenceLine } from "@/components/gamer/GamePresenceLine";
-import { QuickProfile } from "@/components/gamer/QuickProfile";
+import { useState } from "react";
+import { MemberActions } from "./MemberActions";
+import { useAuth } from "@/hooks/use-auth";
+import { useServerAbilities } from "@/hooks/use-server-admin";
+import { groupMembersByRole, memberAliasKey } from "@/lib/member-groups";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useGamePresenceMap } from "@/hooks/use-gamer";
 import { useGlobalPresence } from "@/hooks/use-global-presence";
 import { cn } from "@/lib/utils";
 import { roleLabel } from "@/services/roles";
-import type { MemberWithProfile, UserStatus } from "@/types";
+import type { MemberWithProfile, UserStatus, Server } from "@/types";
 
 export function MemberPanel({
   members,
   loading,
   onStartDirect,
+  server,
+  onInvite,
 }: {
   members: MemberWithProfile[];
   loading: boolean;
   onStartDirect?: ((conversationId: string) => void) | undefined;
+  server: Server;
+  onInvite?: (() => void) | undefined;
 }) {
   const { statusOf, games } = useGlobalPresence();
+  const { user } = useAuth();
+  const abilities = useServerAbilities(server, members, user?.id);
+  const [, refreshAliases] = useState(0);
   // Single batched query + realtime for the whole list — no per-member fetch.
   const gamePresence = useGamePresenceMap(members.map((m) => m.user_id));
 
-  const online = members.filter((m) => statusOf(m.user_id) !== "offline");
-  const offline = members.filter((m) => statusOf(m.user_id) === "offline");
+  const groups = groupMembersByRole(members);
 
   const renderMember = (member: MemberWithProfile) => {
     const topRole = member.roles[0];
-    const name = member.nickname ?? member.profile?.display_name ?? "Usuário";
+    let alias = "";
+    try {
+      alias = localStorage.getItem(memberAliasKey(user?.id, member.user_id)) ?? "";
+    } catch {
+      /* Local names are optional. */
+    }
+    const name = alias || member.nickname || member.profile?.display_name || "Usuário";
     const status: UserStatus = statusOf(member.user_id);
     const game = gamePresence[member.user_id];
     return (
       <li key={member.id}>
-        <QuickProfile
-          userId={member.user_id}
-          roles={member.roles}
-          side="left"
+        <MemberActions
+          member={member}
+          server={server}
           onStartDirect={onStartDirect}
+          onInvite={onInvite}
+          onAliasChange={() => refreshAliases((value) => value + 1)}
+          canManageRoles={abilities.can("manage_roles")}
+          canManageMembers={abilities.can("manage_server")}
+          canKick={abilities.can("kick_members")}
+          canBan={abilities.can("ban_members")}
         >
           <button
             type="button"
@@ -77,7 +98,7 @@ export function MemberPanel({
               )}
             </div>
           </button>
-        </QuickProfile>
+        </MemberActions>
       </li>
     );
   };
@@ -98,14 +119,18 @@ export function MemberPanel({
               <span className="bg-surface-elevated shimmer h-3 w-24 rounded" />
             </li>
           ))}
-        {online.length > 0 && (
-          <li className="text-caption px-2 pt-1 pb-1">Online — {online.length}</li>
-        )}
-        {online.map(renderMember)}
-        {offline.length > 0 && (
-          <li className="text-caption px-2 pt-4 pb-1">Offline — {offline.length}</li>
-        )}
-        {offline.map(renderMember)}
+        {!loading &&
+          groups.map((group) => (
+            <li key={group.role?.id ?? "unassigned"}>
+              <h4
+                className="text-caption px-2 pt-4 pb-1"
+                style={group.role?.color ? { color: group.role.color } : undefined}
+              >
+                {group.role ? roleLabel(group.role.name) : "Sem cargo"} — {group.members.length}
+              </h4>
+              <ul className="space-y-0.5">{group.members.map(renderMember)}</ul>
+            </li>
+          ))}
       </ul>
     </aside>
   );

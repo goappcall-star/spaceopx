@@ -427,6 +427,10 @@ function AppPage() {
 
           {view === "servers" && activeServer && (
             <MemberPanel
+              server={activeServer}
+              onInvite={
+                canManage || abilities.can("create_invite") ? () => setInviteOpen(true) : undefined
+              }
               members={members}
               loading={loadingMembers}
               onStartDirect={openConversation}

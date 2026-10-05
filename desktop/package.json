@@ -1,6 +1,6 @@
 {
   "name": "lobbyx-desktop",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "description": "LobbyX para Windows",
   "author": "LobbyX",
   "main": "main.cjs",

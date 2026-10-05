@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Profile, UserStatus } from "@/types";
 import { normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
+import { validateProfileStatus } from "@/lib/profile-status";
 
 export interface ProfileUpdate {
   avatar_frame?: AvatarFrameId;
@@ -23,7 +24,10 @@ function sanitize(update: ProfileUpdate): ProfileUpdate {
   if (update.bio !== undefined) clean.bio = update.bio?.trim() || null;
   if (update.custom_status !== undefined)
     clean.custom_status = update.custom_status?.trim() || null;
-  if (update.status !== undefined) clean.status = update.status;
+  if (update.status !== undefined) {
+    validateProfileStatus(update.status);
+    clean.status = update.status;
+  }
   return clean;
 }
 

@@ -119,8 +119,7 @@ export function ChannelSidebar({
   onMarkRead,
 }: Props) {
   const { participantsByChannel, activeChannelId: voiceChannelId, join } = useVoice();
-  const [textOpen, setTextOpen] = useState(true);
-  const [voiceOpen, setVoiceOpen] = useState(true);
+  const [unassignedOpen, setUnassignedOpen] = useState(true);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<ServerCategory | undefined>();
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null);
@@ -134,7 +133,7 @@ export function ChannelSidebar({
       next.delete(id);
       return next;
     });
-    if (id === "") setVoiceOpen(true);
+    if (id === "") setUnassignedOpen(true);
   });
 
   const textChannels = channels.filter(
@@ -154,8 +153,7 @@ export function ChannelSidebar({
   );
   const collapseAll = () => {
     setCollapsed(new Set(categories.map((category) => category.id)));
-    setTextOpen(false);
-    setVoiceOpen(false);
+    setUnassignedOpen(false);
   };
   const toggleCategory = (id: string) =>
     setCollapsed((previous) => {
@@ -232,14 +230,10 @@ export function ChannelSidebar({
     <ContextMenu>
       <ContextMenuTrigger asChild onContextMenu={(event) => event.stopPropagation()}>
         <div
-          {...(label === "Canais de voz" ? drag.zone(null) : {})}
+          {...drag.zone(null)}
           className={cn(
-            label === "Canais de voz" &&
-              drag.source?.kind === "channel" &&
-              "rounded-lg border border-dashed border-primary/40",
-            label === "Canais de voz" &&
-              drag.target?.id === null &&
-              "bg-primary/15 ring-2 ring-primary",
+            drag.source?.kind === "channel" && "rounded-lg border border-dashed border-primary/40",
+            drag.target?.id === null && "bg-primary/15 ring-2 ring-primary",
           )}
         >
           <CategoryHeader
@@ -621,41 +615,35 @@ export function ChannelSidebar({
             </div>
           ))}
 
-          {defaultHeader(
-            "Canais de texto",
-            channels.filter(
-              (c) =>
-                c.type !== "voice" &&
-                (!c.category_id || !categories.some((cat) => cat.id === c.category_id)),
-            ),
-            textOpen,
-            () => setTextOpen((v) => !v),
+          {(channels.some(
+            (c) => !c.category_id || !categories.some((cat) => cat.id === c.category_id),
+          ) ||
+            drag.source?.kind === "channel") && (
+            <div className="mt-3">
+              {defaultHeader(
+                "Sem categoria",
+                channels.filter(
+                  (c) => !c.category_id || !categories.some((cat) => cat.id === c.category_id),
+                ),
+                unassignedOpen,
+                () => setUnassignedOpen((v) => !v),
+              )}
+              {unassignedOpen && (
+                <>
+                  {renderText(
+                    textChannels.filter(
+                      (c) => !c.category_id || !categories.some((cat) => cat.id === c.category_id),
+                    ),
+                  )}
+                  {renderVoice(
+                    voiceChannels.filter(
+                      (c) => !c.category_id || !categories.some((cat) => cat.id === c.category_id),
+                    ),
+                  )}
+                </>
+              )}
+            </div>
           )}
-          {textOpen &&
-            renderText(
-              textChannels.filter(
-                (c) => !c.category_id || !categories.some((cat) => cat.id === c.category_id),
-              ),
-            )}
-
-          <div className="mt-3">
-            {defaultHeader(
-              "Canais de voz",
-              channels.filter(
-                (c) =>
-                  c.type === "voice" &&
-                  (!c.category_id || !categories.some((cat) => cat.id === c.category_id)),
-              ),
-              voiceOpen,
-              () => setVoiceOpen((v) => !v),
-            )}
-          </div>
-          {voiceOpen &&
-            renderVoice(
-              voiceChannels.filter(
-                (c) => !c.category_id || !categories.some((cat) => cat.id === c.category_id),
-              ),
-            )}
 
           {canInvite && (
             <Button variant="outline" size="sm" className="mt-4 w-full" onClick={onInvite}>

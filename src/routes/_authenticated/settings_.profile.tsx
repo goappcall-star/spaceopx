@@ -1,5 +1,7 @@
 import { AVATAR_FRAMES, normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
 import { ThemeSelector } from "@/components/settings/ThemeSelector";
+import { ProfileStatusSelect } from "@/components/settings/ProfileStatusSelect";
+import { profileSaveErrorMessage } from "@/lib/profile-status";
 import { z } from "zod";
 import {
   SettingsShell,
@@ -64,7 +66,6 @@ export const Route = createFileRoute("/_authenticated/settings_/profile")({
   component: ProfileSettingsPage,
 });
 
-const STATUSES: UserStatus[] = ["online", "idle", "dnd", "offline"];
 const ACCENTS: { value: AccentColor; label: string }[] = [
   { value: "neon_cyan", label: "Ciano" },
   { value: "neon_blue", label: "Azul" },
@@ -145,14 +146,7 @@ function ProfileSettingsPage() {
       toast.success("Perfil atualizado.");
     },
     onError: (error) => {
-      const message = error instanceof Error ? error.message : "";
-      toast.error(
-        message.includes("username_is_permanent")
-          ? "Seu username é permanente e não pode ser alterado."
-          : /avatar_frame|schema cache/.test(message)
-            ? "As molduras ainda precisam ser ativadas no servidor. Tente novamente após a atualização."
-            : "Não foi possível salvar o perfil.",
-      );
+      toast.error(profileSaveErrorMessage(error));
     },
   });
 
@@ -316,23 +310,10 @@ function ProfileSettingsPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="status">Status online</Label>
-                  <Select
+                  <ProfileStatusSelect
                     value={form.status}
-                    onValueChange={(value) =>
-                      setForm((f) => ({ ...f, status: value as UserStatus }))
-                    }
-                  >
-                    <SelectTrigger id="status">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STATUSES.map((status) => (
-                        <SelectItem key={status} value={status}>
-                          {STATUS_EMOJI[status]} {STATUS_LABEL[status]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(status) => setForm((f) => ({ ...f, status }))}
+                  />
                 </div>
 
                 <fieldset className="space-y-3">

@@ -84,8 +84,7 @@ export function useSidebarDrag(
         if (channel.category_id !== id)
           await categoriesService.assignChannel(serverId, channel.id, id);
         expand(id ?? "");
-        const label =
-          categories.find((category) => category.id === id)?.name ?? "Canais de voz sem categoria";
+        const label = categories.find((category) => category.id === id)?.name ?? "Sem categoria";
         setAnnouncement(`Canal ${channel.name} movido para ${label}.`);
       } else {
         // Use fresh rows so a concurrent rename is not overwritten by the reorder.

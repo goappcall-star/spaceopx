@@ -82,6 +82,10 @@ test("Cosmetics are saved through the shared profile service with account scope 
     await profilesService.update("viewer-account", { profile_frame: theme.id });
     assert.equal(payload.profile_frame, theme.id);
   }
+  await profilesService.update("viewer-account", { profile_frame: "flaming-cut" });
+  assert.equal(payload.profile_frame, "flaming-cut", "the imported frame survives profile saves");
+  await profilesService.update("viewer-account", { nameplate: "flaming-cut" });
+  assert.equal(payload.nameplate, "none", "the imported frame remains profile-only");
   await profilesService.update("viewer-account", { nameplate: "crimson-flow" });
   assert.equal(
     payload.nameplate,

@@ -1,6 +1,7 @@
 import { profileCosmetic } from "@/lib/profile-cosmetics";
 import { isAnimeFrame } from "@/lib/anime-frame-themes";
 import { AnimeFrame } from "./AnimeFrame";
+import { FlamingCutFrame } from "./FlamingCutFrame";
 
 /** Decorative overlay never intercepts profile or menu interactions. */
 export function ProfileFrameDecoration({
@@ -12,6 +13,7 @@ export function ProfileFrameDecoration({
 }) {
   const item = profileCosmetic(value);
   if (item.id === "none") return null;
+  if (item.id === "flaming-cut") return <FlamingCutFrame animated={animated} />;
   if (isAnimeFrame(item.id)) return <AnimeFrame theme={item.id} animated={animated} />;
   return (
     <div

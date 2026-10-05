@@ -45,7 +45,17 @@ export const NAMEPLATE_COSMETICS = [
     secondary: "#c084fc",
   },
 ] as const;
-export const PROFILE_COSMETICS = [...NAMEPLATE_COSMETICS, ...ANIME_FRAME_THEMES] as const;
+export const PROFILE_COSMETICS = [
+  ...NAMEPLATE_COSMETICS,
+  ...ANIME_FRAME_THEMES,
+  {
+    id: "flaming-cut",
+    name: "Corte Flamejante",
+    description: "Chamas ondulantes e três cortes luminosos percorrem o perfil.",
+    color: "#ff852f",
+    secondary: "#ff2339",
+  },
+] as const;
 export type ProfileCosmeticId = (typeof PROFILE_COSMETICS)[number]["id"];
 export function normalizeProfileCosmetic(value: unknown): ProfileCosmeticId {
   return PROFILE_COSMETICS.find((item) => item.id === value)?.id ?? "none";

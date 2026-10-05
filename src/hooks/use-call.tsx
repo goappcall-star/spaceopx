@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { createVoiceProvider, type RemoteMedia, type VoiceProvider } from "@/services/voice";
 import { createCallGracePeriod } from "@/services/call-grace-period";
 import type { Profile } from "@/types";
+import { reportDesktopCall, clearDesktopCall, beginDesktopCall } from "@/services/desktop-updates";
 
 /**
  * 1:1 private calls (voice or video).
@@ -105,6 +106,10 @@ export function CallProviderRoot({
   const [speakingUsers, setSpeakingUsers] = useState<Record<string, boolean>>({});
   const [cameraOn, setCameraOn] = useState(false);
   const [screenOn, setScreenOn] = useState(false);
+  useEffect(() => {
+    reportDesktopCall("private", screenOn || (status !== "idle" && status !== "ended"));
+  }, [screenOn, status]);
+  useEffect(() => () => clearDesktopCall("private"), []);
   const [localCamera, setLocalCamera] = useState<MediaStream | null>(null);
   const [localScreen, setLocalScreen] = useState<MediaStream | null>(null);
   const [remote, setRemote] = useState<RemoteMedia | null>(null);
@@ -157,6 +162,8 @@ export function CallProviderRoot({
   /* --------------------------------------------------------------- cleanup */
 
   const teardownMedia = useCallback(async () => {
+    const teardown = `private-teardown-${crypto.randomUUID()}`;
+    reportDesktopCall(teardown, true);
     const presence = groupPresenceRef.current;
     groupPresenceRef.current = null;
     const provider = providerRef.current;
@@ -171,10 +178,14 @@ export function CallProviderRoot({
     setGroupConversationId(null);
     setParticipants([]);
     setGroupMedia({});
-    await Promise.all([
-      presence ? supabase.removeChannel(presence) : undefined,
-      provider?.disconnect(),
-    ]);
+    try {
+      await Promise.all([
+        presence ? supabase.removeChannel(presence) : undefined,
+        provider?.disconnect(),
+      ]);
+    } finally {
+      clearDesktopCall(teardown);
+    }
   }, []);
 
   const closeControl = useCallback(async (pending?: Promise<unknown>) => {
@@ -258,6 +269,7 @@ export function CallProviderRoot({
 
   const startMedia = useCallback(
     async (callId: string, remoteId: string, withVideo: boolean) => {
+      beginDesktopCall("private");
       const provider = createVoiceProvider();
       providerRef.current = provider;
       statusRef.current = "connecting";
@@ -414,6 +426,7 @@ export function CallProviderRoot({
     async (id: string, name: string, members: CallPeer[]) => {
       if (!userId || !me || !members.some((member) => member.id === userId)) return;
       if (statusRef.current !== "idle" && statusRef.current !== "ended") return;
+      beginDesktopCall("private");
       statusRef.current = "connecting";
       setStatus("connecting");
       setEndReason(null);
@@ -499,6 +512,7 @@ export function CallProviderRoot({
       if (!userId || !me) return;
       if (statusRef.current !== "idle" && statusRef.current !== "ended") return;
       const callId = `${userId}-${target.id}-${Date.now().toString(36)}`;
+      beginDesktopCall("private");
       callIdRef.current = callId;
       setPeer(target);
       setVideo(withVideo);

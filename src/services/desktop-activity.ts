@@ -1,3 +1,4 @@
+import type { DesktopUpdateState } from "./desktop-updates";
 export interface DetectedGame {
   id: string;
   name: string;
@@ -31,6 +32,13 @@ export interface DesktopActivityState {
 declare global {
   interface Window {
     lobbyxDesktop?: {
+      updates?: {
+        state: () => Promise<DesktopUpdateState>;
+        check: () => Promise<DesktopUpdateState>;
+        activity: (busy: boolean) => Promise<DesktopUpdateState>;
+        install: () => Promise<{ ok: boolean; message?: string | null }>;
+        subscribe: (callback: (state: DesktopUpdateState) => void) => () => void;
+      };
       activity: () => Promise<DesktopActivityState>;
       preference: (
         key: DesktopPreferenceKey,

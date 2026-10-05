@@ -12,16 +12,20 @@
     "picker.js",
     "package.json",
     "web/**/*",
-    "!node_modules/**/*"
+    "node_modules/**/*"
   ],
   "asar": true,
+  "publish": {
+    "provider": "github",
+    "owner": "goappcall-star",
+    "repo": "spaceopx",
+    "releaseType": "draft"
+  },
   "win": {
     "target": [
       {
         "target": "nsis",
-        "arch": [
-          "x64"
-        ]
+        "arch": ["x64"]
       }
     ],
     "signExecutable": false,
@@ -37,9 +41,7 @@
   "protocols": [
     {
       "name": "LobbyX",
-      "schemes": [
-        "lobbyx"
-      ]
+      "schemes": ["lobbyx"]
     }
   ]
 }

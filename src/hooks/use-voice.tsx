@@ -21,6 +21,7 @@ import {
   type VoiceProvider,
 } from "@/services/voice";
 import type { VoiceConnectionState, VoiceParticipant } from "@/types";
+import { reportDesktopCall, clearDesktopCall, beginDesktopCall } from "@/services/desktop-updates";
 
 export type MediaPermission = "unknown" | "granted" | "denied" | "unavailable";
 
@@ -101,6 +102,16 @@ export function VoiceProviderRoot({
   }, []);
   const [cameraOn, setCameraOn] = useState(false);
   const [screenOn, setScreenOn] = useState(false);
+  useEffect(() => {
+    reportDesktopCall(
+      "voice",
+      !!activeChannelId ||
+        screenOn ||
+        connectionState === "connecting" ||
+        connectionState === "reconnecting",
+    );
+  }, [activeChannelId, screenOn, connectionState]);
+  useEffect(() => () => clearDesktopCall("voice"), []);
   const [volumes, setVolumes] = useState<Record<string, number>>({});
   const [remoteMedia, setRemoteMedia] = useState<Record<string, RemoteMedia>>({});
   const [localCamera, setLocalCamera] = useState<MediaStream | null>(null);
@@ -390,6 +401,8 @@ export function VoiceProviderRoot({
     // Invalidate callbacks immediately. The queued teardown then removes the
     // exact current presence slot before another session is allowed to start.
     lifecycleGenerationRef.current += 1;
+    const teardown = `voice-teardown-${lifecycleGenerationRef.current}`;
+    reportDesktopCall(teardown, true);
     const disconnecting = detachCurrent();
     voiceServerRef.current = null;
     setActiveServerId(null);
@@ -398,7 +411,8 @@ export function VoiceProviderRoot({
       .then(async () => {
         await disconnecting;
         await publishQueueRef.current;
-      });
+      })
+      .finally(() => clearDesktopCall(teardown));
     return lifecycleQueueRef.current;
   }, [detachCurrent]);
 
@@ -410,8 +424,10 @@ export function VoiceProviderRoot({
         (stateRef.current.activeChannelId === channelId && providerRef.current)
       )
         return lifecycleQueueRef.current;
-      pendingJoinChannelRef.current = channelId;
       const generation = lifecycleGenerationRef.current + 1;
+      const transition = `voice-transition-${generation}`;
+      beginDesktopCall(transition);
+      pendingJoinChannelRef.current = channelId;
       lifecycleGenerationRef.current = generation;
       const disconnecting = detachCurrent();
 
@@ -504,6 +520,9 @@ export function VoiceProviderRoot({
             if (pendingJoinChannelRef.current === channelId) pendingJoinChannelRef.current = null;
           }
         });
+      lifecycleQueueRef.current = lifecycleQueueRef.current.finally(() =>
+        clearDesktopCall(transition),
+      );
       return lifecycleQueueRef.current;
     },
     [

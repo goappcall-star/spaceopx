@@ -1,7 +1,10 @@
 {
   "name": "lobbyx-desktop",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "description": "LobbyX para Windows",
   "author": "LobbyX",
-  "main": "main.cjs"
+  "main": "main.cjs",
+  "dependencies": {
+    "electron-updater": "6.8.10"
+  }
 }

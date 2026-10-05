@@ -89,6 +89,11 @@ function fixture() {
     },
   };
   const imports = {
+    "@/services/desktop-updates": {
+      reportDesktopCall() {},
+      clearDesktopCall() {},
+      beginDesktopCall() {},
+    },
     react,
     "react/jsx-runtime": { jsx: (_type, p) => p, jsxs: (_type, p) => p },
     sonner: { toast: { error() {} } },

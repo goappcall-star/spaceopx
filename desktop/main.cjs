@@ -1,4 +1,5 @@
-const { app, BrowserWindow, protocol, net, session, dialog, shell } = require("electron");
+const { app, BrowserWindow, protocol, net, session, dialog, shell, ipcMain } = require("electron");
+const { installUpdater } = require("./updater.cjs");
 const path = require("node:path");
 const { chooseScreen } = require("./screen-picker.cjs");
 const fs = require("node:fs/promises");
@@ -198,6 +199,8 @@ else {
       pendingAuth = null;
       await window.loadURL(initialURL);
       ready = true;
+      const stopUpdater = installUpdater({ app, window, ipcMain, trusted });
+      window.once("closed", stopUpdater);
       if (pendingAuth) receiveAuth([pendingAuth]);
     })
     .catch((error) => {

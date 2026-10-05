@@ -17,6 +17,7 @@ import { THEME_BOOTSTRAP } from "@/lib/theme";
 import { AudioSettingsProvider } from "@/hooks/use-audio-settings";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { DesktopUpdates } from "@/components/app/DesktopUpdates";
 
 function NotFoundComponent() {
   return (
@@ -136,6 +137,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AppearanceSync />
+        <DesktopUpdates />
         <AudioSettingsProvider>
           <TooltipProvider delayDuration={200}>
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}

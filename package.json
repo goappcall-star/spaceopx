@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "desktop:build": "node desktop/build.mjs",
     "desktop:start": "electron desktop",
-    "desktop:dist": "npm run desktop:build && electron-builder --config electron-builder.json --win"
+    "desktop:dist": "npm ci --prefix desktop --omit=dev --ignore-scripts && npm run desktop:build && electron-builder --config electron-builder.json --win --publish never && node scripts/verify-desktop-release.mjs",
+    "desktop:release": "node scripts/publish-desktop-release.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -54,6 +55,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "electron-updater": "6.8.10",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.575.0",
@@ -88,6 +90,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
+    "js-yaml": "4.3.2",
     "nitro": "3.0.260603-beta",
     "postgres": "^3.4.9",
     "prettier": "^3.7.3",

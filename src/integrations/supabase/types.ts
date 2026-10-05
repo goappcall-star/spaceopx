@@ -523,6 +523,8 @@ export type Database = {
         Row: {
           accent_color: string
           avatar_frame: string
+          profile_frame: string
+          nameplate: string
           avatar_url: string | null
           banner_url: string | null
           bio: string | null
@@ -537,6 +539,8 @@ export type Database = {
         Insert: {
           accent_color?: string
           avatar_frame?: string
+          profile_frame?: string
+          nameplate?: string
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null
@@ -551,6 +555,8 @@ export type Database = {
         Update: {
           accent_color?: string
           avatar_frame?: string
+          profile_frame?: string
+          nameplate?: string
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null

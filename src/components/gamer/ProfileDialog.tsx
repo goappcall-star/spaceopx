@@ -1,4 +1,5 @@
 import { LiveGameActivity } from "./LiveGameActivity";
+import { ProfileFrameDecoration } from "./ProfileCosmetics";
 import { useGlobalPresence } from "@/hooks/use-global-presence";
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
@@ -81,88 +82,91 @@ function ProfileDialogBody({
   const { profile, presence, favorites, xp, badges, sharedServers } = data;
 
   return (
-    <div className="max-h-[80vh] overflow-y-auto">
-      <div
-        className="bg-brand-gradient h-44 w-full bg-cover bg-center sm:h-52"
-        style={profile.banner_url ? { backgroundImage: `url(${profile.banner_url})` } : undefined}
-      />
-      <div className="px-6 pb-6">
-        <Avatar
-          frame={profile.avatar_frame}
-          className="border-surface glow-ring -mt-24 mb-8 h-20 w-20 border-4"
-        >
-          <AvatarImage src={profile.avatar_url ?? undefined} alt="" />
-          <AvatarFallback className="bg-secondary text-lg">
-            {profile.display_name.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+    <div className="relative rounded-2xl">
+      <ProfileFrameDecoration value={profile.profile_frame} />
+      <div className="max-h-[80vh] overflow-y-auto">
+        <div
+          className="bg-brand-gradient h-44 w-full bg-cover bg-center sm:h-52"
+          style={profile.banner_url ? { backgroundImage: `url(${profile.banner_url})` } : undefined}
+        />
+        <div className="px-6 pb-6">
+          <Avatar
+            frame={profile.avatar_frame}
+            className="border-surface glow-ring -mt-24 mb-8 h-20 w-20 border-4"
+          >
+            <AvatarImage src={profile.avatar_url ?? undefined} alt="" />
+            <AvatarFallback className="bg-secondary text-lg">
+              {profile.display_name.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
 
-        <DialogTitle className="mt-3 text-xl">{profile.display_name}</DialogTitle>
-        <p className="text-muted-foreground font-mono text-sm">@{profile.username}</p>
+          <DialogTitle className="mt-3 text-xl">{profile.display_name}</DialogTitle>
+          <p className="text-muted-foreground font-mono text-sm">@{profile.username}</p>
 
-        <SocialActions userId={profile.id} onStartDirect={onStartDirect} />
+          <SocialActions userId={profile.id} onStartDirect={onStartDirect} />
 
-        <LiveGameActivity userId={profile.id} className="mt-2" />
-        <p className="mt-2 text-xs">
-          {presence?.game && !games[profile.id] ? (
-            <span className="text-primary inline-flex items-center gap-1.5">
-              <Gamepad2 className="h-3.5 w-3.5" /> Jogando {presence.game.name}
-            </span>
-          ) : (
-            <span className="text-muted-foreground">
-              {STATUS_EMOJI[statusOf(profile.id)]} {STATUS_LABEL[statusOf(profile.id)]}
-            </span>
+          <LiveGameActivity userId={profile.id} className="mt-2" />
+          <p className="mt-2 text-xs">
+            {presence?.game && !games[profile.id] ? (
+              <span className="text-primary inline-flex items-center gap-1.5">
+                <Gamepad2 className="h-3.5 w-3.5" /> Jogando {presence.game.name}
+              </span>
+            ) : (
+              <span className="text-muted-foreground">
+                {STATUS_EMOJI[statusOf(profile.id)]} {STATUS_LABEL[statusOf(profile.id)]}
+              </span>
+            )}
+          </p>
+
+          {profile.custom_status && (
+            <p className="text-surface-foreground mt-2 text-sm italic">“{profile.custom_status}”</p>
           )}
-        </p>
 
-        {profile.custom_status && (
-          <p className="text-surface-foreground mt-2 text-sm italic">“{profile.custom_status}”</p>
-        )}
+          {profile.bio && <p className="mt-3 text-sm whitespace-pre-wrap">{profile.bio}</p>}
 
-        {profile.bio && <p className="mt-3 text-sm whitespace-pre-wrap">{profile.bio}</p>}
+          <div className="glass-panel mt-5 p-4">
+            <XpBar xp={xp.xp} level={xp.level} />
+          </div>
 
-        <div className="glass-panel mt-5 p-4">
-          <XpBar xp={xp.xp} level={xp.level} />
+          <Section title="Jogos favoritos">
+            {favorites.length === 0 ? (
+              <p className="text-muted-foreground text-xs">Nenhum jogo favorito.</p>
+            ) : (
+              <ul className="flex flex-wrap gap-2">
+                {favorites.map((fav) => (
+                  <li
+                    key={fav.id}
+                    className="bg-surface border-border flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs"
+                  >
+                    <Gamepad2 className="text-primary h-3.5 w-3.5" />
+                    {fav.game?.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Section>
+
+          <Section title="Badges">
+            <BadgeChips badges={badges} />
+          </Section>
+
+          <Section title="Servidores em comum">
+            {sharedServers.length === 0 ? (
+              <p className="text-muted-foreground text-xs">Nenhum servidor em comum.</p>
+            ) : (
+              <ul className="flex flex-wrap gap-2">
+                {sharedServers.map((server) => (
+                  <li
+                    key={server.id}
+                    className="bg-surface border-border rounded-lg border px-2.5 py-1.5 text-xs"
+                  >
+                    {server.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Section>
         </div>
-
-        <Section title="Jogos favoritos">
-          {favorites.length === 0 ? (
-            <p className="text-muted-foreground text-xs">Nenhum jogo favorito.</p>
-          ) : (
-            <ul className="flex flex-wrap gap-2">
-              {favorites.map((fav) => (
-                <li
-                  key={fav.id}
-                  className="bg-surface border-border flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs"
-                >
-                  <Gamepad2 className="text-primary h-3.5 w-3.5" />
-                  {fav.game?.name}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Section>
-
-        <Section title="Badges">
-          <BadgeChips badges={badges} />
-        </Section>
-
-        <Section title="Servidores em comum">
-          {sharedServers.length === 0 ? (
-            <p className="text-muted-foreground text-xs">Nenhum servidor em comum.</p>
-          ) : (
-            <ul className="flex flex-wrap gap-2">
-              {sharedServers.map((server) => (
-                <li
-                  key={server.id}
-                  className="bg-surface border-border rounded-lg border px-2.5 py-1.5 text-xs"
-                >
-                  {server.name}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Section>
       </div>
     </div>
   );

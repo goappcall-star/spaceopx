@@ -1,0 +1,153 @@
+import { useState } from "react";
+import { Check, Sparkles } from "lucide-react";
+import {
+  PROFILE_COSMETICS,
+  normalizeProfileCosmetic,
+  profileCosmetic,
+  type ProfileCosmeticId,
+} from "@/lib/profile-cosmetics";
+import { ProfileFrameDecoration } from "@/components/gamer/ProfileCosmetics";
+import { nameplateStyle } from "@/lib/profile-cosmetics";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+
+export function ProfileCosmeticPicker({
+  kind,
+  value,
+  onChange,
+  name,
+  avatar,
+  banner,
+}: {
+  kind: "nameplate" | "frame";
+  value: string;
+  onChange: (value: ProfileCosmeticId) => void;
+  name: string;
+  avatar: string;
+  banner: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<ProfileCosmeticId>(normalizeProfileCosmetic(value));
+  const label = kind === "nameplate" ? "Placa de identificação" : "Moldura do perfil";
+  const choice = profileCosmetic(selected);
+  const face = (
+    <Avatar className="h-12 w-12 shrink-0">
+      <AvatarImage src={avatar || undefined} alt="" />
+      <AvatarFallback>{(name || "LX").slice(0, 2)}</AvatarFallback>
+    </Avatar>
+  );
+  return (
+    <>
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4">
+        <div>
+          <p className="text-sm font-semibold">{label}</p>
+          <p className="text-muted-foreground text-xs mt-1">{profileCosmetic(value).name}</p>
+        </div>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            setSelected(normalizeProfileCosmetic(value));
+            setOpen(true);
+          }}
+        >
+          <Sparkles className="mr-2 h-4 w-4" />
+          Alterar
+        </Button>
+      </div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-3xl max-h-[90dvh] overflow-y-auto">
+          <DialogTitle>Alterar {label.toLowerCase()}</DialogTitle>
+          <DialogDescription>
+            Escolha um estilo e veja a prévia. Todos os estilos estão disponíveis.
+          </DialogDescription>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div
+              className="grid grid-cols-2 content-start gap-3"
+              aria-label={`Estilos de ${label.toLowerCase()}`}
+            >
+              {PROFILE_COSMETICS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  aria-pressed={selected === item.id}
+                  onClick={() => setSelected(item.id)}
+                  className={`relative rounded-xl border p-3 text-left transition-colors ${selected === item.id ? "border-primary bg-primary/10" : "border-border bg-surface hover:bg-surface-hover"}`}
+                >
+                  <div
+                    className="relative h-20 overflow-hidden rounded-lg bg-surface-elevated"
+                    style={kind === "nameplate" ? nameplateStyle(item.id) : undefined}
+                  >
+                    {kind === "frame" && <ProfileFrameDecoration value={item.id} />}
+                    <span className="absolute left-3 top-6 h-6 w-6 rounded-full bg-muted" />
+                    <span className="absolute left-12 right-3 top-8 h-2 rounded-full bg-muted" />
+                  </div>
+                  <p className="mt-2 text-xs font-semibold">{item.name}</p>
+                  {selected === item.id && (
+                    <Check className="absolute right-2 top-2 h-4 w-4 text-primary" />
+                  )}
+                </button>
+              ))}
+            </div>
+            <div className="space-y-4">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground">Prévia</p>
+              {kind === "nameplate" ? (
+                <div className="rounded-xl border border-border bg-surface p-3 space-y-3">
+                  <div className="h-10 rounded-lg bg-muted/30" />
+                  <div
+                    className="flex items-center gap-3 rounded-lg p-2"
+                    style={nameplateStyle(selected)}
+                  >
+                    {face}
+                    <p className="min-w-0 truncate font-semibold">{name || "Seu nome"}</p>
+                  </div>
+                  <div className="h-10 rounded-lg bg-muted/30" />
+                </div>
+              ) : (
+                <div className="relative rounded-2xl bg-surface overflow-hidden border border-border">
+                  <ProfileFrameDecoration value={selected} />
+                  <div
+                    className="h-24 bg-brand-gradient bg-cover bg-center"
+                    style={banner ? { backgroundImage: `url(${banner})` } : undefined}
+                  />
+                  <div className="p-5">
+                    <div className="-mt-10 relative">{face}</div>
+                    <p className="mt-4 font-semibold break-words">{name || "Seu nome"}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Seu perfil, com a sua identidade.
+                    </p>
+                    <Button type="button" className="mt-5 w-full" tabIndex={-1}>
+                      Botão exemplo
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <div className="rounded-xl border border-primary/40 bg-primary/5 p-4">
+                <p className="font-semibold text-sm">{choice.name}</p>
+                <p className="mt-2 text-xs text-muted-foreground">{choice.description}</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                onChange(selected);
+                setOpen(false);
+              }}
+            >
+              Aplicar estilo
+            </Button>
+          </div>
+          <p className="text-muted-foreground text-xs">
+            Salve o perfil para confirmar as alterações.
+          </p>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}

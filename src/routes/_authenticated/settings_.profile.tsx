@@ -1,5 +1,8 @@
 import { AVATAR_FRAMES, normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
 import { ThemeSelector } from "@/components/settings/ThemeSelector";
+import { ProfileCosmeticPicker } from "@/components/settings/ProfileCosmeticPicker";
+import { ProfileFrameDecoration } from "@/components/gamer/ProfileCosmetics";
+import { normalizeProfileCosmetic, type ProfileCosmeticId } from "@/lib/profile-cosmetics";
 import { ProfileStatusSelect } from "@/components/settings/ProfileStatusSelect";
 import { profileSaveErrorMessage } from "@/lib/profile-status";
 import { z } from "zod";
@@ -109,6 +112,8 @@ function ProfileSettingsPage() {
     custom_status: "",
     avatar_url: "",
     avatar_frame: "default" as AvatarFrameId,
+    nameplate: "none" as ProfileCosmeticId,
+    profile_frame: "none" as ProfileCosmeticId,
     banner_url: "",
     status: "online" as UserStatus,
   });
@@ -122,6 +127,8 @@ function ProfileSettingsPage() {
       custom_status: profile.custom_status ?? "",
       avatar_url: profile.avatar_url ?? "",
       avatar_frame: normalizeAvatarFrame(profile.avatar_frame),
+      nameplate: normalizeProfileCosmetic(profile.nameplate),
+      profile_frame: normalizeProfileCosmetic(profile.profile_frame),
       banner_url: profile.banner_url ?? "",
       status: profile.status,
     });
@@ -138,6 +145,12 @@ function ProfileSettingsPage() {
           ? { avatar_frame: form.avatar_frame }
           : {}),
         banner_url: form.banner_url,
+        ...(form.nameplate !== normalizeProfileCosmetic(profile?.nameplate)
+          ? { nameplate: form.nameplate }
+          : {}),
+        ...(form.profile_frame !== normalizeProfileCosmetic(profile?.profile_frame)
+          ? { profile_frame: form.profile_frame }
+          : {}),
         status: form.status,
       }),
     onSuccess: async () => {
@@ -339,6 +352,27 @@ function ProfileSettingsPage() {
                   </div>
                 </fieldset>
 
+                <div className="space-y-3">
+                  <ProfileCosmeticPicker
+                    kind="nameplate"
+                    value={form.nameplate}
+                    name={form.display_name}
+                    avatar={form.avatar_url}
+                    banner={form.banner_url}
+                    onChange={(nameplate) => setForm((current) => ({ ...current, nameplate }))}
+                  />
+                  <ProfileCosmeticPicker
+                    kind="frame"
+                    value={form.profile_frame}
+                    name={form.display_name}
+                    avatar={form.avatar_url}
+                    banner={form.banner_url}
+                    onChange={(profile_frame) =>
+                      setForm((current) => ({ ...current, profile_frame }))
+                    }
+                  />
+                </div>
+
                 <Button type="submit" disabled={saveProfile.isPending || uploadImage.isPending}>
                   {saveProfile.isPending ? "Salvando..." : "Salvar perfil"}
                 </Button>
@@ -496,7 +530,8 @@ function ProfileSettingsPage() {
         {/* -------------------------------------------------------- preview */}
         {section === "profile" && (
           <aside className="xl:sticky xl:top-6 xl:self-start">
-            <div className="glass-panel overflow-hidden">
+            <div className="glass-panel relative overflow-hidden">
+              <ProfileFrameDecoration value={form.profile_frame} />
               <div
                 className="bg-brand-gradient relative h-44 w-full bg-cover bg-center sm:h-52"
                 style={form.banner_url ? { backgroundImage: `url(${form.banner_url})` } : undefined}

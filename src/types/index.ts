@@ -10,6 +10,8 @@ export type ChannelType = "text" | "voice" | "announcement" | "forum";
 export type RoleName = "OWNER" | "ADMIN" | "MEMBER" | (string & {});
 
 export interface Profile {
+  nameplate?: import("@/lib/profile-cosmetics").ProfileCosmeticId;
+  profile_frame?: import("@/lib/profile-cosmetics").ProfileCosmeticId;
   avatar_frame?: import("@/lib/avatar-frames").AvatarFrameId;
   id: string;
   username: string;

@@ -1,4 +1,5 @@
 import { StatusDot } from "@/components/app/StatusDot";
+import { nameplateStyle } from "@/lib/profile-cosmetics";
 import { GamePresenceLine } from "@/components/gamer/GamePresenceLine";
 import { useState } from "react";
 import { MemberActions } from "./MemberActions";
@@ -60,6 +61,7 @@ export function MemberPanel({
         >
           <button
             type="button"
+            style={nameplateStyle(member.profile?.nameplate)}
             className={cn(
               "hover:bg-surface-hover flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-all duration-150",
               status === "offline" && "opacity-55 hover:opacity-100",

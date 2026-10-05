@@ -1,4 +1,5 @@
 import { LiveGameActivity } from "./LiveGameActivity";
+import { ProfileFrameDecoration } from "./ProfileCosmetics";
 import { useProfileDialog } from "./ProfileDialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, Gamepad2, MessageSquare, Phone, UserCheck, UserPlus, X } from "lucide-react";
@@ -117,114 +118,117 @@ export function QuickProfileCard({
   const status = statusOf(profile.id);
 
   return (
-    <div className="max-h-[70vh] overflow-y-auto">
-      <div
-        className="bg-brand-gradient h-32 w-full bg-cover bg-center sm:h-36"
-        style={profile.banner_url ? { backgroundImage: `url(${profile.banner_url})` } : undefined}
-      />
-      <div className="px-4 pb-4">
-        <button
-          type="button"
-          aria-label={`Abrir perfil completo de ${profile.display_name}`}
-          title="Ver perfil completo"
-          className="relative -mt-20 mb-6 block w-fit rounded-full cursor-pointer outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-          onClick={() => {
-            onDone();
-            openProfile(userId);
-          }}
-        >
-          <Avatar
-            frame={profile.avatar_frame}
-            className="border-surface glow-ring h-16 w-16 border-4"
-          >
-            <AvatarImage src={profile.avatar_url ?? undefined} alt="" />
-            <AvatarFallback className="bg-secondary">
-              {profile.display_name.slice(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <StatusDot
-            status={status}
-            className="border-surface absolute right-0 bottom-0 h-4 w-4 border-2"
-          />
-        </button>
-
-        <p className="mt-2 text-base leading-tight font-semibold">{profile.display_name}</p>
-        <p className="text-muted-foreground font-mono text-xs">@{profile.username}</p>
-
-        <p className="text-muted-foreground mt-2 flex items-center gap-1.5 text-xs">
-          <StatusDot status={status} className="h-2.5 w-2.5" />
-          {STATUS_LABEL[status]}
-        </p>
-        <LiveGameActivity userId={profile.id} />
-        {presence?.game && !games[profile.id] && (
-          <p className="text-primary mt-1 flex items-center gap-1.5 text-xs">
-            <Gamepad2 className="h-3.5 w-3.5" /> {presence.game.name}
-          </p>
-        )}
-
-        {profile.custom_status && (
-          <p className="text-surface-foreground mt-2 text-xs italic">“{profile.custom_status}”</p>
-        )}
-        {profile.bio && (
-          <p className="mt-2 line-clamp-4 text-xs whitespace-pre-wrap">{profile.bio}</p>
-        )}
-
-        {roles && roles.length > 0 && (
-          <div className="mt-3">
-            <p className="text-caption mb-1.5">Cargos</p>
-            <ul className="flex flex-wrap gap-1.5">
-              {roles.map((role) => (
-                <li
-                  key={role.id}
-                  className="border-border/70 bg-surface flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px]"
-                >
-                  <span
-                    aria-hidden
-                    className="h-2 w-2 rounded-full"
-                    style={{ backgroundColor: role.color }}
-                  />
-                  {role.name}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {badges.length > 0 && (
-          <div className="mt-3">
-            <p className="text-caption mb-1.5">Badges</p>
-            <BadgeChips badges={badges} />
-          </div>
-        )}
-
-        {sharedServers.length > 0 && (
-          <div className="mt-3">
-            <p className="text-caption mb-1.5">Servidores em comum</p>
-            <ul className="flex flex-wrap gap-1.5">
-              {sharedServers.slice(0, 6).map((server) => (
-                <li
-                  key={server.id}
-                  className="border-border/70 bg-surface rounded-full border px-2 py-0.5 text-[11px]"
-                >
-                  {server.name}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <QuickActions
-          userId={profile.id}
-          peer={{
-            id: profile.id,
-            display_name: profile.display_name,
-            username: profile.username,
-            avatar_url: profile.avatar_url,
-            avatar_frame: profile.avatar_frame,
-          }}
-          onDone={onDone}
-          onStartDirect={onStartDirect}
+    <div className="relative rounded-2xl">
+      <ProfileFrameDecoration value={profile.profile_frame} />
+      <div className="max-h-[70vh] overflow-y-auto">
+        <div
+          className="bg-brand-gradient h-32 w-full bg-cover bg-center sm:h-36"
+          style={profile.banner_url ? { backgroundImage: `url(${profile.banner_url})` } : undefined}
         />
+        <div className="px-4 pb-4">
+          <button
+            type="button"
+            aria-label={`Abrir perfil completo de ${profile.display_name}`}
+            title="Ver perfil completo"
+            className="relative -mt-20 mb-6 block w-fit rounded-full cursor-pointer outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            onClick={() => {
+              onDone();
+              openProfile(userId);
+            }}
+          >
+            <Avatar
+              frame={profile.avatar_frame}
+              className="border-surface glow-ring h-16 w-16 border-4"
+            >
+              <AvatarImage src={profile.avatar_url ?? undefined} alt="" />
+              <AvatarFallback className="bg-secondary">
+                {profile.display_name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <StatusDot
+              status={status}
+              className="border-surface absolute right-0 bottom-0 h-4 w-4 border-2"
+            />
+          </button>
+
+          <p className="mt-2 text-base leading-tight font-semibold">{profile.display_name}</p>
+          <p className="text-muted-foreground font-mono text-xs">@{profile.username}</p>
+
+          <p className="text-muted-foreground mt-2 flex items-center gap-1.5 text-xs">
+            <StatusDot status={status} className="h-2.5 w-2.5" />
+            {STATUS_LABEL[status]}
+          </p>
+          <LiveGameActivity userId={profile.id} />
+          {presence?.game && !games[profile.id] && (
+            <p className="text-primary mt-1 flex items-center gap-1.5 text-xs">
+              <Gamepad2 className="h-3.5 w-3.5" /> {presence.game.name}
+            </p>
+          )}
+
+          {profile.custom_status && (
+            <p className="text-surface-foreground mt-2 text-xs italic">“{profile.custom_status}”</p>
+          )}
+          {profile.bio && (
+            <p className="mt-2 line-clamp-4 text-xs whitespace-pre-wrap">{profile.bio}</p>
+          )}
+
+          {roles && roles.length > 0 && (
+            <div className="mt-3">
+              <p className="text-caption mb-1.5">Cargos</p>
+              <ul className="flex flex-wrap gap-1.5">
+                {roles.map((role) => (
+                  <li
+                    key={role.id}
+                    className="border-border/70 bg-surface flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px]"
+                  >
+                    <span
+                      aria-hidden
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: role.color }}
+                    />
+                    {role.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {badges.length > 0 && (
+            <div className="mt-3">
+              <p className="text-caption mb-1.5">Badges</p>
+              <BadgeChips badges={badges} />
+            </div>
+          )}
+
+          {sharedServers.length > 0 && (
+            <div className="mt-3">
+              <p className="text-caption mb-1.5">Servidores em comum</p>
+              <ul className="flex flex-wrap gap-1.5">
+                {sharedServers.slice(0, 6).map((server) => (
+                  <li
+                    key={server.id}
+                    className="border-border/70 bg-surface rounded-full border px-2 py-0.5 text-[11px]"
+                  >
+                    {server.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <QuickActions
+            userId={profile.id}
+            peer={{
+              id: profile.id,
+              display_name: profile.display_name,
+              username: profile.username,
+              avatar_url: profile.avatar_url,
+              avatar_frame: profile.avatar_frame,
+            }}
+            onDone={onDone}
+            onStartDirect={onStartDirect}
+          />
+        </div>
       </div>
     </div>
   );

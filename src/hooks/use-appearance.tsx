@@ -32,8 +32,18 @@ export function AppearanceSync() {
     root.dataset["accent"] = prefs?.accent_color ?? "neon_cyan";
     root.dataset["glow"] = String(prefs?.glow_enabled ?? true);
     root.dataset["animations"] = String(prefs?.animations_enabled ?? true);
+    root.dataset["frameAnimations"] = String(prefs?.frame_animations_enabled ?? true);
     root.dataset["transparency"] = prefs?.transparency_level ?? "medium";
   }, [prefs]);
+
+  useEffect(() => {
+    const apply = () => {
+      document.documentElement.dataset["pageHidden"] = String(document.hidden);
+    };
+    apply();
+    document.addEventListener("visibilitychange", apply);
+    return () => document.removeEventListener("visibilitychange", apply);
+  }, []);
 
   return null;
 }

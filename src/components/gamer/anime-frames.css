@@ -1,0 +1,175 @@
+/* Bounded SVG effects: no blur filters, videos, RAF loops or animated box shadows. */
+.lx-anime-frame {
+  overflow: visible;
+}
+.lx-wave {
+  animation: lx-wave 14s linear infinite;
+}
+.lx-cut {
+  animation: lx-cut 9s linear infinite;
+}
+.lx-mist {
+  animation: lx-mist 7s ease-in-out infinite;
+}
+.lx-rise {
+  animation: lx-rise 5s ease-out infinite;
+}
+.lx-aura {
+  transform-origin: 150px 200px;
+  animation: lx-aura 4s ease-in-out infinite;
+}
+.lx-energy {
+  animation: lx-wave 8s linear infinite reverse;
+}
+.lx-spark {
+  animation: lx-spark 6s ease-in-out infinite;
+}
+.lx-orbit {
+  animation: lx-wave 18s linear infinite;
+}
+.lx-void {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lx-void 6s ease-in-out infinite;
+}
+/* Alternating, sparse flashes: no rapid flicker or JS randomness. */
+.lx-bolt {
+  stroke-dasharray: 70 14;
+  animation: lx-bolt 9s linear infinite;
+}
+.lx-bolt-alt {
+  animation-delay: -4.7s;
+  animation-duration: 11s;
+}
+.lx-moon {
+  animation: lx-moon 10s ease-in-out infinite;
+}
+.lx-speed {
+  animation: lx-wave 6s linear infinite;
+}
+.lx-glitch {
+  animation: lx-glitch 8s steps(1, end) infinite;
+}
+.lx-flame {
+  animation: lx-flame 4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: bottom;
+}
+@keyframes lx-wave {
+  to {
+    stroke-dashoffset: -400;
+  }
+}
+@keyframes lx-cut {
+  50% {
+    stroke-dashoffset: -100;
+    opacity: 0.4;
+  }
+  to {
+    stroke-dashoffset: -200;
+  }
+}
+@keyframes lx-rise {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.8;
+  }
+  to {
+    transform: translateY(-55px);
+    opacity: 0;
+  }
+}
+@keyframes lx-mist {
+  50% {
+    transform: translateY(-12px);
+    opacity: 0.15;
+  }
+}
+@keyframes lx-aura {
+  50% {
+    transform: scale(1.012, 1.008);
+    opacity: 0.45;
+  }
+}
+@keyframes lx-spark {
+  0%,
+  60%,
+  100% {
+    opacity: 0.2;
+  }
+  70%,
+  85% {
+    opacity: 0.85;
+    transform: translateY(-3px);
+  }
+}
+@keyframes lx-void {
+  50% {
+    transform: rotate(90deg) scale(0.8);
+    opacity: 0.5;
+  }
+}
+@keyframes lx-bolt {
+  0%,
+  60%,
+  100% {
+    opacity: 0.18;
+    stroke-dashoffset: 60;
+  }
+  68%,
+  76% {
+    opacity: 0.9;
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes lx-moon {
+  50% {
+    transform: translateY(-3px);
+    opacity: 0.5;
+  }
+}
+@keyframes lx-glitch {
+  0%,
+  80%,
+  100% {
+    transform: translateX(0);
+  }
+  83% {
+    transform: translateX(2px);
+  }
+  87% {
+    transform: translateX(-2px);
+  }
+}
+@keyframes lx-flame {
+  50% {
+    transform: translateY(-8px) scale(0.75, 1.2);
+    opacity: 0.4;
+  }
+}
+.lx-anime-frame[data-visible="false"] .lx-fx,
+.lx-frame-avatar .lx-fx,
+html[data-page-hidden="true"] .lx-anime-frame .lx-fx {
+  animation-play-state: paused;
+}
+/* Compact room avatars are still unless hovered; full profile cards animate normally. */
+*:hover > .lx-frame-avatar .lx-fx,
+*:hover > span > .lx-frame-avatar .lx-fx {
+  animation-play-state: running;
+}
+html[data-page-hidden="true"] .lx-anime-frame .lx-fx {
+  animation-play-state: paused !important;
+}
+.lx-anime-frame[data-animated="false"] .lx-fx,
+html[data-frame-animations="false"] .lx-anime-frame .lx-fx,
+html[data-animations="false"] .lx-anime-frame .lx-fx {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lx-anime-frame .lx-fx {
+    animation: none !important;
+  }
+}

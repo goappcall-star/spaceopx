@@ -1,9 +1,18 @@
 import { profileCosmetic } from "@/lib/profile-cosmetics";
+import { isAnimeFrame } from "@/lib/anime-frame-themes";
+import { AnimeFrame } from "./AnimeFrame";
 
 /** Decorative overlay never intercepts profile or menu interactions. */
-export function ProfileFrameDecoration({ value }: { value: unknown }) {
+export function ProfileFrameDecoration({
+  value,
+  animated = true,
+}: {
+  value: unknown;
+  animated?: boolean;
+}) {
   const item = profileCosmetic(value);
   if (item.id === "none") return null;
+  if (isAnimeFrame(item.id)) return <AnimeFrame theme={item.id} animated={animated} />;
   return (
     <div
       aria-hidden="true"

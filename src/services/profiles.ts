@@ -2,7 +2,11 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Profile, UserStatus } from "@/types";
 import { normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
 import { validateProfileStatus } from "@/lib/profile-status";
-import { normalizeProfileCosmetic, type ProfileCosmeticId } from "@/lib/profile-cosmetics";
+import {
+  NAMEPLATE_COSMETICS,
+  normalizeProfileCosmetic,
+  type ProfileCosmeticId,
+} from "@/lib/profile-cosmetics";
 
 export interface ProfileUpdate {
   nameplate?: ProfileCosmeticId;
@@ -19,7 +23,9 @@ export interface ProfileUpdate {
 /** Only these columns can ever be written from the client. Username is permanent. */
 function sanitize(update: ProfileUpdate): ProfileUpdate {
   const clean: ProfileUpdate = {};
-  if (update.nameplate !== undefined) clean.nameplate = normalizeProfileCosmetic(update.nameplate);
+  if (update.nameplate !== undefined)
+    clean.nameplate =
+      NAMEPLATE_COSMETICS.find((item) => item.id === update.nameplate)?.id ?? "none";
   if (update.profile_frame !== undefined)
     clean.profile_frame = normalizeProfileCosmetic(update.profile_frame);
   if (update.avatar_frame !== undefined)

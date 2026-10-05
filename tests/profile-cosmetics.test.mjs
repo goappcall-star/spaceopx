@@ -19,7 +19,17 @@ function load(file, dependencies = {}) {
   );
   return exports;
 }
-const cosmetics = load("../src/lib/profile-cosmetics.ts");
+const themes = load("../src/lib/anime-frame-themes.ts");
+const cosmetics = load("../src/lib/profile-cosmetics.ts", { "./anime-frame-themes": themes });
+test("Original themes also work on avatars while preserving the existing frames", () => {
+  const avatars = load("../src/lib/avatar-frames.ts", { "./anime-frame-themes": themes });
+  for (const theme of themes.ANIME_FRAME_THEMES) {
+    assert.equal(cosmetics.normalizeProfileCosmetic(theme.id), theme.id);
+    assert.equal(avatars.normalizeAvatarFrame(theme.id), theme.id);
+  }
+  for (const id of ["default", "neon", "orbit", "royal"])
+    assert.equal(avatars.normalizeAvatarFrame(id), id);
+});
 test("Unknown and missing decorations safely render as undecorated profiles", () => {
   for (const input of [undefined, null, "", "invalid", "<script>", {}]) {
     assert.equal(cosmetics.normalizeProfileCosmetic(input), "none");
@@ -68,6 +78,16 @@ test("Cosmetics are saved through the shared profile service with account scope 
   assert.equal(result.nameplate, "cosmic");
   assert.equal(result.profile_frame, "sakura");
   assert.equal("username" in payload, false);
+  for (const theme of themes.ANIME_FRAME_THEMES) {
+    await profilesService.update("viewer-account", { profile_frame: theme.id });
+    assert.equal(payload.profile_frame, theme.id);
+  }
+  await profilesService.update("viewer-account", { nameplate: "crimson-flow" });
+  assert.equal(
+    payload.nameplate,
+    "none",
+    "frame-only designs are not written as unsupported nameplates",
+  );
   await profilesService.update("viewer-account", { nameplate: "invalid" });
   assert.equal(payload.nameplate, "none");
 });

@@ -88,6 +88,7 @@ export interface UserPreferences {
   accent_color: AccentColor;
   glow_enabled: boolean;
   animations_enabled: boolean;
+  frame_animations_enabled: boolean;
   sounds_enabled: boolean;
   transparency_level: TransparencyLevel;
   input_device_id: string | null;

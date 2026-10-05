@@ -879,6 +879,7 @@ export type Database = {
         Row: {
           accent_color: string
           animations_enabled: boolean
+          frame_animations_enabled: boolean
           created_at: string
           glow_enabled: boolean
           input_device_id: string | null
@@ -895,6 +896,7 @@ export type Database = {
         Insert: {
           accent_color?: string
           animations_enabled?: boolean
+          frame_animations_enabled?: boolean
           created_at?: string
           glow_enabled?: boolean
           input_device_id?: string | null
@@ -911,6 +913,7 @@ export type Database = {
         Update: {
           accent_color?: string
           animations_enabled?: boolean
+          frame_animations_enabled?: boolean
           created_at?: string
           glow_enabled?: boolean
           input_device_id?: string | null

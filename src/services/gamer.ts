@@ -180,6 +180,7 @@ const DEFAULT_PREFERENCES: Omit<UserPreferences, "user_id" | "updated_at"> = {
   accent_color: "neon_cyan",
   glow_enabled: true,
   animations_enabled: true,
+  frame_animations_enabled: true,
   sounds_enabled: false,
   transparency_level: "medium",
   input_device_id: null,

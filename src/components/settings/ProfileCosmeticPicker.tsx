@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Check, Sparkles } from "lucide-react";
 import {
   PROFILE_COSMETICS,
+  NAMEPLATE_COSMETICS,
   normalizeProfileCosmetic,
   profileCosmetic,
   type ProfileCosmeticId,
@@ -64,10 +65,10 @@ export function ProfileCosmeticPicker({
           </DialogDescription>
           <div className="grid gap-6 sm:grid-cols-2">
             <div
-              className="grid grid-cols-2 content-start gap-3"
+              className="grid max-h-[52dvh] grid-cols-2 content-start gap-3 overflow-y-auto pr-1"
               aria-label={`Estilos de ${label.toLowerCase()}`}
             >
-              {PROFILE_COSMETICS.map((item) => (
+              {(kind === "nameplate" ? NAMEPLATE_COSMETICS : PROFILE_COSMETICS).map((item) => (
                 <button
                   key={item.id}
                   type="button"
@@ -79,7 +80,9 @@ export function ProfileCosmeticPicker({
                     className="relative h-20 overflow-hidden rounded-lg bg-surface-elevated"
                     style={kind === "nameplate" ? nameplateStyle(item.id) : undefined}
                   >
-                    {kind === "frame" && <ProfileFrameDecoration value={item.id} />}
+                    {kind === "frame" && (
+                      <ProfileFrameDecoration value={item.id} animated={false} />
+                    )}
                     <span className="absolute left-3 top-6 h-6 w-6 rounded-full bg-muted" />
                     <span className="absolute left-12 right-3 top-8 h-2 rounded-full bg-muted" />
                   </div>

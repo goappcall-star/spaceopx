@@ -353,6 +353,17 @@ function ProfileSettingsPage() {
                 </fieldset>
 
                 <div className="space-y-3">
+                  <ToggleRow
+                    label="Animações das molduras"
+                    checked={prefs?.frame_animations_enabled ?? true}
+                    onChange={(frame_animations_enabled) =>
+                      prefsMutation.mutate({ frame_animations_enabled })
+                    }
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    Controla as molduras que você vê. A preferência de movimento reduzido do sistema
+                    também é respeitada.
+                  </p>
                   <ProfileCosmeticPicker
                     kind="nameplate"
                     value={form.nameplate}
@@ -498,6 +509,13 @@ function ProfileSettingsPage() {
                   label="Animações"
                   checked={prefs?.animations_enabled ?? true}
                   onChange={(v) => prefsMutation.mutate({ animations_enabled: v })}
+                />
+                <ToggleRow
+                  label="Animações das molduras"
+                  checked={prefs?.frame_animations_enabled ?? true}
+                  onChange={(frame_animations_enabled) =>
+                    prefsMutation.mutate({ frame_animations_enabled })
+                  }
                 />
 
                 {section === "appearance" && (

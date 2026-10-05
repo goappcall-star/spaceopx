@@ -1,9 +1,17 @@
 import { normalizeAvatarFrame } from "@/lib/avatar-frames";
+import { isAnimeFrame } from "@/lib/anime-frame-themes";
+import { AnimeFrame } from "@/components/gamer/AnimeFrame";
 
 /** Vector decorations stay crisp at every avatar size and never cover the face. */
 export function AvatarFrame({ frame }: { frame?: string | null | undefined }) {
   const id = normalizeAvatarFrame(frame);
   if (id === "default") return null;
+  if (isAnimeFrame(id))
+    return (
+      <span className="pointer-events-none absolute -inset-[8%]">
+        <AnimeFrame theme={id} avatar />
+      </span>
+    );
   return (
     <svg
       aria-hidden="true"

@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
+import { ANIME_FRAME_THEMES } from "./anime-frame-themes";
 
-export const PROFILE_COSMETICS = [
+export const NAMEPLATE_COSMETICS = [
   {
     id: "none",
     name: "Nenhum",
@@ -44,6 +45,7 @@ export const PROFILE_COSMETICS = [
     secondary: "#c084fc",
   },
 ] as const;
+export const PROFILE_COSMETICS = [...NAMEPLATE_COSMETICS, ...ANIME_FRAME_THEMES] as const;
 export type ProfileCosmeticId = (typeof PROFILE_COSMETICS)[number]["id"];
 export function normalizeProfileCosmetic(value: unknown): ProfileCosmeticId {
   return PROFILE_COSMETICS.find((item) => item.id === value)?.id ?? "none";

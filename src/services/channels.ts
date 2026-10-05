@@ -2,6 +2,28 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Channel, ChannelType } from "@/types";
 
 export const channelsService = {
+  async update(serverId: string, id: string, name: string, description: string) {
+    if (!name.trim() || name.trim().length > 80)
+      throw new Error("Use um nome de 1 a 80 caracteres.");
+    const { error } = await supabase
+      .from("channels")
+      .update({ name: name.trim(), description: description.trim() || null })
+      .eq("server_id", serverId)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+  },
+  async remove(serverId: string, id: string) {
+    const { error } = await supabase
+      .from("channels")
+      .delete()
+      .eq("server_id", serverId)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+  },
   async listByServer(serverId: string): Promise<Channel[]> {
     const { data, error } = await supabase
       .from("channels")

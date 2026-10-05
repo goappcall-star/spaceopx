@@ -1,5 +1,17 @@
 import { ChevronDown, Hash, Plus, Settings, UserPlus, Volume2 } from "lucide-react";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { categoriesService } from "@/services/categories";
+import { channelsService } from "@/services/channels";
+import { isChannelMuted } from "@/lib/channel-preferences";
+import {
+  SidebarBlankMenu,
+  SidebarCategoryMenu,
+  SidebarChannelMenu,
+} from "@/components/app/SidebarContextMenus";
+import { EditChannelDialog } from "@/components/app/EditChannelDialog";
+import { CreateChannelDialog } from "@/components/app/CreateChannelDialog";
 
 import { CategoryManager } from "@/components/app/CategoryManager";
 import { useServerCategories } from "@/hooks/use-categories";
@@ -10,13 +22,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useVoice } from "@/hooks/use-voice";
 import { cn } from "@/lib/utils";
-import type { Channel, MemberWithProfile, Server } from "@/types";
+import type { Channel, MemberWithProfile, Server, ServerCategory } from "@/types";
 import type { ServerPreferences } from "@/hooks/use-server-preferences";
 import {
   ContextMenu,
   ContextMenuTrigger,
   ContextMenuContent,
   ContextMenuCheckboxItem,
+  ContextMenuItem,
 } from "@/components/ui/context-menu";
 
 interface Props {
@@ -35,6 +48,8 @@ interface Props {
   onCreateChannel: () => void;
   preferences: ServerPreferences;
   onToggleMuteChannel: (channelId: string) => void;
+  onUpdatePreferences: (patch: Partial<ServerPreferences>) => void;
+  onMarkRead: (channelIds: string[]) => void;
 }
 
 function CategoryHeader({
@@ -99,11 +114,17 @@ export function ChannelSidebar({
   onCreateChannel,
   preferences,
   onToggleMuteChannel,
+  onUpdatePreferences,
+  onMarkRead,
 }: Props) {
   const { participantsByChannel, activeChannelId: voiceChannelId, join } = useVoice();
   const [textOpen, setTextOpen] = useState(true);
   const [voiceOpen, setVoiceOpen] = useState(true);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<ServerCategory | undefined>();
+  const [editingChannel, setEditingChannel] = useState<Channel | null>(null);
+  const [creatingChannelIn, setCreatingChannelIn] = useState<string | null>(null);
+  const client = useQueryClient();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const { data: categories = [], error: categoryError } = useServerCategories(server.id);
 
@@ -111,15 +132,147 @@ export function ChannelSidebar({
     (c) =>
       c.type !== "voice" &&
       (!preferences.hideMutedChannels ||
-        !preferences.mutedChannels.includes(c.id) ||
+        !isChannelMuted(preferences, c) ||
         c.id === activeChannelId),
   );
-  const voiceChannels = channels.filter((c) => c.type === "voice");
+  const voiceChannels = channels.filter(
+    (c) =>
+      c.type === "voice" &&
+      (!preferences.hideMutedChannels ||
+        !isChannelMuted(preferences, c) ||
+        c.id === activeChannelId ||
+        c.id === voiceChannelId),
+  );
+  const collapseAll = () => {
+    setCollapsed(new Set(categories.map((category) => category.id)));
+    setTextOpen(false);
+    setVoiceOpen(false);
+  };
+  const toggleCategory = (id: string) =>
+    setCollapsed((previous) => {
+      const next = new Set(previous);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  async function run(operation: () => Promise<unknown>) {
+    try {
+      await operation();
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ["categories", server.id] }),
+        client.invalidateQueries({ queryKey: ["channels", server.id] }),
+      ]);
+    } catch {
+      toast.error("Não foi possível atualizar. Confira sua permissão de gerenciar canais.");
+    }
+  }
+  async function copy(id: string) {
+    try {
+      await navigator.clipboard.writeText(id);
+      toast.success("ID copiado.");
+    } catch {
+      toast.error("Não foi possível copiar o ID.");
+    }
+  }
+  function moveCategory(category: ServerCategory, where: "top" | "up" | "down" | "bottom") {
+    const next = [...categories],
+      index = next.findIndex((item) => item.id === category.id);
+    if (index < 0) return;
+    const target =
+      where === "top"
+        ? 0
+        : where === "bottom"
+          ? next.length - 1
+          : Math.max(0, Math.min(next.length - 1, index + (where === "up" ? -1 : 1)));
+    next.splice(index, 1);
+    next.splice(target, 0, category);
+    void run(() => categoriesService.reorder(server.id, next));
+  }
+  const channelMenu = (channel: Channel, children: React.ReactNode) => (
+    <SidebarChannelMenu
+      channel={channel}
+      categories={categories}
+      preferences={preferences}
+      update={onUpdatePreferences}
+      canManage={canManage}
+      markRead={() => onMarkRead([channel.id])}
+      hasUnread={unreadChannelIds.has(channel.id)}
+      toggleMute={() => onToggleMuteChannel(channel.id)}
+      edit={() => setEditingChannel(channel)}
+      remove={() => {
+        if (
+          window.confirm(
+            `Excluir o canal "${channel.name}"? As mensagens serão excluídas e esta ação não pode ser desfeita.`,
+          )
+        )
+          void run(() => channelsService.remove(server.id, channel.id));
+      }}
+      assign={(id) => void run(() => categoriesService.assignChannel(server.id, channel.id, id))}
+      invite={canInvite ? onInvite : undefined}
+      copy={() => void copy(channel.id)}
+    >
+      {children}
+    </SidebarChannelMenu>
+  );
 
   const memberName = (userId: string) => {
     const member = members.find((m) => m.user_id === userId);
     return member?.nickname ?? member?.profile?.display_name ?? "Usuário";
   };
+  const defaultHeader = (label: string, items: Channel[], open: boolean, toggle: () => void) => (
+    <ContextMenu>
+      <ContextMenuTrigger asChild onContextMenu={(event) => event.stopPropagation()}>
+        <div>
+          <CategoryHeader
+            label={label}
+            count={items.length}
+            open={open}
+            onToggle={toggle}
+            {...(canManage ? { action: { label: "Criar canal", onClick: onCreateChannel } } : {})}
+          />
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-60">
+        <ContextMenuItem
+          disabled={!items.some((channel) => unreadChannelIds.has(channel.id))}
+          onSelect={() =>
+            onMarkRead(
+              items.filter((channel) => channel.type !== "voice").map((channel) => channel.id),
+            )
+          }
+        >
+          Marcar como lida
+        </ContextMenuItem>
+        <ContextMenuCheckboxItem checked={!open} onCheckedChange={toggle}>
+          Recolher categoria
+        </ContextMenuCheckboxItem>
+        <ContextMenuItem onSelect={collapseAll}>Recolher todas as categorias</ContextMenuItem>
+        <ContextMenuCheckboxItem
+          checked={
+            items.length > 0 &&
+            items.every((channel) => preferences.mutedChannels.includes(channel.id))
+          }
+          onCheckedChange={(value) =>
+            onUpdatePreferences({
+              mutedChannels: value
+                ? [
+                    ...new Set([
+                      ...preferences.mutedChannels,
+                      ...items.map((channel) => channel.id),
+                    ]),
+                  ]
+                : preferences.mutedChannels.filter(
+                    (id) => !items.some((channel) => channel.id === id),
+                  ),
+            })
+          }
+        >
+          Silenciar categoria
+        </ContextMenuCheckboxItem>
+        {canManage && <ContextMenuItem onSelect={onCreateChannel}>Criar canal</ContextMenuItem>}
+      </ContextMenuContent>
+    </ContextMenu>
+  );
 
   const renderText = (textChannels: Channel[]) => (
     <ul className="space-y-0.5">
@@ -129,45 +282,34 @@ export function ChannelSidebar({
       {textChannels.map((channel) => {
         const active = channel.id === activeChannelId;
         const unread =
-          unreadChannelIds.has(channel.id) &&
-          !active &&
-          !preferences.mutedChannels.includes(channel.id);
+          unreadChannelIds.has(channel.id) && !active && !isChannelMuted(preferences, channel);
         return (
           <li key={channel.id}>
-            <ContextMenu>
-              <ContextMenuTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => onSelectChannel(channel.id)}
+            {channelMenu(
+              channel,
+              <button
+                type="button"
+                onClick={() => onSelectChannel(channel.id)}
+                className={cn(
+                  "group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all duration-150",
+                  active
+                    ? "accent-marker bg-surface-active text-foreground font-medium"
+                    : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
+                  unread && "text-foreground font-semibold",
+                )}
+              >
+                <Hash
                   className={cn(
-                    "group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all duration-150",
-                    active
-                      ? "accent-marker bg-surface-active text-foreground font-medium"
-                      : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
-                    unread && "text-foreground font-semibold",
+                    "h-4 w-4 shrink-0 transition-colors",
+                    active ? "text-primary" : "text-muted-foreground/70",
                   )}
-                >
-                  <Hash
-                    className={cn(
-                      "h-4 w-4 shrink-0 transition-colors",
-                      active ? "text-primary" : "text-muted-foreground/70",
-                    )}
-                  />
-                  <span className="truncate">{channel.name}</span>
-                  {unread && (
-                    <span className="bg-primary ml-auto h-2 w-2 shrink-0 rounded-full shadow-[0_0_8px_0_color-mix(in_oklab,var(--color-primary)_80%,transparent)]" />
-                  )}
-                </button>
-              </ContextMenuTrigger>
-              <ContextMenuContent>
-                <ContextMenuCheckboxItem
-                  checked={preferences.mutedChannels.includes(channel.id)}
-                  onCheckedChange={() => onToggleMuteChannel(channel.id)}
-                >
-                  Silenciar canal
-                </ContextMenuCheckboxItem>
-              </ContextMenuContent>
-            </ContextMenu>
+                />
+                <span className="truncate">{channel.name}</span>
+                {unread && (
+                  <span className="bg-primary ml-auto h-2 w-2 shrink-0 rounded-full shadow-[0_0_8px_0_color-mix(in_oklab,var(--color-primary)_80%,transparent)]" />
+                )}
+              </button>,
+            )}
           </li>
         );
       })}
@@ -184,36 +326,39 @@ export function ChannelSidebar({
         const connectedHere = voiceChannelId === channel.id;
         return (
           <li key={channel.id}>
-            <button
-              type="button"
-              onClick={() => {
-                onSelectChannel(channel.id);
-                if (voiceChannelId !== channel.id) void join(channel.id);
-              }}
-              className={cn(
-                "group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all duration-150",
-                active
-                  ? "accent-marker bg-surface-active text-foreground font-medium"
-                  : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
-              )}
-            >
-              <Volume2
+            {channelMenu(
+              channel,
+              <button
+                type="button"
+                onClick={() => {
+                  onSelectChannel(channel.id);
+                  if (voiceChannelId !== channel.id) void join(channel.id);
+                }}
                 className={cn(
-                  "h-4 w-4 shrink-0",
-                  connectedHere
-                    ? "text-success"
-                    : active
-                      ? "text-primary"
-                      : "text-muted-foreground/70",
+                  "group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all duration-150",
+                  active
+                    ? "accent-marker bg-surface-active text-foreground font-medium"
+                    : "text-muted-foreground hover:bg-surface-hover hover:text-foreground",
                 )}
-              />
-              <span className="truncate">{channel.name}</span>
-              {participants.length > 0 && (
-                <span className="bg-surface-elevated text-muted-foreground ml-auto rounded-full px-1.5 py-px text-[10px] font-semibold">
-                  {participants.length}
-                </span>
-              )}
-            </button>
+              >
+                <Volume2
+                  className={cn(
+                    "h-4 w-4 shrink-0",
+                    connectedHere
+                      ? "text-success"
+                      : active
+                        ? "text-primary"
+                        : "text-muted-foreground/70",
+                  )}
+                />
+                <span className="truncate">{channel.name}</span>
+                {participants.length > 0 && (
+                  <span className="bg-surface-elevated text-muted-foreground ml-auto rounded-full px-1.5 py-px text-[10px] font-semibold">
+                    {participants.length}
+                  </span>
+                )}
+              </button>,
+            )}
             {participants.length > 0 && (
               <ul className="mt-1 mb-2 ml-6 space-y-1">
                 {participants.map((participant) => (
@@ -286,7 +431,7 @@ export function ChannelSidebar({
       <div
         className={cn(
           "border-border relative overflow-hidden border-b px-4 py-3.5",
-          server.banner_url && "min-h-40 flex items-end",
+          server.banner_url && "min-h-32 flex items-end",
         )}
       >
         {server.banner_url ? (
@@ -337,93 +482,158 @@ export function ChannelSidebar({
         </div>
       </div>
 
-      <div className="scrollbar-slim flex-1 overflow-y-auto px-2 py-2">
-        {canManage && (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="mb-2 w-full justify-start"
-            onClick={() => setCategoriesOpen(true)}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Gerenciar categorias
-          </Button>
-        )}
-        {categoryError && canManage && (
-          <p className="text-muted-foreground mb-2 px-2 text-xs">
-            Categorias indisponíveis. A atualização do banco precisa ser aplicada.
-          </p>
-        )}
-        {categories.map((category) => (
-          <div key={category.id} className="mb-3">
-            <CategoryHeader
-              label={category.name}
-              count={channels.filter((c) => c.category_id === category.id).length}
-              open={!collapsed.has(category.id)}
-              onToggle={() =>
-                setCollapsed((previous) => {
-                  const next = new Set(previous);
-                  if (next.has(category.id)) next.delete(category.id);
-                  else next.add(category.id);
-                  return next;
-                })
-              }
-            />
-            {!collapsed.has(category.id) && (
-              <>
-                {renderText(textChannels.filter((c) => c.category_id === category.id))}
-                {renderVoice(voiceChannels.filter((c) => c.category_id === category.id))}
-              </>
+      <SidebarBlankMenu
+        preferences={preferences}
+        update={onUpdatePreferences}
+        canManage={canManage}
+        canInvite={canInvite}
+        createChannel={onCreateChannel}
+        createCategory={() => {
+          setEditingCategory(undefined);
+          setCategoriesOpen(true);
+        }}
+        invite={onInvite}
+      >
+        <div
+          className="scrollbar-slim flex-1 overflow-y-auto px-2 py-2"
+          data-testid="channel-sidebar-space"
+        >
+          {categoryError && canManage && (
+            <p className="text-muted-foreground mb-2 px-2 text-xs">
+              Categorias indisponíveis. A atualização do banco precisa ser aplicada.
+            </p>
+          )}
+          {categories.map((category) => (
+            <div key={category.id} className="mb-3">
+              <SidebarCategoryMenu
+                category={category}
+                preferences={preferences}
+                update={onUpdatePreferences}
+                collapsed={collapsed.has(category.id)}
+                toggle={() => toggleCategory(category.id)}
+                collapseAll={collapseAll}
+                markRead={() =>
+                  onMarkRead(
+                    channels
+                      .filter(
+                        (channel) =>
+                          channel.category_id === category.id && channel.type !== "voice",
+                      )
+                      .map((channel) => channel.id),
+                  )
+                }
+                hasUnread={channels.some(
+                  (channel) =>
+                    channel.category_id === category.id && unreadChannelIds.has(channel.id),
+                )}
+                canManage={canManage}
+                edit={() => {
+                  setEditingCategory(category);
+                  setCategoriesOpen(true);
+                }}
+                remove={() => {
+                  if (
+                    window.confirm(
+                      `Excluir a categoria "${category.name}"? Seus canais serão mantidos sem categoria.`,
+                    )
+                  )
+                    void run(() => categoriesService.remove(server.id, category.id));
+                }}
+                move={(where) => moveCategory(category, where)}
+                createChannel={() => setCreatingChannelIn(category.id)}
+                copy={() => void copy(category.id)}
+              >
+                <div>
+                  <CategoryHeader
+                    label={category.name}
+                    count={channels.filter((c) => c.category_id === category.id).length}
+                    open={!collapsed.has(category.id)}
+                    onToggle={() => toggleCategory(category.id)}
+                  />
+                </div>
+              </SidebarCategoryMenu>
+              {!collapsed.has(category.id) && (
+                <>
+                  {textChannels.some((c) => c.category_id === category.id) &&
+                    renderText(textChannels.filter((c) => c.category_id === category.id))}
+                  {voiceChannels.some((c) => c.category_id === category.id) &&
+                    renderVoice(voiceChannels.filter((c) => c.category_id === category.id))}
+                </>
+              )}
+            </div>
+          ))}
+
+          {defaultHeader(
+            "Canais de texto",
+            channels.filter(
+              (c) =>
+                c.type !== "voice" &&
+                (!c.category_id || !categories.some((cat) => cat.id === c.category_id)),
+            ),
+            textOpen,
+            () => setTextOpen((v) => !v),
+          )}
+          {textOpen &&
+            renderText(
+              textChannels.filter(
+                (c) => !c.category_id || !categories.some((cat) => cat.id === c.category_id),
+              ),
+            )}
+
+          <div className="mt-3">
+            {defaultHeader(
+              "Canais de voz",
+              channels.filter(
+                (c) =>
+                  c.type === "voice" &&
+                  (!c.category_id || !categories.some((cat) => cat.id === c.category_id)),
+              ),
+              voiceOpen,
+              () => setVoiceOpen((v) => !v),
             )}
           </div>
-        ))}
+          {voiceOpen &&
+            renderVoice(
+              voiceChannels.filter(
+                (c) => !c.category_id || !categories.some((cat) => cat.id === c.category_id),
+              ),
+            )}
 
-        <CategoryHeader
-          label="Canais de texto"
-          count={textChannels.length}
-          open={textOpen}
-          onToggle={() => setTextOpen((v) => !v)}
-          {...(canManage ? { action: { label: "Criar canal", onClick: onCreateChannel } } : {})}
-        />
-        {textOpen &&
-          renderText(
-            textChannels.filter(
-              (c) => !c.category_id || !categories.some((cat) => cat.id === c.category_id),
-            ),
+          {canInvite && (
+            <Button variant="outline" size="sm" className="mt-4 w-full" onClick={onInvite}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Convidar pessoas
+            </Button>
           )}
-
-        <div className="mt-3">
-          <CategoryHeader
-            label="Canais de voz"
-            count={voiceChannels.length}
-            open={voiceOpen}
-            onToggle={() => setVoiceOpen((v) => !v)}
-            {...(canManage ? { action: { label: "Criar canal", onClick: onCreateChannel } } : {})}
-          />
         </div>
-        {voiceOpen &&
-          renderVoice(
-            voiceChannels.filter(
-              (c) => !c.category_id || !categories.some((cat) => cat.id === c.category_id),
-            ),
-          )}
+      </SidebarBlankMenu>
 
-        {canInvite && (
-          <Button variant="outline" size="sm" className="mt-4 w-full" onClick={onInvite}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            Convidar pessoas
-          </Button>
-        )}
-      </div>
-
-      {canManage && (
+      {canManage && categoriesOpen && (
         <CategoryManager
-          key={server.id}
+          key={server.id + (editingCategory?.id ?? "new")}
           serverId={server.id}
           categories={categories}
-          channels={channels}
-          open={categoriesOpen}
+          category={editingCategory}
           onOpenChange={setCategoriesOpen}
+        />
+      )}
+      {canManage && editingChannel && (
+        <EditChannelDialog
+          key={editingChannel.id}
+          channel={editingChannel}
+          onClose={() => setEditingChannel(null)}
+        />
+      )}
+      {canManage && creatingChannelIn && (
+        <CreateChannelDialog
+          key={creatingChannelIn}
+          serverId={server.id}
+          open
+          defaultCategoryId={creatingChannelIn}
+          onOpenChange={(open) => {
+            if (!open) setCreatingChannelIn(null);
+          }}
+          onCreated={onSelectChannel}
         />
       )}
       <UserBar />

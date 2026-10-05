@@ -6,6 +6,15 @@ function validName(name: string) {
   return value;
 }
 export const categoriesService = {
+  async reorder(serverId: string, categories: ServerCategory[]) {
+    if (categories.some((category) => category.server_id !== serverId))
+      throw new Error("Categoria de outro servidor.");
+    const { error } = await supabase.from("server_categories").upsert(
+      categories.map((category, position) => ({ ...category, position })),
+      { onConflict: "id" },
+    );
+    if (error) throw error;
+  },
   async list(serverId: string): Promise<ServerCategory[]> {
     const { data, error } = await supabase
       .from("server_categories")

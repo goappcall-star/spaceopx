@@ -6,12 +6,18 @@ export interface ServerPreferences {
   notifications: "all" | "mentions" | "none";
   hideMutedChannels: boolean;
   mutedChannels: string[];
+  mutedCategories: Record<string, number>;
+  categoryNotifications: Record<string, "all" | "mentions" | "none">;
+  channelNotifications: Record<string, "all" | "mentions" | "none">;
 }
 export const DEFAULT_SERVER_PREFERENCES: ServerPreferences = {
   mutedUntil: null,
   notifications: "all",
   hideMutedChannels: false,
   mutedChannels: [],
+  mutedCategories: {},
+  categoryNotifications: {},
+  channelNotifications: {},
 };
 export function isServerMuted(preferences: ServerPreferences, now = Date.now()) {
   return preferences.mutedUntil === -1 || (preferences.mutedUntil ?? 0) > now;
@@ -41,6 +47,21 @@ export function useServerPreferences(userId: string | undefined) {
             mutedChannels: Array.isArray(p.mutedChannels)
               ? p.mutedChannels.filter((id): id is string => typeof id === "string")
               : [],
+            mutedCategories: Object.fromEntries(
+              Object.entries(p.mutedCategories ?? {}).filter(
+                ([, value]) => typeof value === "number",
+              ),
+            ),
+            categoryNotifications: Object.fromEntries(
+              Object.entries(p.categoryNotifications ?? {}).filter(([, value]) =>
+                ["all", "mentions", "none"].includes(value),
+              ),
+            ),
+            channelNotifications: Object.fromEntries(
+              Object.entries(p.channelNotifications ?? {}).filter(([, value]) =>
+                ["all", "mentions", "none"].includes(value),
+              ),
+            ),
           };
         }
       } catch {

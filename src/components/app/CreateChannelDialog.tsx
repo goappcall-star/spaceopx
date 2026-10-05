@@ -23,6 +23,7 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultType?: ChannelType;
+  defaultCategoryId?: string;
   onCreated?: (channelId: string) => void;
 }
 
@@ -31,12 +32,13 @@ export function CreateChannelDialog({
   open,
   onOpenChange,
   defaultType = "text",
+  defaultCategoryId = "",
   onCreated,
 }: Props) {
   const [name, setName] = useState("");
   const [type, setType] = useState<ChannelType>(defaultType);
   const [saving, setSaving] = useState(false);
-  const [categoryId, setCategoryId] = useState("");
+  const [categoryId, setCategoryId] = useState(defaultCategoryId);
   const { data: categories = [] } = useQuery({
     queryKey: ["categories", serverId],
     queryFn: () => categoriesService.list(serverId),

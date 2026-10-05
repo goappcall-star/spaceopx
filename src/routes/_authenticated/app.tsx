@@ -37,7 +37,8 @@ import { channelsService } from "@/services/channels";
 import { readStatesService } from "@/services/messages";
 import { membersService } from "@/services/members";
 import { memberHasPermission } from "@/services/permissions";
-import { useServerPreferences, isServerMuted } from "@/hooks/use-server-preferences";
+import { useServerPreferences } from "@/hooks/use-server-preferences";
+import { shouldNotifyChannel } from "@/lib/channel-preferences";
 import { ServerPersonalDialog } from "@/components/app/ServerPersonalDialog";
 import type { ServerMenuAction } from "@/components/app/ServerContextMenu";
 import type { Server } from "@/types";
@@ -191,12 +192,11 @@ function AppPage() {
           const row = payload.new as { channel_id: string; author_id: string; mentions?: string[] };
           if (!ids.has(row.channel_id)) return;
           if (row.author_id === user.id || row.channel_id === activeChannelId) return;
+          const channel = channels.find((channel) => channel.id === row.channel_id);
           if (
             activePreferences &&
-            (isServerMuted(activePreferences) ||
-              activePreferences.mutedChannels.includes(row.channel_id) ||
-              activePreferences.notifications === "none" ||
-              (activePreferences.notifications === "mentions" && !row.mentions?.includes(user.id)))
+            channel &&
+            !shouldNotifyChannel(activePreferences, channel, user.id, row.mentions)
           )
             return;
           setUnread((prev) => new Set(prev).add(row.channel_id));
@@ -263,6 +263,18 @@ function AppPage() {
             />
           ) : activeServer ? (
             <ChannelSidebar
+              key={activeServer.id}
+              onUpdatePreferences={(patch) => preferences.update(activeServer.id, patch)}
+              onMarkRead={(ids) => {
+                if (!user) return;
+                void Promise.all(ids.map((id) => readStatesService.markRead(id, user.id, null)))
+                  .then(() => {
+                    setUnread(
+                      (previous) => new Set([...previous].filter((id) => !ids.includes(id))),
+                    );
+                  })
+                  .catch(() => toast.error("Não foi possível marcar como lido."));
+              }}
               onStartDirect={openConversation}
               preferences={preferences.get(activeServer.id)}
               onToggleMuteChannel={(channelId) => {

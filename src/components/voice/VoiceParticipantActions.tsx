@@ -31,6 +31,7 @@ import {
   requestVoiceDisconnect,
   setVoiceRestriction,
   requestVoiceMove,
+  voiceMemberLocation,
 } from "@/services/voice-moderation";
 
 export function VoiceParticipantActions({
@@ -61,14 +62,22 @@ export function VoiceParticipantActions({
   const { data: servers = [] } = useMyServers();
   const me = serverMembers.find((m) => m.user_id === user?.id);
   const server = servers.find((s) => s.id === member?.server_id);
-  const source = Object.entries(voice.participantsByChannel).find(([, participants]) =>
-    participants.some((p) => p.user_id === userId && p.voice_session_id),
+  const location = voiceMemberLocation(
+    voice.participantsByChannel,
+    userId,
+    channels.map((c) => c.id),
   );
-  const session = source?.[1].find((p) => p.user_id === userId)?.voice_session_id;
+  const source: [string] | undefined = location ? [location.channelId] : undefined;
+  const session = location?.session;
   const canMove =
     memberHasPermission(me, server?.owner_id, "administrator") &&
     (userId !== server?.owner_id || self);
-  const memberDrag = useVoiceMemberDrag(member?.server_id, canMove, voice.participantsByChannel);
+  const memberDrag = useVoiceMemberDrag(
+    member?.server_id,
+    canMove,
+    voice.participantsByChannel,
+    channels.map((c) => c.id),
+  );
   const restriction = voice.restrictions[`${member?.server_id}:${userId}`];
   const query = useQueryClient();
   const previousVolume = useRef(100);
@@ -175,6 +184,9 @@ export function VoiceParticipantActions({
                 <DropdownMenuSeparator />
               </>
             )}
+            {canMove && (!source || !session) && (
+              <DropdownMenuItem disabled>Mover para</DropdownMenuItem>
+            )}
             {canMove && source && session && (
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>Mover para</DropdownMenuSubTrigger>
@@ -185,10 +197,7 @@ export function VoiceParticipantActions({
                       <DropdownMenuItem
                         key={c.id}
                         onSelect={() =>
-                          void run(
-                            () => requestVoiceMove(userId, source[0], c.id, session),
-                            "Solicitação de movimentação enviada.",
-                          )
+                          void run(() => requestVoiceMove(userId, source[0], c.id, session), "")
                         }
                       >
                         {c.name}

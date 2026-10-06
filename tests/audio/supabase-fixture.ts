@@ -16,7 +16,14 @@ class TestChannel {
   }
   async send(message: { payload: unknown }) {
     for (const peer of rooms.get(this.room) ?? [])
-      if (peer !== this) queueMicrotask(() => peer.callback?.(message));
+      if (peer !== this) {
+        queueMicrotask(() => peer.callback?.(message));
+        if (
+          new URLSearchParams(location.search).has("repeat-offers") &&
+          (message.payload as { description?: { type?: string } }).description?.type === "offer"
+        )
+          queueMicrotask(() => peer.callback?.(message));
+      }
   }
 }
 export const supabase = {

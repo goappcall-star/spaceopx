@@ -9,6 +9,20 @@ export interface VoiceMoveRequest {
   voice_session_id: string;
   created_at: string;
 }
+export const CHANNEL_VOICE_SESSION = "@channel";
+export function voiceMemberLocation(
+  rooms: Record<string, import("@/types").VoiceParticipant[]>,
+  userId: string,
+  channelIds?: string[],
+) {
+  const room = Object.entries(rooms).find(
+    ([id, people]) =>
+      (!channelIds || channelIds.includes(id)) && people.some((p) => p.user_id === userId),
+  );
+  if (!room) return undefined;
+  const participant = room[1].find((p) => p.user_id === userId)!;
+  return { channelId: room[0], session: participant.voice_session_id || CHANNEL_VOICE_SESSION };
+}
 export async function requestVoiceMove(
   userId: string,
   source: string,
@@ -30,13 +44,16 @@ export function shouldApplyVoiceMove(
   channelId: string | null,
   session: string,
   now = Date.now(),
+  sessionStartedAt = -Infinity,
 ) {
   const age = now - Date.parse(request.created_at);
   return (
     request.recipient_id === userId &&
     request.server_id === serverId &&
     request.source_channel_id === channelId &&
-    request.voice_session_id === session &&
+    (request.voice_session_id === session ||
+      (request.voice_session_id === CHANNEL_VOICE_SESSION &&
+        Date.parse(request.created_at) >= sessionStartedAt)) &&
     age >= -5000 &&
     age < 15000
   );

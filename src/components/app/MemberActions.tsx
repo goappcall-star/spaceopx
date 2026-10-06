@@ -38,6 +38,7 @@ import {
   requestVoiceDisconnect,
   setVoiceRestriction,
   requestVoiceMove,
+  voiceMemberLocation,
 } from "@/services/voice-moderation";
 
 export function MemberActions({
@@ -74,12 +75,20 @@ export function MemberActions({
   const canMove =
     memberHasPermission(me, server.owner_id, "administrator") &&
     (member.user_id !== server.owner_id || member.user_id === user?.id);
-  const source = Object.entries(voice.participantsByChannel).find(([, people]) =>
-    people.some((p) => p.user_id === member.user_id && p.voice_session_id),
+  const location = voiceMemberLocation(
+    voice.participantsByChannel,
+    member.user_id,
+    channels.map((c) => c.id),
   );
-  const memberDrag = useVoiceMemberDrag(server.id, canMove, voice.participantsByChannel);
+  const source: [string] | undefined = location ? [location.channelId] : undefined;
+  const memberDrag = useVoiceMemberDrag(
+    server.id,
+    canMove,
+    voice.participantsByChannel,
+    channels.map((c) => c.id),
+  );
   const restriction = voice.restrictions[`${server.id}:${member.user_id}`];
-  const session = source?.[1].find((p) => p.user_id === member.user_id)?.voice_session_id;
+  const session = location?.session;
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: relationship } = useRelationship(
     menuOpen && member.user_id !== user?.id ? member.user_id : null,
@@ -137,6 +146,7 @@ export function MemberActions({
             }}
           >
             <QuickProfile
+              disablePreview={memberDrag.dragging}
               userId={member.user_id}
               roles={member.roles}
               side="left"
@@ -185,6 +195,9 @@ export function MemberActions({
               <ContextMenuSeparator />
             </>
           )}
+          {canMove && (!source || !session) && (
+            <ContextMenuItem disabled>Mover para</ContextMenuItem>
+          )}
           {canMove && source && session && (
             <ContextMenuSub>
               <ContextMenuSubTrigger>Mover para</ContextMenuSubTrigger>
@@ -197,7 +210,7 @@ export function MemberActions({
                       onSelect={() =>
                         void run(
                           () => requestVoiceMove(member.user_id, source[0], c.id, session),
-                          "Solicitação de movimentação enviada.",
+                          "",
                         )
                       }
                     >

@@ -197,6 +197,7 @@ export function VoiceProviderRoot({
   const publishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const publishQueueRef = useRef<Promise<void>>(Promise.resolve());
   const sessionIdRef = useRef(crypto.randomUUID());
+  const sessionStartedAtRef = useRef(Date.now());
   const lifecycleQueueRef = useRef<Promise<void>>(Promise.resolve());
   const lifecycleGenerationRef = useRef(0);
   const pendingJoinChannelRef = useRef<string | null>(null);
@@ -510,6 +511,7 @@ export function VoiceProviderRoot({
           // Every entry is a distinct voice session. Presence from a previous
           // entry can no longer be mistaken for, or clean up, this one.
           sessionIdRef.current = crypto.randomUUID();
+          sessionStartedAtRef.current = Date.now();
           voiceServerRef.current = callServerId;
           setActiveServerId(callServerId);
           if (listenOnly) setMuted(true);
@@ -649,6 +651,8 @@ export function VoiceProviderRoot({
           voiceServerRef.current,
           stateRef.current.activeChannelId,
           sessionIdRef.current,
+          Date.now(),
+          sessionStartedAtRef.current,
         )
       )
         return;
@@ -663,11 +667,25 @@ export function VoiceProviderRoot({
       if (!request.destination_channel_id) return;
       void moveJoinRef
         .current(request.destination_channel_id, request.server_id)
-        .then(() => {
-          if (stateRef.current.activeChannelId === request.destination_channel_id)
-            toast.info("Você foi movido para outro canal de voz.");
-        })
         .catch(() => toast.error("Não foi possível mudar de canal de voz."));
+    };
+    let loading = false;
+    const recover = async () => {
+      if (disposed || loading || !stateRef.current.activeChannelId) return;
+      loading = true;
+      try {
+        const { data } = await supabase
+          .from("voice_move_requests")
+          .select("*")
+          .eq("recipient_id", userId)
+          .gte("created_at", new Date(Date.now() - 15000).toISOString())
+          .order("created_at", { ascending: true });
+        if (!disposed) for (const row of data ?? []) receive(row);
+      } catch {
+        // Keep the call running; the next recovery pass retries after a network failure.
+      } finally {
+        loading = false;
+      }
     };
     const channel = supabase
       .channel(`voice-moves:${userId}`)
@@ -682,19 +700,15 @@ export function VoiceProviderRoot({
         (payload) => receive(payload.new as VoiceMoveRequest),
       )
       .subscribe((status) => {
-        if (status === "SUBSCRIBED")
-          void supabase
-            .from("voice_move_requests")
-            .select("*")
-            .eq("recipient_id", userId)
-            .gte("created_at", new Date(Date.now() - 15000).toISOString())
-            .order("created_at", { ascending: true })
-            .then(({ data }) => {
-              if (!disposed) for (const row of data ?? []) receive(row);
-            });
+        if (status === "SUBSCRIBED") void recover();
       });
+    // Realtime is the immediate path; this recovers missed events without user intervention.
+    const recoveryTimer = setInterval(() => {
+      void recover();
+    }, 2000);
     return () => {
       disposed = true;
+      clearInterval(recoveryTimer);
       void supabase.removeChannel(channel);
     };
   }, [userId]);

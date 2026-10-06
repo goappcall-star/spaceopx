@@ -130,6 +130,8 @@ interface Peer {
   streams: { mic: MediaStream; camera: MediaStream; screen: MediaStream; screenAudio: MediaStream };
   /** Candidates that arrived before the remote description was applied. */
   pendingCandidates: RTCIceCandidateInit[];
+  /** Process whole SDP exchanges in order, not just individual browser operations. */
+  signalQueue: Promise<void>;
   state: RTCPeerConnectionState;
   restartTimer: ReturnType<typeof setTimeout> | null;
   createdAt: number;
@@ -400,6 +402,7 @@ class MeshVoiceProvider implements VoiceProvider {
         screenAudio: new MediaStream(),
       },
       pendingCandidates: [],
+      signalQueue: Promise.resolve(),
       state: "new",
       restartTimer: null,
       createdAt: Date.now(),
@@ -418,6 +421,8 @@ class MeshVoiceProvider implements VoiceProvider {
     };
 
     pc.onnegotiationneeded = async () => {
+      if (this.disposed || this.peers.get(remoteId) !== peer || pc.signalingState !== "stable")
+        return;
       try {
         peer.makingOffer = true;
         await pc.setLocalDescription();
@@ -732,11 +737,30 @@ class MeshVoiceProvider implements VoiceProvider {
 
     const peer = this.peers.get(payload.from) ?? this.createPeer(payload.from);
     if (payload.from_session) peer.remoteSessionId = payload.from_session;
+    const operation = peer.signalQueue.then(() => this.applySignal(peer, payload));
+    peer.signalQueue = operation.catch(() => undefined);
+    await operation;
+  }
+
+  private async applySignal(peer: Peer, payload: SignalPayload) {
+    if (this.disposed || this.peers.get(payload.from) !== peer) return;
     const { pc } = peer;
 
     try {
       if (payload.description) {
         const description = payload.description;
+        // A hello can resend the initial offer. Applying it twice concurrently
+        // would make the second implicit setLocalDescription create an OFFER
+        // instead of an answer, leaving both participants waiting forever.
+        if (
+          pc.remoteDescription?.type === description.type &&
+          pc.remoteDescription.sdp === description.sdp
+        ) {
+          if (description.type === "offer" && pc.localDescription?.type === "answer")
+            this.send(payload.from, { description: pc.localDescription.toJSON() });
+          return;
+        }
+        if (description.type === "answer" && pc.signalingState !== "have-local-offer") return;
         const offerCollision =
           description.type === "offer" && (peer.makingOffer || pc.signalingState !== "stable");
         peer.ignoreOffer = !peer.polite && offerCollision;

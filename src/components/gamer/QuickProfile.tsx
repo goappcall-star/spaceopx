@@ -5,7 +5,7 @@ import { ProfileFrameDecoration } from "./ProfileCosmetics";
 import { useProfileDialog } from "./ProfileDialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, Gamepad2, MessageSquare, Phone, UserCheck, UserPlus, X } from "lucide-react";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { STATUS_LABEL, StatusDot } from "@/components/app/StatusDot";
@@ -36,7 +36,9 @@ export function QuickProfile({
   align = "start",
   className,
   onStartDirect,
+  disablePreview = false,
 }: {
+  disablePreview?: boolean;
   userId: string;
   roles?: Role[] | undefined;
   children: ReactNode;
@@ -49,8 +51,15 @@ export function QuickProfile({
   const [open, setOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useEffect(() => {
+    if (disablePreview) {
+      if (timer.current) clearTimeout(timer.current);
+      setOpen(false);
+    }
+  }, [disablePreview]);
+
   function scheduleOpen() {
-    if (isMobile) return;
+    if (isMobile || disablePreview) return;
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => setOpen(true), 320);
   }
@@ -62,7 +71,12 @@ export function QuickProfile({
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open && !disablePreview}
+      onOpenChange={(value) => {
+        if (!disablePreview) setOpen(value);
+      }}
+    >
       <PopoverTrigger asChild>
         <span
           className={cn("block", className)}

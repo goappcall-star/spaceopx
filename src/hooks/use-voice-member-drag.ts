@@ -1,24 +1,30 @@
 import { useRef, useState, type DragEvent } from "react";
 import { toast } from "sonner";
 import type { VoiceParticipant } from "@/types";
-import { requestVoiceMove } from "@/services/voice-moderation";
+import {
+  requestVoiceMove,
+  voiceMemberLocation,
+  CHANNEL_VOICE_SESSION,
+} from "@/services/voice-moderation";
 
 const MIME = "application/x-lobbyx-voice-member";
 export function useVoiceMemberDrag(
   serverId: string | undefined,
   allowed: boolean,
   rooms: Record<string, VoiceParticipant[]>,
+  channelIds?: string[],
 ) {
+  const [dragging, setDragging] = useState(false);
   const [target, setTarget] = useState<string | null>(null);
   const until = useRef(0);
   const busy = useRef(false);
   const source = (userId: string) => {
-    const room = Object.entries(rooms).find(([, people]) =>
-      people.some((p) => p.user_id === userId && p.voice_session_id),
-    );
-    const session = room?.[1].find((p) => p.user_id === userId)?.voice_session_id;
+    const location = voiceMemberLocation(rooms, userId, channelIds);
+    const room = location?.channelId;
+    const session = location?.session;
     return {
       draggable: Boolean(allowed && serverId && room && session),
+      style: allowed && room ? { userSelect: "none" as const } : undefined,
       onDragStart: (event: DragEvent<HTMLElement>) => {
         if (!allowed || !room || !session) {
           event.preventDefault();
@@ -26,16 +32,18 @@ export function useVoiceMemberDrag(
         }
         event.stopPropagation();
         until.current = Infinity;
+        setDragging(true);
         event.dataTransfer.effectAllowed = "move";
         event.dataTransfer.setData(
           MIME,
-          JSON.stringify({ serverId, userId, channelId: room[0], session }),
+          JSON.stringify({ serverId, userId, channelId: room, session }),
         );
       },
       onDragEnd: (event: DragEvent<HTMLElement>) => {
         event.stopPropagation();
         until.current = Date.now() + 350;
         setTarget(null);
+        setDragging(false);
       },
     };
   };
@@ -67,13 +75,14 @@ export function useVoiceMemberDrag(
         data.serverId !== serverId ||
         data.channelId === channelId ||
         !rooms[data.channelId]?.some(
-          (p) => p.user_id === data.userId && p.voice_session_id === data.session,
+          (p) =>
+            p.user_id === data.userId &&
+            (data.session === CHANNEL_VOICE_SESSION || p.voice_session_id === data.session),
         )
       )
         return;
       busy.current = true;
       void requestVoiceMove(data.userId, data.channelId, channelId, data.session)
-        .then(() => toast.success("Movimentação solicitada."))
         .catch(() =>
           toast.error(
             "Não foi possível mover. Confira a permissão de administrador e o canal de destino.",
@@ -84,5 +93,5 @@ export function useVoiceMemberDrag(
         });
     },
   });
-  return { source, zone, target, suppressClick: () => Date.now() < until.current };
+  return { source, zone, target, dragging, suppressClick: () => Date.now() < until.current };
 }

@@ -47,3 +47,18 @@ test("Voice move requests must match the current user, server, room and session 
   assert.equal(apply({ ...r, created_at: "invalid" }), false);
   assert.equal(apply({ ...r, created_at: new Date(now + 6000).toISOString() }), false);
 });
+
+test("Channel-scoped fallback is allowed only for the live room and after the current session began", () => {
+  const now = Date.now();
+  const row = {
+    recipient_id: "me",
+    server_id: "s",
+    source_channel_id: "a",
+    voice_session_id: "@channel",
+    created_at: new Date(now - 1000).toISOString(),
+  };
+  assert.equal(shouldApplyVoiceMove(row, "me", "s", "a", "new-session", now, now - 2000), true);
+  assert.equal(shouldApplyVoiceMove(row, "me", "s", "a", "new-session", now, now - 500), false);
+  assert.equal(shouldApplyVoiceMove(row, "me", "s", "b", "new-session", now, now - 2000), false);
+  assert.equal(shouldApplyVoiceMove(row, "other", "s", "a", "new-session", now, now - 2000), false);
+});

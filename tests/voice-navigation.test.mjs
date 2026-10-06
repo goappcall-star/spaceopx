@@ -7,6 +7,8 @@ import ts from "typescript";
 // Exercise the actual provider with deterministic hooks, signaling and media.
 function fixture() {
   const timers = new Map();
+  const intervals = new Map(),
+    missedRequests = [];
   const restrictionRows = [],
     restrictionChannels = [];
   let restrictionFailure = false;
@@ -134,7 +136,7 @@ function fixture() {
             data:
               table === "voice_restrictions"
                 ? restrictionRows.filter((row) => serverIds.includes(row.server_id))
-                : [],
+                : missedRequests,
             error: null,
           }).then(resolve);
         },
@@ -215,8 +217,12 @@ function fixture() {
       return timerId;
     },
     clearTimeout: (id) => timers.delete(id),
-    setInterval: () => 1,
-    clearInterval() {},
+    setInterval: (fn) => {
+      const id = intervals.size + 1;
+      intervals.set(id, fn);
+      return id;
+    },
+    clearInterval: (id) => intervals.delete(id),
   });
   function render(serverId = props.serverId) {
     props = { ...props, serverId };
@@ -243,6 +249,8 @@ function fixture() {
     providers,
     timers,
     moveChannels,
+    intervals,
+    missedRequests,
     restrictionRows,
     restrictionChannels,
     failRestrictions: () => {
@@ -529,4 +537,23 @@ test("A failed moderation lookup cleans up and never publishes an unprotected mi
   assert.equal(f.providers[0].callbacks, undefined);
   assert.equal(f.providers[0].disconnects, 1);
   assert.equal(f.render().connectionState, "error");
+});
+
+test("A missed realtime command is recovered while in call and applied without a confirmation", async () => {
+  const f = fixture();
+  await f.render().join("room-a");
+  await f.flush();
+  const session = f.render().participantsByChannel["room-a"][0].voice_session_id;
+  f.missedRequests.push({
+    id: "missed",
+    recipient_id: "me",
+    server_id: "a",
+    source_channel_id: "room-a",
+    destination_channel_id: "room-b",
+    voice_session_id: session,
+  });
+  for (const fn of f.intervals.values()) fn();
+  await f.flush();
+  await f.flush();
+  assert.equal(f.render().activeChannelId, "room-b");
 });

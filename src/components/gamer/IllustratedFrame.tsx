@@ -2,9 +2,43 @@ import { useId } from "react";
 import { useFrameVisibility } from "@/hooks/use-frame-visibility";
 import { FRAME_PALETTES, type IllustratedFrameId } from "@/lib/illustrated-frames";
 import "./illustrated-frames.css";
-// Preserve the illustration's proportions; the rounded safe mask clears the content.
-function FrameArt({ src }: { src: string }) {
-  return <image href={src} x="-18" y="-20" width="336" height="440" preserveAspectRatio="none" />;
+// The painted border has different transparent margins in each source asset.
+// Align its centerline to the card perimeter instead of stretching the whole canvas.
+const artworkEdges: Record<IllustratedFrameId, [number, number, number, number]> = {
+  aurora: [0.12, 0.873, 0.096, 0.892],
+  cosmic: [0.136, 0.877, 0.093, 0.902],
+  royal: [0.115, 0.885, 0.097, 0.889],
+  sakura: [0.126, 0.897, 0.079, 0.879],
+  "shadow-rise": [0.141, 0.879, 0.136, 0.883],
+  "celestial-energy": [0.134, 0.868, 0.108, 0.851],
+  "void-eye": [0.12, 0.869, 0.105, 0.881],
+  thunderstorm: [0.141, 0.856, 0.108, 0.876],
+  "crimson-moon": [0.132, 0.873, 0.113, 0.876],
+};
+function FrameArt({
+  src,
+  theme,
+  avatar,
+}: {
+  src: string;
+  theme: IllustratedFrameId;
+  avatar: boolean;
+}) {
+  if (avatar)
+    return <image href={src} x="-18" y="-20" width="336" height="440" preserveAspectRatio="none" />;
+  const [left, right, top, bottom] = artworkEdges[theme];
+  const width = 300 / (right - left),
+    height = 400 / (bottom - top);
+  return (
+    <image
+      href={src}
+      x={-left * width}
+      y={-top * height}
+      width={width}
+      height={height}
+      preserveAspectRatio="none"
+    />
+  );
 }
 const contour = "M150 5H257Q295 5 295 43V357Q295 395 257 395H43Q5 395 5 357V43Q5 5 43 5H150Z";
 export function IllustratedFrame({
@@ -30,18 +64,30 @@ export function IllustratedFrame({
       data-theme={theme}
       data-visible={visible}
       data-animated={animated}
+      style={
+        compact && !avatar
+          ? { inset: 10, width: "calc(100% - 20px)", height: "calc(100% - 20px)" }
+          : undefined
+      }
       className={
         "lx-illustrated-frame pointer-events-none absolute inset-0 z-10 h-full w-full overflow-visible" +
         (avatar ? " lx-illustrated-avatar" : "")
       }
     >
       <defs>
-        <mask id={id + "-safe"} maskUnits="userSpaceOnUse" x="-35" y="-35" width="370" height="470">
-          <rect x="-35" y="-35" width="370" height="470" rx="64" fill="white" />
+        <mask id={id + "-safe"} maskUnits="userSpaceOnUse" x="-60" y="-60" width="420" height="520">
+          <rect
+            x={avatar ? -35 : -60}
+            y={avatar ? -35 : -60}
+            width={avatar ? 370 : 420}
+            height={avatar ? 470 : 520}
+            rx={avatar ? 64 : 80}
+            fill="white"
+          />
           {avatar ? (
             <ellipse cx="150" cy="200" rx="128" ry="174" fill="black" />
           ) : (
-            <rect x="16" y="16" width="268" height="368" rx="32" fill="black" />
+            <rect x="8" y="8" width="284" height="384" rx="28" fill="black" />
           )}
         </mask>
         <linearGradient id={id + "-energy"}>
@@ -52,19 +98,23 @@ export function IllustratedFrame({
         <mask
           id={id + "-metal"}
           maskUnits="userSpaceOnUse"
-          x="-18"
-          y="-20"
-          width="336"
-          height="440"
+          x="-60"
+          y="-60"
+          width="420"
+          height="520"
           style={{ maskType: "alpha" }}
         >
           <FrameArt
+            theme={theme}
+            avatar={avatar}
             src={"/frames/illustrated/" + theme + (compact || avatar ? "-compact.webp" : ".webp")}
           />
         </mask>
       </defs>
       <g mask={"url(#" + id + "-safe)"}>
         <FrameArt
+          theme={theme}
+          avatar={avatar}
           src={"/frames/illustrated/" + theme + (compact || avatar ? "-compact.webp" : ".webp")}
         />
         {theme === "royal" && (

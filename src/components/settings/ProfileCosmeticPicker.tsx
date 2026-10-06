@@ -1,11 +1,12 @@
+import { isIllustratedFrame } from "@/lib/illustrated-frames";
 import { VisualBanner } from "@/components/ui/static-image";
 import { useState } from "react";
 import { Check, Sparkles } from "lucide-react";
+import { AVATAR_FRAMES, normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
 import {
   PROFILE_COSMETICS,
   NAMEPLATE_COSMETICS,
   normalizeProfileCosmetic,
-  profileCosmetic,
   type ProfileCosmeticId,
 } from "@/lib/profile-cosmetics";
 import { ProfileFrameDecoration } from "@/components/gamer/ProfileCosmetics";
@@ -22,19 +23,36 @@ export function ProfileCosmeticPicker({
   avatar,
   banner,
 }: {
-  kind: "nameplate" | "frame";
   value: string;
-  onChange: (value: ProfileCosmeticId) => void;
   name: string;
   avatar: string;
   banner: string;
-}) {
+} & (
+  | { kind: "avatar"; onChange: (value: AvatarFrameId) => void }
+  | { kind: "nameplate" | "frame"; onChange: (value: ProfileCosmeticId) => void }
+)) {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<ProfileCosmeticId>(normalizeProfileCosmetic(value));
-  const label = kind === "nameplate" ? "Placa de identificação" : "Moldura do perfil";
-  const choice = profileCosmetic(selected);
+  const normalize = kind === "avatar" ? normalizeAvatarFrame : normalizeProfileCosmetic;
+  const [selected, setSelected] = useState<ProfileCosmeticId | AvatarFrameId>(normalize(value));
+  const label =
+    kind === "avatar"
+      ? "Moldura do avatar"
+      : kind === "nameplate"
+        ? "Placa de identificação"
+        : "Moldura do perfil";
+  const options =
+    kind === "avatar"
+      ? AVATAR_FRAMES
+      : kind === "nameplate"
+        ? NAMEPLATE_COSMETICS
+        : PROFILE_COSMETICS;
+  const choice = options.find((item) => item.id === selected) ?? options[0];
+  const currentChoice = options.find((item) => item.id === normalize(value)) ?? options[0];
   const face = (
-    <Avatar className="h-12 w-12 shrink-0">
+    <Avatar
+      frame={kind === "avatar" ? normalizeAvatarFrame(selected) : "default"}
+      className="h-12 w-12 shrink-0"
+    >
       <AvatarImage src={avatar || undefined} alt="" />
       <AvatarFallback>{(name || "LX").slice(0, 2)}</AvatarFallback>
     </Avatar>
@@ -44,13 +62,14 @@ export function ProfileCosmeticPicker({
       <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4">
         <div>
           <p className="text-sm font-semibold">{label}</p>
-          <p className="text-muted-foreground text-xs mt-1">{profileCosmetic(value).name}</p>
+          <p className="text-muted-foreground text-xs mt-1">{currentChoice.name}</p>
         </div>
         <Button
           type="button"
           variant="secondary"
+          aria-label={`Alterar ${label.toLowerCase()}`}
           onClick={() => {
-            setSelected(normalizeProfileCosmetic(value));
+            setSelected(normalize(value));
             setOpen(true);
           }}
         >
@@ -69,7 +88,7 @@ export function ProfileCosmeticPicker({
               className="grid max-h-[52dvh] grid-cols-2 content-start gap-3 overflow-y-auto pr-1"
               aria-label={`Estilos de ${label.toLowerCase()}`}
             >
-              {(kind === "nameplate" ? NAMEPLATE_COSMETICS : PROFILE_COSMETICS).map((item) => (
+              {options.map((item) => (
                 <button
                   key={item.id}
                   type="button"
@@ -84,8 +103,19 @@ export function ProfileCosmeticPicker({
                     {kind === "frame" && (
                       <ProfileFrameDecoration value={item.id} animated={false} compact />
                     )}
-                    <span className="absolute left-3 top-6 h-6 w-6 rounded-full bg-muted" />
-                    <span className="absolute left-12 right-3 top-8 h-2 rounded-full bg-muted" />
+                    {kind === "avatar" ? (
+                      <div className="flex h-full items-center justify-center">
+                        <Avatar frame={normalizeAvatarFrame(item.id)} className="h-12 w-12">
+                          <AvatarImage src={avatar || undefined} alt="" />
+                          <AvatarFallback>{(name || "LX").slice(0, 2)}</AvatarFallback>
+                        </Avatar>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="absolute left-3 top-6 h-6 w-6 rounded-full bg-muted" />
+                        <span className="absolute left-12 right-3 top-8 h-2 rounded-full bg-muted" />
+                      </>
+                    )}
                   </div>
                   <p className="mt-2 text-xs font-semibold">{item.name}</p>
                   {selected === item.id && (
@@ -109,8 +139,15 @@ export function ProfileCosmeticPicker({
                   <div className="h-10 rounded-lg bg-muted/30" />
                 </div>
               ) : (
-                <div className="relative rounded-2xl bg-surface overflow-visible border border-border mx-4 my-5">
-                  <ProfileFrameDecoration value={selected} />
+                <div
+                  className="relative rounded-2xl bg-surface overflow-visible border border-border mx-4 my-5"
+                  style={
+                    kind === "frame" && isIllustratedFrame(selected)
+                      ? { marginTop: 40, marginBottom: 40 }
+                      : undefined
+                  }
+                >
+                  {kind === "frame" && <ProfileFrameDecoration value={selected} />}
                   <VisualBanner
                     src={banner}
                     className="h-24 rounded-t-2xl bg-brand-gradient bg-cover bg-center"
@@ -140,7 +177,8 @@ export function ProfileCosmeticPicker({
             <Button
               type="button"
               onClick={() => {
-                onChange(selected);
+                if (kind === "avatar") onChange(normalizeAvatarFrame(selected));
+                else onChange(normalizeProfileCosmetic(selected));
                 setOpen(false);
               }}
             >

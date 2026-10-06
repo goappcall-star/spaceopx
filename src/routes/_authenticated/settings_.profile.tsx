@@ -1,5 +1,5 @@
 import { VisualBanner } from "@/components/ui/static-image";
-import { AVATAR_FRAMES, normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
+import { normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
 import { PerformanceSettings } from "@/components/settings/PerformanceSettings";
 import { ThemeSelector } from "@/components/settings/ThemeSelector";
 import { ProfileCosmeticPicker } from "@/components/settings/ProfileCosmeticPicker";
@@ -313,46 +313,14 @@ function ProfileSettingsPage() {
                   />
                 </div>
 
-                <fieldset className="space-y-3">
-                  <legend className="text-sm font-semibold">Moldura do avatar</legend>
-                  <p className="text-muted-foreground text-xs">
-                    Escolha uma moldura e salve seu perfil para aplicar.
-                  </p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {AVATAR_FRAMES.map((frame) => (
-                      <label
-                        key={frame.id}
-                        className={
-                          "relative flex cursor-pointer flex-col items-center gap-3 rounded-xl border px-3 py-5 transition-colors " +
-                          (form.avatar_frame === frame.id
-                            ? "border-primary bg-primary/10"
-                            : "border-border bg-surface hover:bg-surface-elevated")
-                        }
-                      >
-                        <input
-                          type="radio"
-                          name="avatar-frame"
-                          value={frame.id}
-                          checked={form.avatar_frame === frame.id}
-                          onChange={() =>
-                            setForm((current) => ({ ...current, avatar_frame: frame.id }))
-                          }
-                          className="absolute right-3 top-3 accent-[var(--color-primary)]"
-                        />
-                        <Avatar frame={frame.id} className="my-2 h-16 w-16">
-                          <AvatarImage src={form.avatar_url || undefined} alt="" />
-                          <AvatarFallback>
-                            {form.display_name.slice(0, 2).toUpperCase() || "LX"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-semibold">{frame.name}</span>
-                        <span className="text-muted-foreground text-center text-xs">
-                          {frame.description}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
+                <ProfileCosmeticPicker
+                  kind="avatar"
+                  value={form.avatar_frame}
+                  name={form.display_name}
+                  avatar={form.avatar_url}
+                  banner={form.banner_url}
+                  onChange={(avatar_frame) => setForm((current) => ({ ...current, avatar_frame }))}
+                />
 
                 <div className="space-y-3">
                   <ToggleRow

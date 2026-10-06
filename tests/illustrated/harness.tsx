@@ -4,8 +4,17 @@ import { PROFILE_COSMETICS, normalizeProfileCosmetic } from "../../src/lib/profi
 import { ProfileFrameDecoration } from "../../src/components/gamer/ProfileCosmetics";
 import { ProfileCosmeticPicker } from "../../src/components/settings/ProfileCosmeticPicker";
 import { VisualQualitySync } from "../../src/hooks/use-visual-quality";
+import { normalizeAvatarFrame } from "../../src/lib/avatar-frames";
 import "../../src/styles.css";
 function App() {
+  const [light, setLight] = useState(false);
+  const [avatarFrame, setAvatarFrame] = useState(() =>
+    normalizeAvatarFrame(localStorage.getItem("fixture-avatar-frame")),
+  );
+  useEffect(() => {
+    document.documentElement.classList.toggle("light", light);
+  }, [light]);
+  const [cardHeight, setCardHeight] = useState(520);
   const [animated, setAnimated] = useState(true);
   const [motionStats, setMotionStats] = useState("");
   const [selected, setSelected] = useState(() => localStorage.getItem("fixture-frame") ?? "ember");
@@ -21,24 +30,23 @@ function App() {
     setSelected(v);
     localStorage.setItem("fixture-frame", v);
   };
-  const frames = PROFILE_COSMETICS.filter((x) =>
-    [
-      "shadow-rise",
-      "celestial-energy",
-      "void-eye",
-      "thunderstorm",
-      "crimson-moon",
-      "aurora",
-      "cosmic",
-      "royal",
-      "sakura",
-      "flaming-cut",
-    ].includes(x.id),
-  );
+  const frames = PROFILE_COSMETICS.filter((x) => x.id !== "none");
   return (
     <main style={{ padding: 50, maxWidth: 1400, margin: "auto" }}>
       <VisualQualitySync />
-      <h1 className="text-2xl">Coleção ilustrada LobbyX</h1>
+      <label>
+        <input type="checkbox" checked={light} onChange={(e) => setLight(e.target.checked)} />
+        Tema claro
+      </label>
+      <h1 className="text-2xl">Encaixe das molduras LobbyX</h1>
+      <label>
+        Altura do perfil
+        <select value={cardHeight} onChange={(e) => setCardHeight(Number(e.target.value))}>
+          <option value="430">Compacto</option>
+          <option value="520">Perfil padrão</option>
+          <option value="680">Perfil alto</option>
+        </select>
+      </label>
       <label>
         <input type="checkbox" checked={animated} onChange={(e) => setAnimated(e.target.checked)} />{" "}
         Animações
@@ -68,6 +76,17 @@ function App() {
       <pre style={{ whiteSpace: "pre-wrap" }}>{motionStats}</pre>
       <p>Escolha salva: {normalizeProfileCosmetic(selected)}</p>
       <ProfileCosmeticPicker
+        kind="avatar"
+        value={avatarFrame}
+        onChange={(value) => {
+          setAvatarFrame(value);
+          localStorage.setItem("fixture-avatar-frame", value);
+        }}
+        name="Perfil real de teste"
+        avatar=""
+        banner=""
+      />
+      <ProfileCosmeticPicker
         kind="frame"
         value={selected}
         onChange={change}
@@ -78,18 +97,18 @@ function App() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
-          gap: 64,
+          gridTemplateColumns: "repeat(auto-fit,minmax(280px,320px))",
+          gap: 100,
           marginTop: 50,
         }}
       >
         {frames.map((item) => (
           <section key={item.id}>
-            <h2 className="mb-8">{item.name}</h2>
-            <div className="relative bg-surface border rounded-2xl" style={{ height: 430 }}>
+            <h2 style={{ marginBottom: 80 }}>{item.name}</h2>
+            <div className="relative bg-surface border rounded-2xl" style={{ height: cardHeight }}>
               <ProfileFrameDecoration value={item.id} animated={animated} />
               <div
-                className="h-24 rounded-t-2xl"
+                className="h-44 rounded-t-2xl"
                 style={{ background: "linear-gradient(120deg,#254061,#704598)" }}
               />
               <div style={{ padding: 32 }}>

@@ -50,8 +50,7 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
-    const nearBottom =
-      container.scrollHeight - container.scrollTop - container.clientHeight < 240;
+    const nearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 240;
     if (nearBottom) bottomRef.current?.scrollIntoView({ block: "end" });
   }, [messages.length]);
 
@@ -68,7 +67,7 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
         <span className="bg-surface-elevated border-border text-primary flex h-7 w-7 items-center justify-center rounded-lg border">
           <Hash className="h-3.5 w-3.5" />
         </span>
-        <h1 className="text-sm font-semibold tracking-tight">{channel.name}</h1>
+        <h1 className="min-w-0 truncate text-sm font-semibold tracking-tight">{channel.name}</h1>
         {channel.description && (
           <>
             <span className="bg-border h-4 w-px" />
@@ -94,7 +93,12 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
 
         {!loading && hasMore && (
           <div className="flex justify-center pb-2">
-            <Button size="sm" variant="ghost" onClick={() => void loadOlder()} disabled={loadingMore}>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => void loadOlder()}
+              disabled={loadingMore}
+            >
               {loadingMore ? "Carregando..." : "Carregar mensagens anteriores"}
             </Button>
           </div>
@@ -113,7 +117,6 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
             </p>
           </div>
         )}
-
 
         {messages.map((message, index) => {
           const previous = messages[index - 1];
@@ -157,7 +160,6 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
           </>
         )}
       </div>
-
 
       <MessageComposer
         serverId={serverId}

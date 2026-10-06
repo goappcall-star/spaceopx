@@ -18,11 +18,30 @@ test("Explicit screen state clears frozen remote media and restores unchanged tr
   assert.equal(provider.remote.remote.screen, null);
   assert.equal(provider.remote.remote.screenAudio, null);
   assert.equal(provider.remote.remote.audio, audio);
+  // A delayed RTC unmute/ontrack event must not resurrect the stopped overlay.
+  provider.updateRemote("remote", "screen", video);
+  provider.updateRemote("remote", "screenAudio", screenAudio);
+  assert.equal(provider.remote.remote.screen, null);
+  assert.equal(provider.remote.remote.screenAudio, null);
   await provider.onSignal({ from: "remote", to: "*", screenStarted: true, screenHasAudio: true });
   assert.equal(provider.remote.remote.screen, video);
   assert.equal(provider.remote.remote.screenAudio, screenAudio);
   await provider.onSignal({ from: "remote", to: "*", screenStarted: true, screenHasAudio: false });
   assert.equal(provider.remote.remote.screenAudio, null);
+});
+
+test("A screen stop from an old session cannot clear the new session's sharing", async () => {
+  const provider = loadVoiceProvider({});
+  const video = stream([track("video")]);
+  provider.remote.remote = { audio: null, camera: null, screen: video, screenAudio: null };
+  provider.peers.set("remote", { remoteSessionId: "new-session" });
+  await provider.onSignal({
+    from: "remote",
+    from_session: "old-session",
+    to: "*",
+    screenStopped: true,
+  });
+  assert.equal(provider.remote.remote.screen, video);
 });
 function track(kind) {
   const events = {};

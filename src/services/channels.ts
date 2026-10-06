@@ -41,6 +41,7 @@ export const channelsService = {
     name: string,
     type: ChannelType = "text",
     categoryId?: string | null,
+    isAfk = false,
   ): Promise<Channel> {
     const { data, error } = await supabase
       .from("channels")
@@ -48,11 +49,15 @@ export const channelsService = {
         server_id: serverId,
         name: name.trim().toLowerCase(),
         type,
+        ...(isAfk ? { is_afk: true } : {}),
         ...(categoryId ? { category_id: categoryId } : {}),
       })
       .select("*")
       .single();
-    if (error) throw error;
+    if (error) {
+      if (isAfk && error.code === "23505") throw new Error("Este servidor já possui um canal AFK.");
+      throw error;
+    }
     return data as Channel;
   },
 };

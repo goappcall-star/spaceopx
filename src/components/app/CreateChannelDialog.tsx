@@ -38,6 +38,7 @@ export function CreateChannelDialog({
   const [name, setName] = useState("");
   const [type, setType] = useState<ChannelType>(defaultType);
   const [saving, setSaving] = useState(false);
+  const [afk, setAfk] = useState(false);
   const [categoryId, setCategoryId] = useState(defaultCategoryId);
   const { data: categories = [] } = useQuery({
     queryKey: ["categories", serverId],
@@ -50,11 +51,18 @@ export function CreateChannelDialog({
     if (!name.trim()) return;
     setSaving(true);
     try {
-      const channel = await channelsService.create(serverId, name, type, categoryId || null);
+      const channel = await channelsService.create(
+        serverId,
+        name,
+        type,
+        categoryId || null,
+        type === "voice" && afk,
+      );
       await queryClient.invalidateQueries({ queryKey: ["channels", serverId] });
       onCreated?.(channel.id);
       onOpenChange(false);
       setName("");
+      setAfk(false);
       toast.success("Canal criado.");
     } catch (error) {
       toast.error((error as Error).message ?? "Não foi possível criar o canal.");
@@ -93,6 +101,23 @@ export function CreateChannelDialog({
             </button>
           ))}
         </div>
+
+        {type === "voice" && (
+          <label className="border-border flex items-start gap-3 rounded-lg border p-3 text-sm">
+            <input
+              type="checkbox"
+              checked={afk}
+              onChange={(event) => setAfk(event.target.checked)}
+              className="mt-1"
+            />
+            <span>
+              <strong className="block">Canal AFK</strong>
+              <span className="text-muted-foreground text-xs">
+                Recebe usuários após 10 minutos com o microfone mutado. Um canal AFK por servidor.
+              </span>
+            </span>
+          </label>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="channel-name">Nome do canal</Label>

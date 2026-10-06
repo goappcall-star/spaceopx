@@ -15,6 +15,7 @@ function fixture() {
     props = { serverId: "a", userId: "me" };
   const slots = [],
     channels = [],
+    moveChannels = [],
     providers = [];
   const memo = (fn, deps) => {
     const index = cursor++,
@@ -65,15 +66,24 @@ function fixture() {
       const ch = {
         topic,
         tracks: [],
+        events: {},
+        snapshot: {},
+        sent: [],
         removed: false,
-        on() {
+        on(kind, filter, handler) {
+          this.events[filter.event] = handler;
           return this;
         },
         subscribe(fn) {
           this.subscribed = fn;
           return this;
         },
-        presenceState: () => ({}),
+        presenceState() {
+          return this.snapshot;
+        },
+        async send(event) {
+          this.sent.push(event);
+        },
         async track(payload) {
           this.tracks.push(payload);
         },
@@ -81,8 +91,21 @@ function fixture() {
           this.untracked = true;
         },
       };
-      channels.push(ch);
+      (topic.startsWith("voice-moves:") ? moveChannels : channels).push(ch);
       return ch;
+    },
+    from() {
+      return {
+        select() {
+          return this;
+        },
+        eq() {
+          return this;
+        },
+        gte() {
+          return Promise.resolve({ data: [] });
+        },
+      };
     },
     async removeChannel(ch) {
       ch.removed = true;
@@ -96,7 +119,14 @@ function fixture() {
     },
     react,
     "react/jsx-runtime": { jsx: (_type, p) => p, jsxs: (_type, p) => p },
-    sonner: { toast: { error() {} } },
+    sonner: { toast: { error() {}, info() {} } },
+    "@/services/voice-moderation": {
+      shouldApplyVoiceMove: (r, u, s, c, session) =>
+        r.recipient_id === u &&
+        r.server_id === s &&
+        r.source_channel_id === c &&
+        r.voice_session_id === session,
+    },
     "@/hooks/use-audio-settings": { useAudioSettings: () => audio },
     "@/integrations/supabase/client": { supabase },
     "@/services/voice": {
@@ -163,7 +193,7 @@ function fixture() {
     render();
   }
   render();
-  return { render, flush, channels, providers, timers };
+  return { render, flush, channels, providers, timers, moveChannels };
 }
 
 test("Speech bursts publish without continually restarting the pending update", async () => {
@@ -280,5 +310,97 @@ test("Received speaking updates reach remote participant tiles and clear on depa
   assert.equal(
     f.render().participantsByChannel["room-a"].some((p) => p.user_id === "other"),
     false,
+  );
+});
+
+test("A server observer receives occupied rooms without capturing a microphone", async () => {
+  const f = fixture();
+  const ch = f.channels[0];
+  ch.snapshot = {
+    peer: [
+      {
+        user_id: "peer",
+        channel_id: "room-a",
+        voice_session_id: "peer-session",
+        speaking: false,
+        muted: false,
+        deafened: false,
+      },
+    ],
+  };
+  ch.subscribed("SUBSCRIBED");
+  await f.flush();
+  assert.equal(f.render().participantsByChannel["room-a"][0].user_id, "peer");
+  assert.equal(f.providers.length, 0);
+  assert.ok(ch.sent.some((e) => e.event === "occupancy-refresh"));
+  ch.snapshot = {};
+  ch.events.sync();
+  await f.flush();
+  assert.equal(f.render().participantsByChannel["room-a"], undefined);
+});
+
+test("Moving a live participant replaces media and keeps the original server while browsing", async () => {
+  const f = fixture();
+  f.channels[0].subscribed("SUBSCRIBED");
+  await f.render().join("room-a");
+  await f.flush();
+  const session = f
+    .render()
+    .participantsByChannel["room-a"].find((p) => p.user_id === "me").voice_session_id;
+  f.render("b");
+  f.moveChannels[0].events.INSERT({
+    new: {
+      id: "move",
+      recipient_id: "me",
+      server_id: "a",
+      source_channel_id: "room-a",
+      destination_channel_id: "room-new",
+      voice_session_id: session,
+    },
+  });
+  await f.flush();
+  assert.equal(f.render().activeServerId, "a");
+  assert.equal(f.render().activeChannelId, "room-new");
+  assert.equal(f.providers.length, 2);
+  assert.equal(f.providers[0].disconnects, 1);
+});
+
+test("A capture stopped before startup completes does not resurrect screen sharing", async () => {
+  const f = fixture();
+  await f.render().join("room-a");
+  await f.flush();
+  f.providers[0].startScreenShare = async () => {
+    f.providers[0].callbacks.onLocalMedia({ camera: null, screen: null });
+  };
+  await f.render().toggleScreenShare();
+  await f.flush();
+  assert.equal(f.render().screenOn, false);
+});
+
+test("A stopped remote capture clears a stale sharing presence badge", async () => {
+  const f = fixture();
+  await f.render().join("room-a");
+  await f.flush();
+  const ch = f.channels[0];
+  ch.snapshot = { peer: [{ user_id: "peer", channel_id: "room-a", screen: true }] };
+  ch.events.sync();
+  await f.flush();
+  f.providers[0].callbacks.onRemoteMedia({ peer: { audio: {}, camera: null, screen: null } });
+  assert.equal(
+    f.render().participantsByChannel["room-a"].find((p) => p.user_id === "peer").screen,
+    false,
+  );
+});
+
+test("Watching in a specific server joins with microphone muted even while browsing another", async () => {
+  const f = fixture();
+  f.render("b");
+  await f.render().join("room-a", "a", true);
+  await f.flush();
+  assert.equal(f.render().activeServerId, "a");
+  assert.equal(f.render().muted, true);
+  assert.equal(
+    f.render().participantsByChannel["room-a"].find((p) => p.user_id === "me").muted,
+    true,
   );
 });

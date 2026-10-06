@@ -377,6 +377,9 @@ export function ChannelSidebar({
                   )}
                 />
                 <span className="truncate">{channel.name}</span>
+                {channel.is_afk && (
+                  <span className="text-muted-foreground text-[10px] font-semibold">AFK</span>
+                )}
                 {participants.length > 0 && (
                   <span className="bg-surface-elevated text-muted-foreground ml-auto rounded-full px-1.5 py-px text-[10px] font-semibold">
                     {participants.length}

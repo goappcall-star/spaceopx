@@ -59,6 +59,7 @@ export const MessageItem = memo(function MessageItem({
   onDelete,
   onReact,
 }: Props) {
+  const [reactionOpen, setReactionOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(message.content);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -84,7 +85,10 @@ export const MessageItem = memo(function MessageItem({
           </span>
         ) : (
           <QuickProfile userId={message.author_id} side="right">
-            <Avatar frame={message.author?.avatar_frame} className="ring-border hover:ring-primary/60 h-9 w-9 cursor-pointer ring-1 transition">
+            <Avatar
+              frame={message.author?.avatar_frame}
+              className="ring-border hover:ring-primary/60 h-9 w-9 cursor-pointer ring-1 transition"
+            >
               <AvatarImage src={message.author?.avatar_url ?? undefined} alt="" />
               <AvatarFallback className="bg-surface-elevated text-xs">
                 {name.slice(0, 2).toUpperCase()}
@@ -93,7 +97,6 @@ export const MessageItem = memo(function MessageItem({
           </QuickProfile>
         )}
       </div>
-
 
       <div className="min-w-0 flex-1">
         {message.replyTo && (
@@ -107,7 +110,7 @@ export const MessageItem = memo(function MessageItem({
         )}
 
         {!compact && (
-          <p className="flex items-baseline gap-2">
+          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 break-all">
             <QuickProfile userId={message.author_id} side="bottom" className="inline-block">
               <span className="cursor-pointer text-sm font-semibold hover:underline">{name}</span>
             </QuickProfile>
@@ -177,20 +180,28 @@ export const MessageItem = memo(function MessageItem({
         )}
       </div>
 
-      <div className="border-border bg-surface-elevated absolute -top-3.5 right-4 hidden items-center gap-0.5 rounded-xl border p-0.5 shadow-[var(--shadow-overlay)] group-hover:flex group-focus-within:flex">
-        <Popover>
+      <div
+        className={cn(
+          "border-border bg-surface-elevated absolute -top-3.5 right-4 flex sm:hidden items-center gap-0.5 rounded-xl border p-0.5 shadow-[var(--shadow-overlay)] group-hover:flex group-focus-within:flex",
+          reactionOpen && "sm:!flex",
+        )}
+      >
+        <Popover open={reactionOpen} onOpenChange={setReactionOpen}>
           <PopoverTrigger asChild>
             <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Reagir">
               <SmilePlus className="h-3.5 w-3.5" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-1.5" align="end">
-            <div className="flex gap-1">
+            <div className="grid grid-cols-4 gap-1 sm:flex">
               {QUICK_EMOJIS.map((emoji) => (
                 <button
                   key={emoji}
                   type="button"
-                  onClick={() => onReact(message.id, emoji)}
+                  onClick={() => {
+                    onReact(message.id, emoji);
+                    setReactionOpen(false);
+                  }}
                   className="hover:bg-accent rounded p-1 text-base"
                 >
                   {emoji}

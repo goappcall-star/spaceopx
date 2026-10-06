@@ -163,6 +163,7 @@ export interface MemberRole {
 }
 
 export interface Channel {
+  is_afk?: boolean;
   category_id: string | null;
   id: string;
   server_id: string;
@@ -277,6 +278,7 @@ export type VoiceConnectionState =
   "disconnected" | "connecting" | "connected" | "reconnecting" | "error";
 
 export interface VoiceParticipant {
+  voice_session_id?: string | undefined;
   user_id: string;
   muted: boolean;
   deafened: boolean;

@@ -606,7 +606,7 @@ export function CallProviderRoot({
         toast.info(
           "Tela compartilhada sem áudio. Habilite o áudio da aba ou do sistema na seleção, quando disponível.",
         );
-      setScreenOn(true);
+      // onLocalMedia owns screen state; a late startup completion must not resurrect it.
     } catch (error) {
       if ((error as DOMException)?.name === "NotAllowedError")
         toast.info("Compartilhamento de tela cancelado.");

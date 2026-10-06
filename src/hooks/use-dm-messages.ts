@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -52,12 +53,22 @@ export function useDirectMessages({ conversationId, userId, profiles }: Options)
       }
     })();
 
-    const refreshReactions = async (messageId: string) => {
-      if (!messagesRef.current.some((m) => m.id === messageId)) return;
-      const rows = await directMessagesService.listReactions([messageId]);
+    const refreshReactions = async (messageId?: string) => {
+      const ids = messageId ? [messageId] : messagesRef.current.map((m) => m.id);
+      if (!ids.some((id) => messagesRef.current.some((m) => m.id === id))) return;
+      const rows = await directMessagesService.listReactions(ids);
+      if (cancelled) return;
       setMessages((prev) =>
         prev.map((m) =>
-          m.id === messageId ? { ...m, reactions: groupReactions(rows, userId) } : m,
+          ids.includes(m.id)
+            ? {
+                ...m,
+                reactions: groupReactions(
+                  rows.filter((row) => row.message_id === m.id),
+                  userId,
+                ),
+              }
+            : m,
         ),
       );
     };
@@ -111,8 +122,13 @@ export function useDirectMessages({ conversationId, userId, profiles }: Options)
         "postgres_changes",
         { event: "*", schema: "public", table: "direct_message_reactions" },
         (payload) => {
-          const row = (payload.new ?? payload.old) as { message_id?: string };
-          if (row?.message_id) void refreshReactions(row.message_id);
+          const row = (payload.eventType === "DELETE" ? payload.old : payload.new) as {
+            message_id?: string;
+          };
+          // With RLS a DELETE event can contain only the reaction primary key.
+          // Refresh the loaded messages instead of leaving other clients stale.
+          if (row.message_id || payload.eventType === "DELETE")
+            void refreshReactions(row.message_id).catch(() => undefined);
         },
       )
       .subscribe();
@@ -169,13 +185,28 @@ export function useDirectMessages({ conversationId, userId, profiles }: Options)
     );
   }, []);
 
+  const reactionBusy = useRef(new Set<string>());
   const toggleReaction = useCallback(
     async (messageId: string, emoji: string) => {
-      if (!userId) return;
-      const message = messagesRef.current.find((m) => m.id === messageId);
-      const mine = message?.reactions.find((r) => r.emoji === emoji)?.mine;
-      if (mine) await directMessagesService.removeReaction(messageId, userId, emoji);
-      else await directMessagesService.addReaction(messageId, userId, emoji);
+      if (!userId || reactionBusy.current.has(messageId)) return;
+      reactionBusy.current.add(messageId);
+      try {
+        const message = messagesRef.current.find((m) => m.id === messageId);
+        const mine = message?.reactions.find((r) => r.emoji === emoji)?.mine;
+        if (mine) await directMessagesService.removeReaction(messageId, userId, emoji);
+        else await directMessagesService.addReaction(messageId, userId, emoji);
+        const rows = await directMessagesService.listReactions([messageId]);
+        const { groupReactions } = await import("@/services/messages");
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId ? { ...m, reactions: groupReactions(rows, userId) } : m,
+          ),
+        );
+      } catch {
+        toast.error("Não foi possível atualizar a reação. Tente novamente.");
+      } finally {
+        reactionBusy.current.delete(messageId);
+      }
     },
     [userId],
   );

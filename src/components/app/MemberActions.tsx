@@ -31,6 +31,10 @@ import { SettingsMembers } from "@/components/server-settings/SettingsMembers";
 import { ConfirmActionDialog } from "./ConfirmActionDialog";
 import type { MemberWithProfile, Server } from "@/types";
 import { memberAliasKey } from "@/lib/member-groups";
+import { useServerChannels, useServerMembers } from "@/hooks/use-servers";
+import { memberHasPermission } from "@/services/permissions";
+import { hasPermission } from "@/lib/permissions";
+import { requestVoiceMove } from "@/services/voice-moderation";
 
 export function MemberActions({
   member,
@@ -60,6 +64,15 @@ export function MemberActions({
     voice = useVoice(),
     query = useQueryClient();
   const { openProfile } = useProfileDialog();
+  const { data: channels = [] } = useServerChannels(server.id);
+  const { data: members = [] } = useServerMembers(server.id);
+  const me = members.find((m) => m.user_id === user?.id);
+  const canMove =
+    memberHasPermission(me, server.owner_id, "manage_voice") || hasPermission(me, "move_members");
+  const source = Object.entries(voice.participantsByChannel).find(([, people]) =>
+    people.some((p) => p.user_id === member.user_id && p.voice_session_id),
+  );
+  const session = source?.[1].find((p) => p.user_id === member.user_id)?.voice_session_id;
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: relationship } = useRelationship(
     menuOpen && member.user_id !== user?.id ? member.user_id : null,
@@ -119,6 +132,28 @@ export function MemberActions({
           </div>
         </ContextMenuTrigger>
         <ContextMenuContent className="w-64">
+          {canMove && source && session && (
+            <ContextMenuSub>
+              <ContextMenuSubTrigger>Mover para</ContextMenuSubTrigger>
+              <ContextMenuSubContent>
+                {channels
+                  .filter((c) => c.type === "voice" && c.id !== source[0])
+                  .map((c) => (
+                    <ContextMenuItem
+                      key={c.id}
+                      onSelect={() =>
+                        void run(
+                          () => requestVoiceMove(member.user_id, source[0], c.id, session),
+                          "Solicitação de movimentação enviada.",
+                        )
+                      }
+                    >
+                      {c.name}
+                    </ContextMenuItem>
+                  ))}
+              </ContextMenuSubContent>
+            </ContextMenuSub>
+          )}
           <ContextMenuItem onSelect={() => openProfile(member.user_id)}>Perfil</ContextMenuItem>
           <ContextMenuItem
             onSelect={() =>

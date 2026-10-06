@@ -47,6 +47,7 @@ export const DmMessageItem = memo(function DmMessageItem({
   onReact,
   onOpenProfile,
 }: Props) {
+  const [reactionOpen, setReactionOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(message.content);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -70,14 +71,21 @@ export const DmMessageItem = memo(function DmMessageItem({
           </span>
         ) : (
           <QuickProfile userId={message.sender_id} side="right">
-          <button type="button" onClick={() => onOpenProfile(message.sender_id)} aria-label={name}>
-            <Avatar frame={message.author?.avatar_frame} className="ring-border hover:ring-primary/60 h-9 w-9 ring-1 transition">
-              <AvatarImage src={message.author?.avatar_url ?? undefined} alt="" />
-              <AvatarFallback className="bg-surface-elevated text-xs">
-                {name.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </button>
+            <button
+              type="button"
+              onClick={() => onOpenProfile(message.sender_id)}
+              aria-label={name}
+            >
+              <Avatar
+                frame={message.author?.avatar_frame}
+                className="ring-border hover:ring-primary/60 h-9 w-9 ring-1 transition"
+              >
+                <AvatarImage src={message.author?.avatar_url ?? undefined} alt="" />
+                <AvatarFallback className="bg-surface-elevated text-xs">
+                  {name.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </button>
           </QuickProfile>
         )}
       </div>
@@ -171,20 +179,28 @@ export const DmMessageItem = memo(function DmMessageItem({
       </div>
 
       {!deleted && (
-        <div className="border-border bg-surface-elevated absolute -top-3.5 right-4 hidden items-center gap-0.5 rounded-xl border p-0.5 shadow-[var(--shadow-overlay)] group-hover:flex group-focus-within:flex">
-          <Popover>
+        <div
+          className={cn(
+            "border-border bg-surface-elevated absolute -top-3.5 right-4 flex sm:hidden items-center gap-0.5 rounded-xl border p-0.5 shadow-[var(--shadow-overlay)] group-hover:flex group-focus-within:flex",
+            reactionOpen && "sm:!flex",
+          )}
+        >
+          <Popover open={reactionOpen} onOpenChange={setReactionOpen}>
             <PopoverTrigger asChild>
               <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Reagir">
                 <SmilePlus className="h-3.5 w-3.5" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-1.5" align="end">
-              <div className="flex gap-1">
+              <div className="grid grid-cols-4 gap-1 sm:flex">
                 {QUICK_EMOJIS.map((emoji) => (
                   <button
                     key={emoji}
                     type="button"
-                    onClick={() => onReact(message.id, emoji)}
+                    onClick={() => {
+                      onReact(message.id, emoji);
+                      setReactionOpen(false);
+                    }}
                     className="hover:bg-accent rounded p-1 text-base"
                   >
                     {emoji}
@@ -234,9 +250,7 @@ export const DmMessageItem = memo(function DmMessageItem({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir mensagem?</AlertDialogTitle>
-            <AlertDialogDescription>
-              A mensagem some da conversa para todos.
-            </AlertDialogDescription>
+            <AlertDialogDescription>A mensagem some da conversa para todos.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>

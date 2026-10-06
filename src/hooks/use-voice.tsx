@@ -1,3 +1,4 @@
+import { shouldApplyVoiceMove, type VoiceMoveRequest } from "@/services/voice-moderation";
 import {
   createContext,
   useCallback,
@@ -50,7 +51,7 @@ interface VoiceContextValue {
     cameraId?: string | undefined;
     outputId?: string | undefined;
   };
-  join: (channelId: string) => Promise<void>;
+  join: (channelId: string, serverId?: string, listenOnly?: boolean) => Promise<void>;
   leave: () => Promise<void>;
   toggleMute: () => void;
   toggleDeafen: () => void;
@@ -198,7 +199,7 @@ export function VoiceProviderRoot({
         publishTimer.current = setTimeout(() => {
           publishTimer.current = null;
           publishNow();
-        }, 100);
+        }, 500);
       }
     },
     [publishNow],
@@ -214,7 +215,7 @@ export function VoiceProviderRoot({
     }
 
     const channel = supabase.channel(`voice:${presenceServerId}`, {
-      config: { presence: { key: userId } },
+      config: { presence: { key: userId, enabled: true } },
     });
 
     const sync = () => {
@@ -241,6 +242,7 @@ export function VoiceProviderRoot({
           ...(next[entry.channel_id] ?? []),
           {
             user_id: entry.user_id,
+            voice_session_id: entry.voice_session_id,
             muted: entry.muted,
             deafened: entry.deafened,
             speaking: entry.speaking,
@@ -258,6 +260,7 @@ export function VoiceProviderRoot({
           ...room.filter((participant) => participant.user_id !== userId),
           {
             user_id: userId,
+            voice_session_id: sessionIdRef.current,
             muted: local.muted,
             deafened: local.deafened,
             speaking: local.speaking,
@@ -271,17 +274,22 @@ export function VoiceProviderRoot({
 
     channelServerRef.current = presenceServerId;
     channelRef.current = channel;
-    channel.on("presence", { event: "sync" }, sync).subscribe((status) => {
-      // A late CLOSED/TIMED_OUT callback from the previous server must not
-      // disable publishing on the replacement subscription.
-      if (channelRef.current !== channel) return;
-      if (status === "SUBSCRIBED") {
-        subscribedRef.current = true;
-        publishNow();
-      } else {
-        subscribedRef.current = false;
-      }
-    });
+    channel
+      .on("broadcast", { event: "occupancy-refresh" }, () => publishNow())
+      .on("presence", { event: "sync" }, sync)
+      .subscribe((status) => {
+        // A late CLOSED/TIMED_OUT callback from the previous server must not
+        // disable publishing on the replacement subscription.
+        if (channelRef.current !== channel) return;
+        if (status === "SUBSCRIBED") {
+          subscribedRef.current = true;
+          sync();
+          void channel.send({ type: "broadcast", event: "occupancy-refresh", payload: {} });
+          publishNow();
+        } else {
+          subscribedRef.current = false;
+        }
+      });
     channelRef.current = channel;
 
     const releaseOnUnload = () => {
@@ -313,7 +321,7 @@ export function VoiceProviderRoot({
     if (!serverId || serverId === presenceServerId || !userId) return;
     let disposed = false;
     const channel = supabase.channel(`voice:${serverId}`, {
-      config: { presence: { key: userId } },
+      config: { presence: { key: userId, enabled: true } },
     });
     channel
       .on("presence", { event: "sync" }, () => {
@@ -329,7 +337,10 @@ export function VoiceProviderRoot({
         }
         setObservedParticipants(next);
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED")
+          void channel.send({ type: "broadcast", event: "occupancy-refresh", payload: {} });
+      });
     return () => {
       disposed = true;
       void supabase.removeChannel(channel);
@@ -417,8 +428,8 @@ export function VoiceProviderRoot({
   }, [detachCurrent]);
 
   const join = useCallback(
-    (channelId: string) => {
-      if (!userId || !serverId) return Promise.resolve();
+    (channelId: string, callServerId = serverId, listenOnly = false) => {
+      if (!userId || !callServerId) return Promise.resolve();
       if (
         pendingJoinChannelRef.current === channelId ||
         (stateRef.current.activeChannelId === channelId && providerRef.current)
@@ -441,11 +452,13 @@ export function VoiceProviderRoot({
           // Every entry is a distinct voice session. Presence from a previous
           // entry can no longer be mistaken for, or clean up, this one.
           sessionIdRef.current = crypto.randomUUID();
-          voiceServerRef.current = serverId;
-          setActiveServerId(serverId);
+          voiceServerRef.current = callServerId;
+          setActiveServerId(callServerId);
+          if (listenOnly) setMuted(true);
           stateRef.current = {
             ...stateRef.current,
             activeChannelId: channelId,
+            muted: listenOnly || stateRef.current.muted,
             speaking: false,
             cameraOn: false,
             screenOn: false,
@@ -538,6 +551,64 @@ export function VoiceProviderRoot({
     ],
   );
 
+  const moveJoinRef = useRef(join);
+  moveJoinRef.current = join;
+  useEffect(() => {
+    if (!userId) return;
+    let disposed = false;
+    const seen = new Set<string>();
+    const receive = (request: VoiceMoveRequest) => {
+      if (
+        disposed ||
+        seen.has(request.id) ||
+        !shouldApplyVoiceMove(
+          request,
+          userId,
+          voiceServerRef.current,
+          stateRef.current.activeChannelId,
+          sessionIdRef.current,
+        )
+      )
+        return;
+      seen.add(request.id);
+      if (seen.size > 200) seen.delete(seen.values().next().value!);
+      void moveJoinRef
+        .current(request.destination_channel_id, request.server_id)
+        .then(() => {
+          if (stateRef.current.activeChannelId === request.destination_channel_id)
+            toast.info("Você foi movido para outro canal de voz.");
+        })
+        .catch(() => toast.error("Não foi possível mudar de canal de voz."));
+    };
+    const channel = supabase
+      .channel(`voice-moves:${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "voice_move_requests",
+          filter: `recipient_id=eq.${userId}`,
+        },
+        (payload) => receive(payload.new as VoiceMoveRequest),
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED")
+          void supabase
+            .from("voice_move_requests")
+            .select("*")
+            .eq("recipient_id", userId)
+            .gte("created_at", new Date(Date.now() - 15000).toISOString())
+            .then(({ data }) => {
+              if (!disposed) for (const row of data ?? []) receive(row);
+            });
+      });
+    return () => {
+      disposed = true;
+      void supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
   const toggleMute = useCallback(() => {
     setMuted((prev) => {
       const next = !prev;
@@ -600,7 +671,7 @@ export function VoiceProviderRoot({
         toast.info(
           "Tela compartilhada sem áudio. Para transmitir som, habilite o áudio da aba ou do sistema na seleção, quando disponível.",
         );
-      setScreenOn(true);
+      // onLocalMedia is authoritative, including a capture stopped during startup.
     } catch (error) {
       const name = (error as DOMException)?.name;
       if (name === "NotAllowedError") toast.info("Compartilhamento de tela cancelado.");
@@ -713,6 +784,9 @@ export function VoiceProviderRoot({
     const room = (participantsByChannel[activeChannelId] ?? []).map((participant) => ({
       ...participant,
       speaking: remoteSpeaking[participant.user_id] ?? participant.speaking,
+      screen: remoteMedia[participant.user_id]
+        ? Boolean(remoteMedia[participant.user_id]?.screen)
+        : Boolean(participant.screen),
     }));
     const self = room.find((participant) => participant.user_id === userId);
     // Presence sync is asynchronous and may not emit after a quick re-entry.
@@ -720,6 +794,7 @@ export function VoiceProviderRoot({
     if (userId) {
       const local = {
         user_id: userId,
+        voice_session_id: sessionIdRef.current,
         muted: muted || !pttActive,
         deafened,
         speaking: speaking && !muted && pttActive,
@@ -839,4 +914,8 @@ export function useVoice() {
   const ctx = useContext(VoiceContext);
   if (!ctx) throw new Error("useVoice must be used inside <VoiceProviderRoot>");
   return ctx;
+}
+
+export function useOptionalVoice() {
+  return useContext(VoiceContext);
 }

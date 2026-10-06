@@ -8,6 +8,8 @@ import { IncomingCallDialog } from "@/components/call/IncomingCallDialog";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useRouterState } from "@tanstack/react-router";
 import { ConnectedVoiceBar } from "@/components/voice/ConnectedVoiceBar";
+import { useMentionNotifications } from "@/hooks/use-mention-notifications";
+import { VoiceAfkManager } from "@/components/voice/VoiceAfkManager";
 
 const ServerContext = createContext<{
   serverId: string | null;
@@ -25,6 +27,7 @@ export function useSessionServer() {
 /** Owns media for the entire signed-in session, independently of the visible route. */
 export function SessionCommunications({ children }: { children: ReactNode }) {
   const { user, profile } = useAuth();
+  useMentionNotifications(user?.id);
   const [serverId, setServerId] = useState<string | null>(null);
   const [voiceReturn, setVoiceReturn] = useState<{ serverId: string; channelId: string } | null>(
     null,
@@ -36,6 +39,7 @@ export function SessionCommunications({ children }: { children: ReactNode }) {
         <CallProviderRoot userId={user?.id} profile={profile}>
           <TooltipProvider delayDuration={200}>
             <RemoteAudio />
+            <VoiceAfkManager />
             <CallAudioPlayback />
             <IncomingCallDialog />
             {children}

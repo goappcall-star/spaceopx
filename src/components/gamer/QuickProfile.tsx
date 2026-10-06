@@ -1,4 +1,5 @@
 import { LiveGameActivity } from "./LiveGameActivity";
+import { WatchStreamButton } from "./WatchStreamButton";
 import { ProfileFrameDecoration } from "./ProfileCosmetics";
 import { useProfileDialog } from "./ProfileDialog";
 import { useQueryClient } from "@tanstack/react-query";
@@ -228,6 +229,7 @@ export function QuickProfileCard({
             onDone={onDone}
             onStartDirect={onStartDirect}
           />
+          <WatchStreamButton userId={profile.id} sharedServers={sharedServers} onDone={onDone} />
         </div>
       </div>
     </div>

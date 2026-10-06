@@ -87,7 +87,7 @@ export function VoiceControlBar() {
 
   return (
     <>
-      <div className="border-border bg-surface-elevated/80 mx-auto flex items-center gap-2 rounded-2xl border px-3 py-2 backdrop-blur">
+      <div className="border-border bg-surface-elevated/80 mx-auto flex max-w-full flex-wrap justify-center items-center gap-1 sm:gap-2 rounded-2xl border px-3 py-2 backdrop-blur">
         <ControlButton
           label={
             pttMode

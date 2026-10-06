@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      voice_move_requests: {
+        Row: { id: string; recipient_id: string; actor_id: string; server_id: string; source_channel_id: string; destination_channel_id: string; voice_session_id: string; created_at: string }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -132,6 +138,7 @@ export type Database = {
       }
       channels: {
         Row: {
+          is_afk: boolean
           category_id: string | null
           created_at: string
           description: string | null
@@ -143,6 +150,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          is_afk?: boolean
           category_id?: string | null
           created_at?: string
           description?: string | null
@@ -154,6 +162,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          is_afk?: boolean
           category_id?: string | null
           created_at?: string
           description?: string | null
@@ -955,6 +964,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      request_voice_move: { Args: { _user_id: string; _source: string; _destination: string; _session: string }; Returns: string }
       google_registration_ready: { Args: Record<PropertyKey, never>; Returns: boolean }
       complete_registration: { Args: { chosen_username: string }; Returns: undefined }
       get_server_dm_privacy: {

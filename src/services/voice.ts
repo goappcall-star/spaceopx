@@ -148,6 +148,7 @@ class MeshVoiceProvider implements VoiceProvider {
   private pendingSignaling: RealtimeChannel | null = null;
   private peers = new Map<string, Peer>();
   private remote: Record<string, RemoteMedia> = {};
+  private remoteScreens = new Map<string, { active: boolean; hasAudio: boolean }>();
 
   private micStream: MediaStream | null = null;
   private cameraStream: MediaStream | null = null;
@@ -305,6 +306,7 @@ class MeshVoiceProvider implements VoiceProvider {
       this.closePeer(id, peer);
     }
     this.remote = {};
+    this.remoteScreens.clear();
     this.events.onRemoteMedia?.({});
 
     stopStream(this.micStream);
@@ -357,6 +359,7 @@ class MeshVoiceProvider implements VoiceProvider {
       /* already closed */
     }
     this.peers.delete(id);
+    this.remoteScreens.delete(id);
     delete this.remote[id];
     this.emitRemote();
   }
@@ -546,6 +549,13 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   private updateRemote(userId: string, kind: MediaKind, stream: MediaStream | null) {
+    const screenState = this.remoteScreens.get(userId);
+    if (
+      (kind === "screen" || kind === "screenAudio") &&
+      screenState &&
+      (!screenState.active || (kind === "screenAudio" && !screenState.hasAudio))
+    )
+      stream = null;
     const current = this.remote[userId] ?? {
       audio: null,
       camera: null,
@@ -648,6 +658,13 @@ class MeshVoiceProvider implements VoiceProvider {
     // A participant that leaves and immediately returns has a new signaling
     // session. Never negotiate that session over the closed peer connection.
     const existing = this.peers.get(payload.from);
+    if (
+      (payload.screenStarted || payload.screenStopped) &&
+      existing?.remoteSessionId &&
+      payload.from_session &&
+      existing.remoteSessionId !== payload.from_session
+    )
+      return;
     if (payload.bye) {
       if (
         existing &&
@@ -668,11 +685,13 @@ class MeshVoiceProvider implements VoiceProvider {
     }
 
     if (payload.screenStopped) {
+      this.remoteScreens.set(payload.from, { active: false, hasAudio: false });
       this.updateRemote(payload.from, "screen", null);
       this.updateRemote(payload.from, "screenAudio", null);
       return;
     }
     if (payload.screenStarted) {
+      this.remoteScreens.set(payload.from, { active: true, hasAudio: !!payload.screenHasAudio });
       const peer = this.peers.get(payload.from);
       if (peer) {
         for (const kind of ["screen", "screenAudio"] as const) {
@@ -697,6 +716,12 @@ class MeshVoiceProvider implements VoiceProvider {
       if (payload.from_session) peer.remoteSessionId = payload.from_session;
       // Reply directly so the newcomer learns about us too (but never loop).
       if (payload.to === "*") this.send(payload.from, { hello: true });
+      this.send(
+        payload.from,
+        this.screenStream
+          ? { screenStarted: true, screenHasAudio: this.screenShareHasAudio }
+          : { screenStopped: true },
+      );
       // Repair: our previous offer may have been sent before this peer was
       // subscribed, leaving us stuck in have-local-offer forever.
       if (peer.pc.signalingState === "have-local-offer" && peer.pc.localDescription)

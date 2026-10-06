@@ -501,7 +501,7 @@ export function CallWorkspace({
       {showPanel && engaged && call.participants.length >= 3 && (
         <aside
           aria-label="Membros da chamada"
-          className="bg-surface border-border w-40 shrink-0 overflow-y-auto border-l p-3 lg:w-56"
+          className="bg-surface border-border hidden lg:block w-40 shrink-0 overflow-y-auto border-l p-3 lg:w-56"
         >
           <h2 className="text-muted-foreground mb-4 text-xs font-semibold uppercase">
             Membros — {call.participants.length}

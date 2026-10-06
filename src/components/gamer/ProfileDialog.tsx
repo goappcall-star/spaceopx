@@ -1,4 +1,5 @@
 import { LiveGameActivity } from "./LiveGameActivity";
+import { WatchStreamButton } from "./WatchStreamButton";
 import { ProfileFrameDecoration } from "./ProfileCosmetics";
 import { useGlobalPresence } from "@/hooks/use-global-presence";
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
@@ -47,6 +48,7 @@ export function ProfileDialogProvider({
         <DialogContent className="max-w-lg overflow-visible p-0">
           <ProfileDialogBody
             userId={userId}
+            onDone={() => setUserId(null)}
             onStartDirect={(conversationId) => {
               setUserId(null);
               onStartDirect?.(conversationId);
@@ -61,9 +63,11 @@ export function ProfileDialogProvider({
 function ProfileDialogBody({
   userId,
   onStartDirect,
+  onDone,
 }: {
   userId: string | null;
   onStartDirect?: ((conversationId: string) => void) | undefined;
+  onDone: () => void;
 }) {
   const { statusOf, games } = useGlobalPresence();
   const { data, isLoading } = usePublicProfile(userId);
@@ -104,6 +108,7 @@ function ProfileDialogBody({
           <p className="text-muted-foreground font-mono text-sm">@{profile.username}</p>
 
           <SocialActions userId={profile.id} onStartDirect={onStartDirect} />
+          <WatchStreamButton userId={profile.id} sharedServers={sharedServers} onDone={onDone} />
 
           <LiveGameActivity userId={profile.id} className="mt-2" />
           <p className="mt-2 text-xs">

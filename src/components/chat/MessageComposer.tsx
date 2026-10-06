@@ -1,6 +1,7 @@
 import { Paperclip, SendHorizonal, Smile, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { mentionedUsernames } from "@/lib/chat-mentions";
 
 import { QUICK_EMOJIS } from "@/components/chat/MessageItem";
 import { Button } from "@/components/ui/button";
@@ -60,7 +61,12 @@ export function MessageComposer({
   }
 
   function applyMention(username: string) {
-    setValue((prev) => prev.replace(/(?:^|\s)@([a-z0-9_.-]*)$/i, (m) => `${m.startsWith(" ") ? " " : ""}@${username} `));
+    setValue((prev) =>
+      prev.replace(
+        /(?:^|\s)@([a-z0-9_.-]*)$/i,
+        (m) => `${m.startsWith(" ") ? " " : ""}@${username} `,
+      ),
+    );
     setMentionQuery(null);
     inputRef.current?.focus();
   }
@@ -91,8 +97,9 @@ export function MessageComposer({
     if (!value.trim() && attachments.length === 0) return;
     setSending(true);
     try {
+      const usernames = mentionedUsernames(value);
       const mentioned = members
-        .filter((m) => m.profile && value.includes(`@${m.profile.username}`))
+        .filter((m) => m.profile && usernames.has(m.profile.username.toLowerCase()))
         .map((m) => m.user_id);
       await onSend({
         content: value,
@@ -114,7 +121,6 @@ export function MessageComposer({
     <div className="border-border bg-background shrink-0 border-t px-4 pt-2 pb-4">
       {replyTo && (
         <div className="border-border bg-surface-elevated text-muted-foreground mb-2 flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs">
-
           <span>
             Respondendo a{" "}
             <span className="text-primary">{replyTo.author?.display_name ?? "Usuário"}</span>
@@ -142,7 +148,9 @@ export function MessageComposer({
               <button
                 type="button"
                 aria-label="Remover anexo"
-                onClick={() => setAttachments((prev) => prev.filter((a) => a.path !== attachment.path))}
+                onClick={() =>
+                  setAttachments((prev) => prev.filter((a) => a.path !== attachment.path))
+                }
               >
                 <X className="h-3 w-3" />
               </button>
@@ -195,7 +203,9 @@ export function MessageComposer({
             rows={1}
             value={value}
             disabled={disabled}
-            placeholder={disabled ? "Sem permissão para enviar mensagens" : `Conversar em #${channelName}`}
+            placeholder={
+              disabled ? "Sem permissão para enviar mensagens" : `Conversar em #${channelName}`
+            }
             onChange={(event) => handleChange(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === "Enter" && !event.shiftKey) {

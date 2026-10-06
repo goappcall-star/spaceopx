@@ -24,6 +24,10 @@ import {
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import type { MemberWithProfile } from "@/types";
+import { useMyServers, useServerChannels, useServerMembers } from "@/hooks/use-servers";
+import { hasPermission } from "@/lib/permissions";
+import { memberHasPermission } from "@/services/permissions";
+import { requestVoiceMove } from "@/services/voice-moderation";
 
 export function VoiceParticipantActions({
   userId,
@@ -48,6 +52,17 @@ export function VoiceParticipantActions({
   const self = user?.id === userId;
   const call = useOptionalCall();
   const voice = useVoice();
+  const { data: channels = [] } = useServerChannels(member?.server_id ?? null);
+  const { data: serverMembers = [] } = useServerMembers(member?.server_id ?? null);
+  const { data: servers = [] } = useMyServers();
+  const me = serverMembers.find((m) => m.user_id === user?.id);
+  const server = servers.find((s) => s.id === member?.server_id);
+  const source = Object.entries(voice.participantsByChannel).find(([, participants]) =>
+    participants.some((p) => p.user_id === userId && p.voice_session_id),
+  );
+  const session = source?.[1].find((p) => p.user_id === userId)?.voice_session_id;
+  const canMove =
+    hasPermission(me, "move_members") || memberHasPermission(me, server?.owner_id, "manage_voice");
   const query = useQueryClient();
   const previousVolume = useRef(100);
   const volume = voice.volumes[userId] ?? 100;
@@ -113,6 +128,30 @@ export function VoiceParticipantActions({
             </DropdownMenuTrigger>
           </PopoverAnchor>
           <DropdownMenuContent side="right" align="start" className="w-60">
+            {canMove && source && session && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>Mover para</DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {channels
+                    .filter((c) => c.type === "voice" && c.id !== source[0])
+                    .map((c) => (
+                      <DropdownMenuItem
+                        key={c.id}
+                        onSelect={() =>
+                          void run(
+                            () => requestVoiceMove(userId, source[0], c.id, session),
+                            "Solicitação de movimentação enviada.",
+                          )
+                        }
+                      >
+                        {c.name}
+                      </DropdownMenuItem>
+                    ))}
+                  {channels.filter((c) => c.type === "voice" && c.id !== source[0]).length ===
+                    0 && <DropdownMenuLabel>Nenhum outro canal de voz</DropdownMenuLabel>}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            )}
             <DropdownMenuItem
               onSelect={() =>
                 void run(

@@ -1,3 +1,4 @@
+import { VisualBanner } from "@/components/ui/static-image";
 import { useState } from "react";
 import { Check, Sparkles } from "lucide-react";
 import {
@@ -81,7 +82,7 @@ export function ProfileCosmeticPicker({
                     style={kind === "nameplate" ? nameplateStyle(item.id) : undefined}
                   >
                     {kind === "frame" && (
-                      <ProfileFrameDecoration value={item.id} animated={false} />
+                      <ProfileFrameDecoration value={item.id} animated={false} compact />
                     )}
                     <span className="absolute left-3 top-6 h-6 w-6 rounded-full bg-muted" />
                     <span className="absolute left-12 right-3 top-8 h-2 rounded-full bg-muted" />
@@ -110,9 +111,9 @@ export function ProfileCosmeticPicker({
               ) : (
                 <div className="relative rounded-2xl bg-surface overflow-visible border border-border mx-4 my-5">
                   <ProfileFrameDecoration value={selected} />
-                  <div
+                  <VisualBanner
+                    src={banner}
                     className="h-24 rounded-t-2xl bg-brand-gradient bg-cover bg-center"
-                    style={banner ? { backgroundImage: `url(${banner})` } : undefined}
                   />
                   <div className="p-5">
                     <div className="-mt-10 relative">{face}</div>

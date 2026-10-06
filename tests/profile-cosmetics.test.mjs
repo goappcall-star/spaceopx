@@ -95,3 +95,23 @@ test("Cosmetics are saved through the shared profile service with account scope 
   await profilesService.update("viewer-account", { nameplate: "invalid" });
   assert.equal(payload.nameplate, "none");
 });
+
+test("Nine redesigned frame identifiers persist; retired Chama safely falls back", () => {
+  for (const id of [
+    "shadow-rise",
+    "celestial-energy",
+    "void-eye",
+    "thunderstorm",
+    "crimson-moon",
+    "aurora",
+    "cosmic",
+    "royal",
+    "sakura",
+  ])
+    assert.equal(cosmetics.normalizeProfileCosmetic(id), id);
+  assert.equal(cosmetics.normalizeProfileCosmetic("ember"), "none");
+  assert.equal(cosmetics.profileCosmetic("ember").name, "Nenhum");
+  assert.ok(!cosmetics.PROFILE_COSMETICS.some((item) => item.id === "ember"));
+  assert.equal(cosmetics.normalizeProfileCosmetic("crimson-flow"), "crimson-flow");
+  assert.equal(cosmetics.normalizeProfileCosmetic("flaming-cut"), "flaming-cut");
+});

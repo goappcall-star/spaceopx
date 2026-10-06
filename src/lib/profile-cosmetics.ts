@@ -31,13 +31,6 @@ export const NAMEPLATE_COSMETICS = [
     secondary: "#f97316",
   },
   {
-    id: "ember",
-    name: "Chama",
-    description: "Energia laranja com contornos incandescentes.",
-    color: "#fb923c",
-    secondary: "#ef4444",
-  },
-  {
     id: "sakura",
     name: "Flor de cerejeira",
     description: "Rosa suave e detalhes lilás.",

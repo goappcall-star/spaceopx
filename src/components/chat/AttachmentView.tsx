@@ -1,3 +1,4 @@
+import { VisualImage } from "@/components/ui/static-image";
 import { Download, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -22,7 +23,7 @@ export function AttachmentView({ attachment }: { attachment: Attachment }) {
     return (
       <a href={url ?? undefined} target="_blank" rel="noreferrer" className="mt-1.5 block">
         {url ? (
-          <img
+          <VisualImage
             src={url}
             alt={attachment.name}
             loading="lazy"

@@ -3,7 +3,7 @@ import { useFrameVisibility } from "@/hooks/use-frame-visibility";
 
 // The supplied illustration is retained verbatim. Masks expose only its flame perimeter.
 const route =
-  "M221 169 H887 Q961 169 961 243 V1176 Q961 1255 882 1255 H221 Q139 1255 139 1173 V251 Q139 169 221 169Z";
+  "M257 169 H843 Q961 169 961 287 V1137 Q961 1255 843 1255 H257 Q139 1255 139 1137 V287 Q139 169 257 169Z";
 const layers = [
   { fill: "#ff2339", width: 18, opacity: 0.75 },
   { fill: "#ff852f", width: 12, opacity: 0.95 },
@@ -17,6 +17,7 @@ const trails = [
 ];
 
 // One bounded 30 fps clock, regardless of how many profile overlays are mounted.
+let sharedPoints: { x: number; y: number; nx: number; ny: number }[] | undefined;
 const draws = new Set<(time: number) => void>();
 let clock = 0;
 let previous = 0;
@@ -50,14 +51,14 @@ export function FlamingCutFrame({ animated = true }: { animated?: boolean }) {
     if (!scene || !path) return;
     const length = path.getTotalLength();
     const count = 2400;
-    const points = Array.from({ length: count }, (_, i) => {
+    const points = (sharedPoints ??= Array.from({ length: count }, (_, i) => {
       const p = path.getPointAtLength((i / count) * length);
       const q = path.getPointAtLength(((i / count) * length + 1) % length);
       const dx = q.x - p.x,
         dy = q.y - p.y,
         m = Math.hypot(dx, dy) || 1;
       return { x: p.x, y: p.y, nx: dy / m, ny: -dx / m };
-    });
+    }));
     function sample(v: number) {
       const f = (((v % 1) + 1) % 1) * count,
         i = Math.floor(f),
@@ -113,6 +114,8 @@ export function FlamingCutFrame({ animated = true }: { animated?: boolean }) {
         animated &&
         visible &&
         !document.hidden &&
+        root.dataset["visualQuality"] !== "optimized" &&
+        root.dataset["visualQuality"] !== "maximum" &&
         !motion.matches &&
         root.dataset["frameAnimations"] !== "false" &&
         root.dataset["animations"] !== "false";
@@ -127,7 +130,7 @@ export function FlamingCutFrame({ animated = true }: { animated?: boolean }) {
     const preferences = new MutationObserver(update);
     preferences.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ["data-frame-animations", "data-animations"],
+      attributeFilter: ["data-frame-animations", "data-animations", "data-visual-quality"],
     });
     document.addEventListener("visibilitychange", update);
     motion.addEventListener("change", update);
@@ -169,13 +172,8 @@ export function FlamingCutFrame({ animated = true }: { animated?: boolean }) {
         </mask>
         <mask id={`${id}-band`} maskUnits="userSpaceOnUse" x="0" y="0" width="1111" height="1416">
           <rect width="1111" height="1416" fill="black" />
-          <path
-            d="M195 177 H904 Q953 177 953 226 V1195 Q953 1259 891 1259 H210 Q143 1259 143 1197 V236 Q143 177 195 177Z"
-            fill="none"
-            stroke="white"
-            strokeWidth="175"
-          />
-          <path d="M190 220H930V425L890 530V1200H190Z" fill="black" />
+          <path d={route} fill="none" stroke="white" strokeWidth="175" />
+          <rect x="190" y="220" width="740" height="980" rx="100" fill="black" />
         </mask>
         <filter
           id={`${id}-flow`}

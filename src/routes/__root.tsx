@@ -13,6 +13,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/hooks/use-auth";
 import { AppearanceSync } from "@/hooks/use-appearance";
+import { VisualQualitySync } from "@/hooks/use-visual-quality";
+import { VISUAL_QUALITY_BOOTSTRAP } from "@/lib/visual-quality";
 import { THEME_BOOTSTRAP } from "@/lib/theme";
 import { AudioSettingsProvider } from "@/hooks/use-audio-settings";
 import { Toaster } from "@/components/ui/sonner";
@@ -119,7 +121,7 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="pt-BR" className="dark" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP + VISUAL_QUALITY_BOOTSTRAP }} />
         <HeadContent />
       </head>
       <body>
@@ -137,6 +139,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AppearanceSync />
+        <VisualQualitySync />
         <DesktopUpdates />
         <AudioSettingsProvider>
           <TooltipProvider delayDuration={200}>

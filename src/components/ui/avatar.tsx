@@ -4,6 +4,8 @@ import * as React from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 
 import { cn } from "@/lib/utils";
+import { useMediaAnimations } from "@/hooks/use-visual-quality";
+import { StaticImage, isAnimatedImage } from "./static-image";
 import { AvatarFrame } from "./avatar-frame";
 import { normalizeAvatarFrame } from "@/lib/avatar-frames";
 
@@ -31,13 +33,28 @@ Avatar.displayName = AvatarPrimitive.Root.displayName;
 const AvatarImage = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Image
-    ref={ref}
-    className={cn("aspect-square h-full w-full rounded-[inherit] object-cover", className)}
-    {...props}
-  />
-));
+>(({ className, ...props }, ref) => {
+  const animateMedia = useMediaAnimations();
+  if (!animateMedia && isAnimatedImage(props.src))
+    return (
+      <StaticImage
+        src={props.src}
+        alt={props.alt}
+        style={props.style}
+        className={cn(
+          "absolute inset-0 z-[1] aspect-square h-full w-full rounded-[inherit] object-cover",
+          className,
+        )}
+      />
+    );
+  return (
+    <AvatarPrimitive.Image
+      ref={ref}
+      className={cn("aspect-square h-full w-full rounded-[inherit] object-cover", className)}
+      {...props}
+    />
+  );
+});
 AvatarImage.displayName = AvatarPrimitive.Image.displayName;
 
 const AvatarFallback = React.forwardRef<

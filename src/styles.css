@@ -511,3 +511,31 @@
     min-width: 190px;
   }
 }
+
+/* Local visual policy. Never targets video, audio, call timers or WebRTC. */
+html[data-visual-quality="optimized"] .glass-panel,
+html[data-visual-quality="maximum"] .glass-panel,
+html[data-visual-quality="optimized"] [class*="backdrop-blur"],
+html[data-visual-quality="maximum"] [class*="backdrop-blur"] {
+  backdrop-filter: none !important; background-color: var(--color-surface);
+}
+html[data-visual-quality="optimized"] .lx-fx,
+html[data-visual-quality="maximum"] .lx-fx { animation-play-state: paused !important; }
+html[data-visual-quality="optimized"] .lx-anime-frame [filter],
+html[data-visual-quality="maximum"] .lx-anime-frame [filter],
+html[data-visual-quality="optimized"] .lx-flaming-cut [filter],
+html[data-visual-quality="maximum"] .lx-flaming-cut [filter] { filter: none !important; }
+html[data-visual-quality="optimized"] [class*="animate-pulse"],
+html[data-visual-quality="optimized"] .shimmer { animation-play-state: paused !important; }
+html[data-visual-quality="optimized"] [class*="shadow"],
+html[data-visual-quality="maximum"] [class*="shadow"],
+html[data-visual-quality="optimized"] .glass-panel,
+html[data-visual-quality="maximum"] .glass-panel { box-shadow: none !important; }
+html[data-visual-quality="maximum"] *,
+html[data-visual-quality="maximum"] *::before,
+html[data-visual-quality="maximum"] *::after {
+  animation: none !important; transition: none !important; scroll-behavior: auto !important;
+}
+html[data-page-hidden="true"] *,
+html[data-page-hidden="true"] *::before,
+html[data-page-hidden="true"] *::after { animation-play-state: paused !important; }

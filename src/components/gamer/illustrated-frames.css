@@ -1,0 +1,176 @@
+.lx-illustrated-frame .lx-frame-trail {
+  animation: lx-illustrated-travel 5s linear infinite;
+}
+.lx-illustrated-frame[data-theme="royal"] .lx-frame-trail {
+  animation-duration: 8s;
+}
+.lx-illustrated-frame[data-theme="cosmic"] .lx-frame-trail {
+  stroke-dasharray: 8 55 4 933;
+  animation-duration: 9s;
+}
+.lx-shadow-stream {
+  animation: lx-shadow-flow 5s ease-in-out infinite;
+}
+.lx-celestial-rise {
+  animation: lx-celestial-up 4s ease-in-out infinite;
+}
+.lx-aurora-wave {
+  animation: lx-illustrated-travel 8s linear infinite;
+}
+.lx-vortex-turn {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lx-vortex-spin 7s linear infinite;
+}
+.lx-thunder-sequence {
+  animation: lx-thunder-flash 5.2s linear infinite;
+}
+.lx-moon-breathe {
+  animation: lx-moon-light 5s ease-in-out infinite;
+}
+.lx-star-twinkle {
+  animation: lx-star-light 4s ease-in-out infinite;
+}
+.lx-border-mote {
+  animation: lx-mote-rise 6s ease-in-out infinite;
+}
+.lx-blossom-sway {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lx-blossom-breeze 6s ease-in-out infinite;
+}
+.lx-petal-follow {
+  offset-rotate: auto;
+  animation: lx-petal-drift 12s linear infinite;
+}
+@keyframes lx-illustrated-travel {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+@keyframes lx-shadow-flow {
+  0%,
+  100% {
+    transform: translateY(4px);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-9px);
+    opacity: 0.8;
+  }
+}
+@keyframes lx-celestial-up {
+  0%,
+  100% {
+    transform: translateY(3px);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-8px);
+    opacity: 0.9;
+  }
+}
+@keyframes lx-vortex-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes lx-thunder-flash {
+  0%,
+  14%,
+  100% {
+    opacity: 0.12;
+  }
+  5%,
+  9% {
+    opacity: 0.85;
+  }
+  7%,
+  11% {
+    opacity: 0.3;
+  }
+}
+@keyframes lx-moon-light {
+  0%,
+  100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes lx-star-light {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes lx-mote-rise {
+  0%,
+  100% {
+    transform: translateY(4px);
+    opacity: 0.25;
+  }
+  70% {
+    transform: translateY(-20px);
+    opacity: 0.9;
+  }
+}
+@keyframes lx-blossom-breeze {
+  0%,
+  100% {
+    transform: rotate(-4deg) translateY(0);
+  }
+  50% {
+    transform: rotate(5deg) translateY(-1px);
+  }
+}
+@keyframes lx-petal-drift {
+  from {
+    offset-distance: 0%;
+    opacity: 0.15;
+  }
+  15%,
+  85% {
+    opacity: 0.75;
+  }
+  to {
+    offset-distance: 100%;
+    opacity: 0.15;
+  }
+}
+.lx-illustrated-frame[data-visible="false"] *,
+.lx-illustrated-frame[data-animated="false"] *,
+html[data-page-hidden="true"] .lx-illustrated-frame *,
+html[data-frame-animations="false"] .lx-illustrated-frame *,
+html[data-animations="false"] .lx-illustrated-frame *,
+html[data-visual-quality="optimized"] .lx-illustrated-frame *,
+html[data-visual-quality="maximum"] .lx-illustrated-frame * {
+  animation-play-state: paused !important;
+}
+.lx-illustrated-avatar * {
+  animation-play-state: paused !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lx-illustrated-frame * {
+    animation-play-state: paused !important;
+  }
+}
+
+.lx-metal-reflection {
+  animation: lx-illustrated-travel 8s linear infinite;
+}
+
+/* Round the actual card surface along with its decorative contour. */
+div:has(> .lx-illustrated-frame),
+div:has(> .lx-flaming-cut) {
+  border-radius: 28px;
+}
+div:has(> .lx-illustrated-frame) > div:first-of-type,
+div:has(> .lx-flaming-cut) > div:first-of-type {
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+}

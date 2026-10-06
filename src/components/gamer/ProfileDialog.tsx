@@ -1,3 +1,4 @@
+import { VisualBanner } from "@/components/ui/static-image";
 import { LiveGameActivity } from "./LiveGameActivity";
 import { WatchStreamButton } from "./WatchStreamButton";
 import { ProfileFrameDecoration } from "./ProfileCosmetics";
@@ -89,9 +90,9 @@ function ProfileDialogBody({
     <div className="relative rounded-2xl">
       <ProfileFrameDecoration value={profile.profile_frame} />
       <div className="max-h-[80vh] overflow-y-auto rounded-2xl">
-        <div
+        <VisualBanner
+          src={profile.banner_url}
           className="bg-brand-gradient h-44 w-full bg-cover bg-center sm:h-52"
-          style={profile.banner_url ? { backgroundImage: `url(${profile.banner_url})` } : undefined}
         />
         <div className="px-6 pb-6">
           <Avatar

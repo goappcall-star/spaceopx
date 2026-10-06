@@ -1,4 +1,6 @@
+import { VisualBanner } from "@/components/ui/static-image";
 import { AVATAR_FRAMES, normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
+import { PerformanceSettings } from "@/components/settings/PerformanceSettings";
 import { ThemeSelector } from "@/components/settings/ThemeSelector";
 import { ProfileCosmeticPicker } from "@/components/settings/ProfileCosmeticPicker";
 import { ProfileFrameDecoration } from "@/components/gamer/ProfileCosmetics";
@@ -478,7 +480,12 @@ function ProfileSettingsPage() {
             <section className="glass-panel p-6">
               <h2 className="mb-4 text-base font-semibold">Personalização visual</h2>
               <div className="space-y-5">
-                {section === "appearance" && <ThemeSelector />}
+                {section === "appearance" && (
+                  <>
+                    <ThemeSelector />
+                    <PerformanceSettings />
+                  </>
+                )}
                 {section === "appearance" && (
                   <div className="space-y-2">
                     <Label>Cor de destaque</Label>
@@ -550,9 +557,9 @@ function ProfileSettingsPage() {
           <aside className="xl:sticky xl:top-6 xl:self-start">
             <div className="glass-panel relative overflow-visible">
               <ProfileFrameDecoration value={form.profile_frame} />
-              <div
+              <VisualBanner
+                src={form.banner_url}
                 className="bg-brand-gradient relative h-44 w-full rounded-t-2xl bg-cover bg-center sm:h-52"
-                style={form.banner_url ? { backgroundImage: `url(${form.banner_url})` } : undefined}
               >
                 <Button
                   type="button"
@@ -564,7 +571,7 @@ function ProfileSettingsPage() {
                 >
                   <Upload className="h-4 w-4" />
                 </Button>
-              </div>
+              </VisualBanner>
               <div className="p-5">
                 <div className="relative -mt-28 mb-8 w-fit">
                   <button

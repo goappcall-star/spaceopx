@@ -1,3 +1,5 @@
+import { IllustratedFrame } from "./IllustratedFrame";
+import { isIllustratedFrame } from "@/lib/illustrated-frames";
 import { useId, type CSSProperties } from "react";
 import { ANIME_FRAME_THEMES, type AnimeFrameId } from "@/lib/anime-frame-themes";
 import { useFrameVisibility } from "@/hooks/use-frame-visibility";
@@ -17,9 +19,11 @@ export function AnimeFrame({
   avatar?: boolean;
 }) {
   // Avatar artwork is deliberately preserved; this redesign only changes card overlays.
+  if (isIllustratedFrame(theme))
+    return <IllustratedFrame theme={theme} animated={animated} avatar={avatar} />;
   return avatar ? (
     <ExistingFrameArtwork theme={theme} animated={animated} avatar />
-  ) : theme === "crimson-flow" || theme === "crimson-moon" ? (
+  ) : theme === "crimson-flow" ? (
     <SwordCutFrame theme={theme} animated={animated} />
   ) : (
     <ExistingFrameArtwork theme={theme} animated={animated} />

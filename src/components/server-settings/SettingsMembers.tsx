@@ -117,7 +117,7 @@ export function SettingsMembers({
                   <DropdownMenuContent align="end" className="w-52">
                     <DropdownMenuLabel>Cargos</DropdownMenuLabel>
                     {(roles ?? [])
-                      .filter((role) => role.name !== "OWNER")
+                      .filter((role) => !role.is_owner && role.name !== "OWNER")
                       .map((role) => {
                         const checked = currentRoleIds.includes(role.id);
                         return (

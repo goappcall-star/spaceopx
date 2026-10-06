@@ -1,4 +1,8 @@
-import { shouldApplyVoiceMove, type VoiceMoveRequest } from "@/services/voice-moderation";
+import {
+  shouldApplyVoiceMove,
+  type VoiceMoveRequest,
+  type VoiceRestriction,
+} from "@/services/voice-moderation";
 import {
   createContext,
   useCallback,
@@ -34,6 +38,7 @@ interface VoiceContextValue {
   participantsByChannel: Record<string, VoiceParticipant[]>;
   muted: boolean;
   deafened: boolean;
+  restrictions: Record<string, VoiceRestriction>;
   cameraOn: boolean;
   screenOn: boolean;
   transmitsAudio: boolean;
@@ -93,8 +98,61 @@ export function VoiceProviderRoot({
     Record<string, VoiceParticipant[]>
   >({});
   const [participantsByChannel, setParticipants] = useState<Record<string, VoiceParticipant[]>>({});
-  const [muted, setMuted] = useState(false);
-  const [deafened, setDeafened] = useState(false);
+  const [localMuted, setMuted] = useState(false);
+  const [localDeafened, setDeafened] = useState(false);
+  const [restrictions, setRestrictions] = useState<Record<string, VoiceRestriction>>({});
+  const restrictionRef = useRef<Record<string, VoiceRestriction>>({});
+  const ownRestriction = userId ? restrictions[`${presenceServerId}:${userId}`] : undefined;
+  const muted = localMuted || Boolean(ownRestriction?.muted || ownRestriction?.deafened);
+  const deafened = localDeafened || Boolean(ownRestriction?.deafened);
+  useEffect(() => {
+    const serverIds = [
+      ...new Set([serverId, activeServerId].filter((id): id is string => Boolean(id))),
+    ];
+    if (!serverIds.length) {
+      restrictionRef.current = {};
+      setRestrictions({});
+      return;
+    }
+    let disposed = false;
+    let revision = 0;
+    const load = async () => {
+      const current = ++revision;
+      const { data, error } = await supabase
+        .from("voice_restrictions")
+        .select("*")
+        .in("server_id", serverIds);
+      if (!disposed && current === revision && !error) {
+        const next = Object.fromEntries(
+          (data ?? []).map((row) => [`${row.server_id}:${row.user_id}`, row]),
+        );
+        restrictionRef.current = next;
+        setRestrictions(next);
+      }
+    };
+    const channel = supabase
+      .channel(`voice-restrictions:${serverIds.join(":")}:${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "voice_restrictions",
+          filter: `server_id=in.(${serverIds.join(",")})`,
+        },
+        () => {
+          void load();
+        },
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") void load();
+      });
+    void load();
+    return () => {
+      disposed = true;
+      void supabase.removeChannel(channel);
+    };
+  }, [serverId, activeServerId, userId]);
   const [speaking, setSpeaking] = useState(false);
   const [remoteSpeaking, setRemoteSpeaking] = useState<Record<string, boolean>>({});
   const [hiddenVideos, setHiddenVideos] = useState<Record<string, boolean>>({});
@@ -473,6 +531,25 @@ export function VoiceProviderRoot({
             generation === lifecycleGenerationRef.current && providerRef.current === provider;
 
           try {
+            // Read the server restriction before publishing the microphone, including on rejoin.
+            const { data: restriction, error: restrictionError } = await supabase
+              .from("voice_restrictions")
+              .select("*")
+              .eq("server_id", callServerId)
+              .eq("user_id", userId)
+              .maybeSingle();
+            if (restrictionError) throw restrictionError;
+            if (generation !== lifecycleGenerationRef.current) return;
+            const nextRestrictions = { ...restrictionRef.current };
+            if (restriction) nextRestrictions[`${callServerId}:${userId}`] = restriction;
+            else delete nextRestrictions[`${callServerId}:${userId}`];
+            restrictionRef.current = nextRestrictions;
+            setRestrictions(nextRestrictions);
+            stateRef.current.muted =
+              listenOnly || localMuted || Boolean(restriction?.muted || restriction?.deafened);
+            stateRef.current.deafened = localDeafened || Boolean(restriction?.deafened);
+            provider.setMuted(stateRef.current.muted);
+            provider.setDeafened(stateRef.current.deafened);
             await provider.setNoiseSuppression(audioSettings.noiseSuppression);
             await provider.connect(channelId, userId, {
               onNoiseProcessingChange: (status) => {
@@ -518,6 +595,7 @@ export function VoiceProviderRoot({
             if (!isCurrent()) return;
             provider.setInputGain(audioSettings.inputVolume);
             provider.setMuted(stateRef.current.muted);
+            provider.setDeafened(stateRef.current.deafened);
             void refreshDevices();
           } catch {
             await provider.disconnect().catch(() => undefined);
@@ -544,6 +622,8 @@ export function VoiceProviderRoot({
       userId,
       refreshDevices,
       schedulePublish,
+      localMuted,
+      localDeafened,
       audioSettings.inputDeviceId,
       audioSettings.inputVolume,
       audioSettings.noiseSuppression,
@@ -551,6 +631,8 @@ export function VoiceProviderRoot({
     ],
   );
 
+  const moderationLeaveRef = useRef(leave);
+  moderationLeaveRef.current = leave;
   const moveJoinRef = useRef(join);
   moveJoinRef.current = join;
   useEffect(() => {
@@ -572,6 +654,13 @@ export function VoiceProviderRoot({
         return;
       seen.add(request.id);
       if (seen.size > 200) seen.delete(seen.values().next().value!);
+      if (request.action === "disconnect") {
+        void moderationLeaveRef
+          .current()
+          .then(() => toast.info("Você foi desconectado por um administrador."));
+        return;
+      }
+      if (!request.destination_channel_id) return;
       void moveJoinRef
         .current(request.destination_channel_id, request.server_id)
         .then(() => {
@@ -599,6 +688,7 @@ export function VoiceProviderRoot({
             .select("*")
             .eq("recipient_id", userId)
             .gte("created_at", new Date(Date.now() - 15000).toISOString())
+            .order("created_at", { ascending: true })
             .then(({ data }) => {
               if (!disposed) for (const row of data ?? []) receive(row);
             });
@@ -610,15 +700,29 @@ export function VoiceProviderRoot({
   }, [userId]);
 
   const toggleMute = useCallback(() => {
+    const restriction = userId
+      ? restrictionRef.current[`${voiceServerRef.current ?? serverId}:${userId}`]
+      : undefined;
+    if (restriction?.muted || restriction?.deafened) {
+      toast.info("Seu microfone foi silenciado por um administrador.");
+      return;
+    }
     setMuted((prev) => {
       const next = !prev;
       providerRef.current?.setMuted(next);
       if (!next) setDeafened(false);
       return next;
     });
-  }, []);
+  }, [userId, serverId]);
 
   const toggleDeafen = useCallback(() => {
+    if (
+      userId &&
+      restrictionRef.current[`${voiceServerRef.current ?? serverId}:${userId}`]?.deafened
+    ) {
+      toast.info("Seu áudio foi silenciado por um administrador.");
+      return;
+    }
     setDeafened((prev) => {
       const next = !prev;
       providerRef.current?.setDeafened(next);
@@ -628,7 +732,7 @@ export function VoiceProviderRoot({
       }
       return next;
     });
-  }, []);
+  }, [userId, serverId]);
 
   const toggleCamera = useCallback(async () => {
     const provider = providerRef.current;
@@ -765,7 +869,8 @@ export function VoiceProviderRoot({
 
   useEffect(() => {
     providerRef.current?.setMuted(muted || !pttActive);
-  }, [muted, pttActive, activeChannelId]);
+    providerRef.current?.setDeafened(deafened);
+  }, [muted, deafened, pttActive, activeChannelId]);
 
   useEffect(
     () => () => {
@@ -844,6 +949,7 @@ export function VoiceProviderRoot({
       deafened,
       cameraOn,
       screenOn,
+      restrictions,
       transmitsAudio: true,
       volumes,
       hiddenVideos,
@@ -871,6 +977,7 @@ export function VoiceProviderRoot({
       setUserVolume,
     }),
     [
+      restrictions,
       connectionState,
       activeChannelId,
       participantsByChannel,

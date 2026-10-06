@@ -60,7 +60,7 @@ function AudioSink({
 
 /** Plays every remote participant's audio, honouring deafen and per-user volume. */
 export function RemoteAudio() {
-  const { remoteMedia, volumes, deafened } = useVoice();
+  const { remoteMedia, volumes, deafened, restrictions, activeServerId } = useVoice();
   const { settings } = useAudioSettings();
   const [blocked, setBlocked] = useState(false);
   const [unlockToken, setUnlockToken] = useState(0);
@@ -75,7 +75,13 @@ export function RemoteAudio() {
                 key={`${userId}:${index}`}
                 stream={stream}
                 volume={((volumes[userId] ?? 100) * settings.outputVolume) / 100}
-                deafened={deafened}
+                deafened={
+                  deafened ||
+                  Boolean(
+                    restrictions[`${activeServerId}:${userId}`]?.muted ||
+                    restrictions[`${activeServerId}:${userId}`]?.deafened,
+                  )
+                }
                 outputId={settings.outputDeviceId ?? undefined}
                 onBlocked={setBlocked}
                 unlockToken={unlockToken}

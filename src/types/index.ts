@@ -146,6 +146,7 @@ export interface RolePermissions {
 }
 
 export interface Role {
+  is_owner?: boolean;
   id: string;
   server_id: string;
   name: RoleName;

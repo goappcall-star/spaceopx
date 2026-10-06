@@ -1,4 +1,7 @@
 import { ChevronDown, Hash, Plus, Settings, UserPlus, Volume2 } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { memberHasPermission } from "@/services/permissions";
+import { useVoiceMemberDrag } from "@/hooks/use-voice-member-drag";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -120,6 +123,16 @@ export function ChannelSidebar({
   onMarkRead,
 }: Props) {
   const { participantsByChannel, activeChannelId: voiceChannelId, join } = useVoice();
+  const { user } = useAuth();
+  const memberDrag = useVoiceMemberDrag(
+    server.id,
+    memberHasPermission(
+      members.find((m) => m.user_id === user?.id),
+      server.owner_id,
+      "administrator",
+    ),
+    participantsByChannel,
+  );
   const [unassignedOpen, setUnassignedOpen] = useState(true);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<ServerCategory | undefined>();
@@ -304,7 +317,13 @@ export function ChannelSidebar({
         const unread =
           unreadChannelIds.has(channel.id) && !active && !isChannelMuted(preferences, channel);
         return (
-          <li key={channel.id}>
+          <li
+            key={channel.id}
+            {...memberDrag.zone(channel.id)}
+            className={cn(
+              memberDrag.target === channel.id && "rounded-lg ring-2 ring-primary bg-primary/10",
+            )}
+          >
             {channelMenu(
               channel,
               <button
@@ -345,7 +364,13 @@ export function ChannelSidebar({
         const active = channel.id === activeChannelId;
         const connectedHere = voiceChannelId === channel.id;
         return (
-          <li key={channel.id}>
+          <li
+            key={channel.id}
+            {...memberDrag.zone(channel.id)}
+            className={cn(
+              memberDrag.target === channel.id && "rounded-lg ring-2 ring-primary bg-primary/10",
+            )}
+          >
             {channelMenu(
               channel,
               <button

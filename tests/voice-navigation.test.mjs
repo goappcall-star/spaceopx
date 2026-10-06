@@ -7,6 +7,9 @@ import ts from "typescript";
 // Exercise the actual provider with deterministic hooks, signaling and media.
 function fixture() {
   const timers = new Map();
+  const restrictionRows = [],
+    restrictionChannels = [];
+  let restrictionFailure = false;
   let timerId = 0;
   let cursor = 0,
     pending = [],
@@ -91,19 +94,49 @@ function fixture() {
           this.untracked = true;
         },
       };
-      (topic.startsWith("voice-moves:") ? moveChannels : channels).push(ch);
+      (topic.startsWith("voice-restrictions:")
+        ? restrictionChannels
+        : topic.startsWith("voice-moves:")
+          ? moveChannels
+          : channels
+      ).push(ch);
       return ch;
     },
-    from() {
+    from(table) {
+      let serverIds;
       return {
         select() {
           return this;
         },
-        eq() {
+        eq(key, value) {
+          if (key === "server_id") serverIds = [value];
+          return this;
+        },
+        in(_key, values) {
+          serverIds = values;
           return this;
         },
         gte() {
-          return Promise.resolve({ data: [] });
+          return this;
+        },
+        order() {
+          return this;
+        },
+        maybeSingle: async () => ({
+          data:
+            restrictionRows.find(
+              (row) => serverIds.includes(row.server_id) && row.user_id === "me",
+            ) ?? null,
+          error: restrictionFailure ? Error("offline") : null,
+        }),
+        then(resolve) {
+          return Promise.resolve({
+            data:
+              table === "voice_restrictions"
+                ? restrictionRows.filter((row) => serverIds.includes(row.server_id))
+                : [],
+            error: null,
+          }).then(resolve);
         },
       };
     },
@@ -134,6 +167,7 @@ function fixture() {
         const provider = {
           disconnects: 0,
           async connect(_room, _user, callbacks) {
+            this.mutedAtConnect = this.muted;
             this.callbacks = callbacks;
             callbacks.onStateChange("connected");
           },
@@ -144,7 +178,12 @@ function fixture() {
           setInputGain() {},
           async setDevices() {},
           async setNoiseSuppression() {},
-          setMuted() {},
+          setMuted(value) {
+            this.muted = value;
+          },
+          setDeafened(value) {
+            this.deafened = value;
+          },
         };
         providers.push(provider);
         return provider;
@@ -155,7 +194,11 @@ function fixture() {
   const code = ts.transpileModule(
     fs.readFileSync(new URL("../src/hooks/use-voice.tsx", import.meta.url), "utf8"),
     {
-      compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
+      compilerOptions: {
+        module: ts.ModuleKind.CommonJS,
+        jsx: ts.JsxEmit.ReactJSX,
+        target: ts.ScriptTarget.ES2022,
+      },
     },
   ).outputText;
   vm.runInNewContext(code, {
@@ -193,7 +236,19 @@ function fixture() {
     render();
   }
   render();
-  return { render, flush, channels, providers, timers, moveChannels };
+  return {
+    render,
+    flush,
+    channels,
+    providers,
+    timers,
+    moveChannels,
+    restrictionRows,
+    restrictionChannels,
+    failRestrictions: () => {
+      restrictionFailure = true;
+    },
+  };
 }
 
 test("Speech bursts publish without continually restarting the pending update", async () => {
@@ -403,4 +458,75 @@ test("Watching in a specific server joins with microphone muted even while brows
     f.render().participantsByChannel["room-a"].find((p) => p.user_id === "me").muted,
     true,
   );
+});
+
+test("Server mute is enforced before capture, survives room changes, and cannot be removed by the member", async () => {
+  const f = fixture();
+  f.restrictionRows.push({ server_id: "a", user_id: "me", muted: true, deafened: false });
+  await f.render().join("voice-a");
+  await f.flush();
+  assert.equal(f.providers[0].mutedAtConnect, true);
+  assert.equal(f.render().muted, true);
+  f.render().toggleMute();
+  await f.flush();
+  assert.equal(f.render().muted, true);
+  await f.render().join("voice-b");
+  await f.flush();
+  assert.equal(f.providers.at(-1).mutedAtConnect, true);
+  f.restrictionRows[0].muted = false;
+  f.restrictionChannels.at(-1).events["*"]({});
+  await f.flush();
+  assert.equal(f.render().muted, false);
+  assert.equal(f.providers.at(-1).muted, false);
+});
+test("Server deafen blocks member audio and microphone until an administrator clears it", async () => {
+  const f = fixture();
+  await f.render().join("voice-a");
+  await f.flush();
+  f.restrictionRows.push({ server_id: "a", user_id: "me", muted: false, deafened: true });
+  f.restrictionChannels.at(-1).events["*"]({});
+  await f.flush();
+  assert.equal(f.render().deafened, true);
+  assert.equal(f.render().muted, true);
+  f.render().toggleDeafen();
+  f.render().toggleMute();
+  await f.flush();
+  assert.equal(f.render().deafened, true);
+  f.restrictionRows[0].deafened = false;
+  f.restrictionChannels.at(-1).events["*"]({});
+  await f.flush();
+  assert.equal(f.render().deafened, false);
+  assert.equal(f.render().muted, false);
+});
+test("Disconnect targets only the live session and tears down media and presence", async () => {
+  const f = fixture();
+  await f.render().join("voice-a");
+  await f.flush();
+  const session = f.render().participantsByChannel["voice-a"][0].voice_session_id;
+  const request = {
+    id: "disconnect",
+    recipient_id: "me",
+    server_id: "a",
+    source_channel_id: "voice-a",
+    voice_session_id: session,
+    action: "disconnect",
+    destination_channel_id: null,
+  };
+  f.moveChannels[0].events.INSERT({ new: { ...request, voice_session_id: "old" } });
+  await f.flush();
+  assert.equal(f.render().activeChannelId, "voice-a");
+  f.moveChannels[0].events.INSERT({ new: request });
+  await f.flush();
+  assert.equal(f.render().activeChannelId, null);
+  assert.equal(f.providers[0].disconnects, 1);
+});
+test("A failed moderation lookup cleans up and never publishes an unprotected microphone", async () => {
+  const f = fixture();
+  f.failRestrictions();
+  await f.render().join("voice-a");
+  await f.flush();
+  assert.equal(f.render().activeChannelId, null);
+  assert.equal(f.providers[0].callbacks, undefined);
+  assert.equal(f.providers[0].disconnects, 1);
+  assert.equal(f.render().connectionState, "error");
 });

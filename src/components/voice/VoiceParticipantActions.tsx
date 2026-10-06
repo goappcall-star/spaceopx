@@ -25,9 +25,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { MemberWithProfile } from "@/types";
 import { useMyServers, useServerChannels, useServerMembers } from "@/hooks/use-servers";
-import { hasPermission } from "@/lib/permissions";
+import { useVoiceMemberDrag } from "@/hooks/use-voice-member-drag";
 import { memberHasPermission } from "@/services/permissions";
-import { requestVoiceMove } from "@/services/voice-moderation";
+import {
+  requestVoiceDisconnect,
+  setVoiceRestriction,
+  requestVoiceMove,
+} from "@/services/voice-moderation";
 
 export function VoiceParticipantActions({
   userId,
@@ -62,7 +66,10 @@ export function VoiceParticipantActions({
   );
   const session = source?.[1].find((p) => p.user_id === userId)?.voice_session_id;
   const canMove =
-    hasPermission(me, "move_members") || memberHasPermission(me, server?.owner_id, "manage_voice");
+    memberHasPermission(me, server?.owner_id, "administrator") &&
+    (userId !== server?.owner_id || self);
+  const memberDrag = useVoiceMemberDrag(member?.server_id, canMove, voice.participantsByChannel);
+  const restriction = voice.restrictions[`${member?.server_id}:${userId}`];
   const query = useQueryClient();
   const previousVolume = useRef(100);
   const volume = voice.volumes[userId] ?? 100;
@@ -97,16 +104,18 @@ export function VoiceParticipantActions({
       <Popover open={profileOpen} onOpenChange={setProfileOpen}>
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <PopoverAnchor asChild>
-            <DropdownMenuTrigger asChild>
+            <div className="relative h-full">
+              <DropdownMenuTrigger asChild>
+                <span aria-hidden="true" className="pointer-events-none absolute inset-0" />
+              </DropdownMenuTrigger>
               <div
+                {...memberDrag.source(userId)}
                 role="button"
                 tabIndex={0}
                 aria-label={`Ações de ${name}`}
                 className="h-full cursor-pointer rounded-md outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                onPointerDown={(event) => {
-                  if (event.button === 0) event.preventDefault();
-                }}
                 onClick={() => {
+                  if (memberDrag.suppressClick()) return;
                   setMenuOpen(false);
                   setProfileOpen(true);
                 }}
@@ -125,9 +134,47 @@ export function VoiceParticipantActions({
               >
                 {children}
               </div>
-            </DropdownMenuTrigger>
+            </div>
           </PopoverAnchor>
           <DropdownMenuContent side="right" align="start" className="w-60">
+            {canMove && source && session && member?.server_id && userId !== server?.owner_id && (
+              <>
+                <DropdownMenuCheckboxItem
+                  checked={restriction?.muted ?? false}
+                  onCheckedChange={(enabled) =>
+                    void run(
+                      () => setVoiceRestriction(member.server_id, userId, "muted", enabled),
+                      "Microfone atualizado no servidor.",
+                    )
+                  }
+                >
+                  Silenciar microfone para todos
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={restriction?.deafened ?? false}
+                  onCheckedChange={(enabled) =>
+                    void run(
+                      () => setVoiceRestriction(member.server_id, userId, "deafened", enabled),
+                      "Áudio atualizado no servidor.",
+                    )
+                  }
+                >
+                  Silenciar áudio do membro
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onSelect={() =>
+                    void run(
+                      () => requestVoiceDisconnect(userId, source[0], session),
+                      "Desconexão solicitada.",
+                    )
+                  }
+                >
+                  Desconectar da chamada
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
             {canMove && source && session && (
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>Mover para</DropdownMenuSubTrigger>

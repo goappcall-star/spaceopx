@@ -14,8 +14,14 @@ export type Database = {
   }
   public: {
     Tables: {
+      voice_restrictions: {
+        Row: { server_id: string; user_id: string; muted: boolean; deafened: boolean }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
       voice_move_requests: {
-        Row: { id: string; recipient_id: string; actor_id: string; server_id: string; source_channel_id: string; destination_channel_id: string; voice_session_id: string; created_at: string }
+        Row: { id: string; recipient_id: string; actor_id: string; server_id: string; source_channel_id: string; destination_channel_id: string | null; action: "move" | "disconnect"; voice_session_id: string; created_at: string }
         Insert: never
         Update: never
         Relationships: []
@@ -581,6 +587,7 @@ export type Database = {
       }
       roles: {
         Row: {
+          is_owner: boolean
           color: string
           created_at: string
           id: string
@@ -964,7 +971,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      request_voice_move: { Args: { _user_id: string; _source: string; _destination: string; _session: string }; Returns: string }
+      set_voice_restriction: { Args: { _server: string; _user: string; _kind: string; _enabled: boolean }; Returns: undefined }
+      request_voice_move: { Args: { _user_id: string; _source: string; _destination: string | null; _session: string }; Returns: string }
       google_registration_ready: { Args: Record<PropertyKey, never>; Returns: boolean }
       complete_registration: { Args: { chosen_username: string }; Returns: undefined }
       get_server_dm_privacy: {

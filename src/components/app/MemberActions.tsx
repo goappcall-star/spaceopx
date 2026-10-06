@@ -33,8 +33,12 @@ import type { MemberWithProfile, Server } from "@/types";
 import { memberAliasKey } from "@/lib/member-groups";
 import { useServerChannels, useServerMembers } from "@/hooks/use-servers";
 import { memberHasPermission } from "@/services/permissions";
-import { hasPermission } from "@/lib/permissions";
-import { requestVoiceMove } from "@/services/voice-moderation";
+import { useVoiceMemberDrag } from "@/hooks/use-voice-member-drag";
+import {
+  requestVoiceDisconnect,
+  setVoiceRestriction,
+  requestVoiceMove,
+} from "@/services/voice-moderation";
 
 export function MemberActions({
   member,
@@ -68,10 +72,13 @@ export function MemberActions({
   const { data: members = [] } = useServerMembers(server.id);
   const me = members.find((m) => m.user_id === user?.id);
   const canMove =
-    memberHasPermission(me, server.owner_id, "manage_voice") || hasPermission(me, "move_members");
+    memberHasPermission(me, server.owner_id, "administrator") &&
+    (member.user_id !== server.owner_id || member.user_id === user?.id);
   const source = Object.entries(voice.participantsByChannel).find(([, people]) =>
     people.some((p) => p.user_id === member.user_id && p.voice_session_id),
   );
+  const memberDrag = useVoiceMemberDrag(server.id, canMove, voice.participantsByChannel);
+  const restriction = voice.restrictions[`${server.id}:${member.user_id}`];
   const session = source?.[1].find((p) => p.user_id === member.user_id)?.voice_session_id;
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: relationship } = useRelationship(
@@ -120,7 +127,15 @@ export function MemberActions({
     <>
       <ContextMenu onOpenChange={setMenuOpen}>
         <ContextMenuTrigger asChild>
-          <div>
+          <div
+            {...memberDrag.source(member.user_id)}
+            onClickCapture={(event) => {
+              if (memberDrag.suppressClick()) {
+                event.preventDefault();
+                event.stopPropagation();
+              }
+            }}
+          >
             <QuickProfile
               userId={member.user_id}
               roles={member.roles}
@@ -132,6 +147,44 @@ export function MemberActions({
           </div>
         </ContextMenuTrigger>
         <ContextMenuContent className="w-64">
+          {canMove && source && session && member.user_id !== server.owner_id && (
+            <>
+              <ContextMenuCheckboxItem
+                checked={restriction?.muted ?? false}
+                onCheckedChange={(enabled) =>
+                  void run(
+                    () => setVoiceRestriction(server.id, member.user_id, "muted", enabled),
+                    "Microfone atualizado no servidor.",
+                  )
+                }
+              >
+                Silenciar microfone para todos
+              </ContextMenuCheckboxItem>
+              <ContextMenuCheckboxItem
+                checked={restriction?.deafened ?? false}
+                onCheckedChange={(enabled) =>
+                  void run(
+                    () => setVoiceRestriction(server.id, member.user_id, "deafened", enabled),
+                    "Áudio atualizado no servidor.",
+                  )
+                }
+              >
+                Silenciar áudio do membro
+              </ContextMenuCheckboxItem>
+              <ContextMenuItem
+                className="text-destructive"
+                onSelect={() =>
+                  void run(
+                    () => requestVoiceDisconnect(member.user_id, source[0], session),
+                    "Desconexão solicitada.",
+                  )
+                }
+              >
+                Desconectar da chamada
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+            </>
+          )}
           {canMove && source && session && (
             <ContextMenuSub>
               <ContextMenuSubTrigger>Mover para</ContextMenuSubTrigger>
@@ -272,7 +325,7 @@ export function MemberActions({
             <ContextMenuSubContent>
               {canManageRoles && !owner
                 ? roles
-                    .filter((role) => role.name !== "OWNER")
+                    .filter((role) => !role.is_owner && role.name !== "OWNER")
                     .map((role) => (
                       <ContextMenuCheckboxItem
                         key={role.id}

@@ -9,18 +9,24 @@ import { cn } from "@/lib/utils";
 import { useAdminMutation, useServerRoles } from "@/hooks/use-server-admin";
 import { PERMISSION_CATALOG, PERMISSION_GROUPS } from "@/services/permissions";
 import { serverAdminService } from "@/services/server-admin";
+import { useAuth } from "@/hooks/use-auth";
 import { roleLabel } from "@/services/roles";
 import type { Role, RolePermissions, Server } from "@/types";
 
 const COLORS = ["#22d3ee", "#a78bfa", "#f472b6", "#34d399", "#fbbf24", "#f87171", "#8b95a5"];
 
 export function SettingsRoles({ server, readOnly }: { server: Server; readOnly: boolean }) {
+  const { user } = useAuth();
   const { data: roles } = useServerRoles(server.id);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const sorted = useMemo(() => [...(roles ?? [])].sort((a, b) => b.position - a.position), [roles]);
   const selected = sorted.find((r) => r.id === selectedId) ?? sorted[0] ?? null;
-  const invalidate = [["roles", server.id], ["members", server.id], ["audit-logs", server.id]];
+  const invalidate = [
+    ["roles", server.id],
+    ["members", server.id],
+    ["audit-logs", server.id],
+  ];
 
   const createRole = useAdminMutation(
     () =>
@@ -54,7 +60,9 @@ export function SettingsRoles({ server, readOnly }: { server: Server; readOnly: 
     updateRole.mutate({ id: role.id, patch: { permissions } });
   }
 
-  const locked = readOnly || selected?.name === "OWNER";
+  const ownerRole = Boolean(selected?.is_owner || selected?.name === "OWNER");
+  const locked = readOnly || (ownerRole && user?.id !== server.owner_id);
+  const permissionsLocked = locked || ownerRole;
 
   return (
     <div className="grid gap-5 md:grid-cols-[220px_1fr]">
@@ -93,7 +101,16 @@ export function SettingsRoles({ server, readOnly }: { server: Server; readOnly: 
                     type="button"
                     aria-label="Mover para cima"
                     className="text-muted-foreground hover:text-foreground disabled:opacity-30"
-                    disabled={index === 0 || swap.isPending}
+                    disabled={
+                      Boolean(
+                        role.is_owner ||
+                        role.name === "OWNER" ||
+                        sorted[index - 1]?.is_owner ||
+                        sorted[index - 1]?.name === "OWNER",
+                      ) ||
+                      index === 0 ||
+                      swap.isPending
+                    }
                     onClick={() => {
                       const other = sorted[index - 1];
                       if (other) swap.mutate({ a: role, b: other });
@@ -105,7 +122,16 @@ export function SettingsRoles({ server, readOnly }: { server: Server; readOnly: 
                     type="button"
                     aria-label="Mover para baixo"
                     className="text-muted-foreground hover:text-foreground disabled:opacity-30"
-                    disabled={index === sorted.length - 1 || swap.isPending}
+                    disabled={
+                      Boolean(
+                        role.is_owner ||
+                        role.name === "OWNER" ||
+                        sorted[index + 1]?.is_owner ||
+                        sorted[index + 1]?.name === "OWNER",
+                      ) ||
+                      index === sorted.length - 1 ||
+                      swap.isPending
+                    }
                     onClick={() => {
                       const other = sorted[index + 1];
                       if (other) swap.mutate({ a: role, b: other });
@@ -173,10 +199,8 @@ export function SettingsRoles({ server, readOnly }: { server: Server; readOnly: 
                       </div>
                       <Switch
                         checked={Boolean(selected.permissions[perm.key])}
-                        disabled={locked}
-                        onCheckedChange={(checked) =>
-                          togglePermission(selected, perm.key, checked)
-                        }
+                        disabled={permissionsLocked}
+                        onCheckedChange={(checked) => togglePermission(selected, perm.key, checked)}
                       />
                     </li>
                   ))}
@@ -185,7 +209,7 @@ export function SettingsRoles({ server, readOnly }: { server: Server; readOnly: 
             ))}
           </div>
 
-          {!locked && selected.name !== "MEMBER" && (
+          {!locked && !ownerRole && selected.name !== "MEMBER" && (
             <Button
               variant="ghost"
               className="text-destructive"

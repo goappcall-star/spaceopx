@@ -13,7 +13,7 @@ export function hasPermission(
 ): boolean {
   if (!member) return false;
   const roles = member.roles ?? [];
-  if (roles.some((r) => r.name === "OWNER")) return true;
+  if (roles.some((r) => r.is_owner || r.name === "OWNER")) return true;
   if (roles.some((r) => r.permissions?.["administrator"] || r.permissions?.["manage_server"]))
     return true;
   if (roles.some((r) => r.permissions?.[permission] === true)) return true;

@@ -74,10 +74,24 @@ const VOLUME_KEY = "securechat:voice-volumes";
 const DEVICE_KEY = "securechat:voice-devices";
 
 type VoicePresenceMeta = VoiceParticipant & {
-  channel_id: string;
+  channel_id: string | null;
   voice_session_id?: string;
   updated_at?: number;
 };
+
+function readOccupancy(state: Record<string, VoicePresenceMeta[]>) {
+  const newest = new Map<string, VoicePresenceMeta>();
+  for (const entries of Object.values(state))
+    for (const entry of entries) {
+      if (!entry.channel_id) continue;
+      const previous = newest.get(entry.user_id);
+      if (!previous || (entry.updated_at ?? 0) > (previous.updated_at ?? 0))
+        newest.set(entry.user_id, entry);
+    }
+  const rooms: Record<string, VoiceParticipant[]> = {};
+  for (const entry of newest.values()) (rooms[entry.channel_id!] ??= []).push(entry);
+  return rooms;
+}
 
 export function VoiceProviderRoot({
   serverId,
@@ -97,6 +111,8 @@ export function VoiceProviderRoot({
   const [observedParticipants, setObservedParticipants] = useState<
     Record<string, VoiceParticipant[]>
   >({});
+  const [presenceRevision, setPresenceRevision] = useState(0);
+  const [observerRevision, setObserverRevision] = useState(0);
   const [participantsByChannel, setParticipants] = useState<Record<string, VoiceParticipant[]>>({});
   const [localMuted, setMuted] = useState(false);
   const [localDeafened, setDeafened] = useState(false);
@@ -194,6 +210,7 @@ export function VoiceProviderRoot({
   }, [activeChannelId, reportNoiseProcessing]);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const subscribedRef = useRef(false);
+  const retryPresenceRef = useRef<((channel: RealtimeChannel) => void) | null>(null);
   const publishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const publishQueueRef = useRef<Promise<void>>(Promise.resolve());
   const sessionIdRef = useRef(crypto.randomUUID());
@@ -227,22 +244,22 @@ export function VoiceProviderRoot({
         // The provider may have switched servers while this update waited.
         if (channelRef.current !== channel || !subscribedRef.current) return;
         const snapshot = { ...stateRef.current, voiceSessionId: sessionIdRef.current };
-        if (!snapshot.activeChannelId) {
-          await channel.untrack();
-          return;
-        }
-        if (voiceServerRef.current !== channelServerRef.current) return;
-        await channel.track({
-          user_id: userId,
-          channel_id: snapshot.activeChannelId,
-          muted: snapshot.muted,
-          deafened: snapshot.deafened,
-          speaking: snapshot.speaking,
-          camera: snapshot.cameraOn,
-          screen: snapshot.screenOn,
-          voice_session_id: snapshot.voiceSessionId,
-          updated_at: Date.now(),
-        });
+        if (snapshot.activeChannelId && voiceServerRef.current !== channelServerRef.current) return;
+        // Observers remain subscribed to Presence, but a null room is never rendered.
+        const result = await channel
+          .track({
+            user_id: userId,
+            channel_id: snapshot.activeChannelId,
+            muted: snapshot.muted,
+            deafened: snapshot.deafened,
+            speaking: snapshot.speaking,
+            camera: snapshot.cameraOn,
+            screen: snapshot.screenOn,
+            voice_session_id: snapshot.voiceSessionId,
+            updated_at: Date.now(),
+          })
+          .catch(() => "error" as const);
+        if (result !== "ok") retryPresenceRef.current?.(channel);
       });
   }, [userId]);
 
@@ -274,41 +291,31 @@ export function VoiceProviderRoot({
     }
 
     const channel = supabase.channel(`voice:${presenceServerId}`, {
-      config: { presence: { key: userId, enabled: true } },
+      config: { presence: { key: `${userId}:${sessionIdRef.current}`, enabled: true } },
     });
+    let disposed = false;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    const retry = (failed: RealtimeChannel) => {
+      if (disposed || failed !== channel || retryTimer) return;
+      retryTimer = setTimeout(() => {
+        if (!disposed) setPresenceRevision((value) => value + 1);
+      }, 2000);
+    };
+    retryPresenceRef.current = retry;
 
     const sync = () => {
       if (channelRef.current !== channel) return;
-      const state = channel.presenceState<VoicePresenceMeta>();
-      const next: Record<string, VoiceParticipant[]> = {};
-      for (const entries of Object.values(state)) {
-        // A user can briefly hold more than one meta (reconnect, second tab);
-        // the newest one wins so a stale socket never dictates the room.
-        const entry = entries.reduce<(typeof entries)[number] | undefined>(
-          (newest, candidate) =>
-            !newest || (candidate.updated_at ?? 0) > (newest.updated_at ?? 0) ? candidate : newest,
-          undefined,
-        );
-        if (!entry?.channel_id) continue;
+      const next = readOccupancy(channel.presenceState<VoicePresenceMeta>());
+      for (const [roomId, entries] of Object.entries(next)) {
         // Never resurrect this tab's old slot while its untrack is in flight.
-        if (
-          entry.user_id === userId &&
-          entry.voice_session_id === sessionIdRef.current &&
-          !stateRef.current.activeChannelId
-        )
-          continue;
-        next[entry.channel_id] = [
-          ...(next[entry.channel_id] ?? []),
-          {
-            user_id: entry.user_id,
-            voice_session_id: entry.voice_session_id,
-            muted: entry.muted,
-            deafened: entry.deafened,
-            speaking: entry.speaking,
-            camera: entry.camera ?? false,
-            screen: entry.screen ?? false,
-          },
-        ];
+        next[roomId] = entries.filter(
+          (entry) =>
+            !(
+              entry.user_id === userId &&
+              entry.voice_session_id === sessionIdRef.current &&
+              !stateRef.current.activeChannelId
+            ),
+        );
       }
       // Presence round-trips must never make the local participant blink out.
       // The local lifecycle remains authoritative until leave() clears it.
@@ -341,12 +348,15 @@ export function VoiceProviderRoot({
         // disable publishing on the replacement subscription.
         if (channelRef.current !== channel) return;
         if (status === "SUBSCRIBED") {
+          if (retryTimer) clearTimeout(retryTimer);
+          retryTimer = null;
           subscribedRef.current = true;
           sync();
           void channel.send({ type: "broadcast", event: "occupancy-refresh", payload: {} });
           publishNow();
         } else {
           subscribedRef.current = false;
+          if (["CLOSED", "CHANNEL_ERROR", "TIMED_OUT"].includes(status)) retry(channel);
         }
       });
     channelRef.current = channel;
@@ -362,6 +372,9 @@ export function VoiceProviderRoot({
     window.addEventListener("online", restorePresence);
 
     return () => {
+      disposed = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      if (retryPresenceRef.current === retry) retryPresenceRef.current = null;
       clearInterval(heartbeat);
       window.removeEventListener("pageshow", restorePresence);
       window.removeEventListener("online", restorePresence);
@@ -372,7 +385,7 @@ export function VoiceProviderRoot({
       }
       void channel.untrack().finally(() => supabase.removeChannel(channel));
     };
-  }, [presenceServerId, userId, publishNow]);
+  }, [presenceServerId, userId, publishNow, presenceRevision]);
 
   // Browsing another server observes its rooms without moving our call.
   useEffect(() => {
@@ -380,31 +393,50 @@ export function VoiceProviderRoot({
     if (!serverId || serverId === presenceServerId || !userId) return;
     let disposed = false;
     const channel = supabase.channel(`voice:${serverId}`, {
-      config: { presence: { key: userId, enabled: true } },
+      config: { presence: { key: `${userId}:${sessionIdRef.current}:observer`, enabled: true } },
     });
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    const retry = () => {
+      if (disposed || retryTimer) return;
+      retryTimer = setTimeout(() => {
+        if (!disposed) setObserverRevision((value) => value + 1);
+      }, 2000);
+    };
+    const announce = async () => {
+      try {
+        if (
+          (await channel.track({ user_id: userId, channel_id: null, updated_at: Date.now() })) !==
+          "ok"
+        )
+          retry();
+      } catch {
+        retry();
+      }
+    };
     channel
       .on("presence", { event: "sync" }, () => {
         if (disposed) return;
-        const next: Record<string, VoiceParticipant[]> = {};
-        for (const entries of Object.values(channel.presenceState<VoicePresenceMeta>())) {
-          const entry = entries.reduce<VoicePresenceMeta | undefined>(
-            (latest, item) =>
-              !latest || (item.updated_at ?? 0) > (latest.updated_at ?? 0) ? item : latest,
-            undefined,
-          );
-          if (entry?.channel_id) (next[entry.channel_id] ??= []).push(entry);
-        }
-        setObservedParticipants(next);
+        setObservedParticipants(readOccupancy(channel.presenceState<VoicePresenceMeta>()));
       })
       .subscribe((status) => {
-        if (status === "SUBSCRIBED")
+        if (disposed) return;
+        if (status === "SUBSCRIBED") {
+          if (retryTimer) clearTimeout(retryTimer);
+          retryTimer = null;
+          void announce();
           void channel.send({ type: "broadcast", event: "occupancy-refresh", payload: {} });
+        } else if (["CLOSED", "CHANNEL_ERROR", "TIMED_OUT"].includes(status)) retry();
       });
+    const heartbeat = setInterval(() => {
+      void announce();
+    }, 15000);
     return () => {
       disposed = true;
+      clearInterval(heartbeat);
+      if (retryTimer) clearTimeout(retryTimer);
       void supabase.removeChannel(channel);
     };
-  }, [serverId, presenceServerId, userId]);
+  }, [serverId, presenceServerId, userId, observerRevision]);
 
   // Every state change publishes at once; only the noisy `speaking` flag is
   // coalesced, because tracking on each speech burst floods the realtime

@@ -91,6 +91,7 @@ function fixture() {
         },
         async track(payload) {
           this.tracks.push(payload);
+          return this.trackResult ?? "ok";
         },
         async untrack() {
           this.untracked = true;
@@ -277,6 +278,96 @@ test("Speech bursts publish without continually restarting the pending update", 
   f.timers.delete(firstTimer);
   await f.flush();
   assert.equal(f.channels[0].tracks.at(-1).speaking, true);
+});
+
+test("An idle observer stays registered without becoming a voice participant and sees room moves", async () => {
+  const f = fixture();
+  const channel = f.channels[0];
+  channel.subscribed("SUBSCRIBED");
+  await f.flush();
+  assert.equal(channel.tracks.at(-1).channel_id, null);
+  assert.equal(f.providers.length, 0);
+  const remote = {
+    user_id: "other",
+    voice_session_id: "live",
+    channel_id: "room-a",
+    updated_at: 10,
+  };
+  channel.snapshot = { other: [remote, { user_id: "other", channel_id: null, updated_at: 30 }] };
+  channel.events.sync();
+  await f.flush();
+  assert.equal(f.render().participantsByChannel["room-a"][0].user_id, "other");
+  channel.snapshot = {
+    other: [{ ...remote, channel_id: "room-b", updated_at: 40 }],
+    oldSocket: [{ ...remote, updated_at: 10 }],
+  };
+  channel.events.sync();
+  await f.flush();
+  assert.equal(f.render().participantsByChannel["room-a"], undefined);
+  assert.equal(f.render().participantsByChannel["room-b"].length, 1);
+  assert.equal(f.providers.length, 0);
+});
+
+test("A closed observer subscription is recreated without joining a call", async () => {
+  const f = fixture();
+  const old = f.channels[0];
+  old.subscribed("SUBSCRIBED");
+  await f.flush();
+  old.subscribed("CLOSED");
+  for (const callback of [...f.timers.values()]) callback();
+  await f.flush();
+  const replacement = f.channels.at(-1);
+  assert.notEqual(replacement, old);
+  assert.equal(old.removed, true);
+  replacement.subscribed("SUBSCRIBED");
+  replacement.snapshot = { remote: [{ user_id: "other", channel_id: "room-b" }] };
+  replacement.events.sync();
+  await f.flush();
+  assert.equal(f.render().participantsByChannel["room-b"][0].user_id, "other");
+  old.subscribed("CLOSED");
+  assert.equal(f.providers.length, 0);
+});
+
+test("A failed occupancy publication replaces only Presence, keeping the call alive", async () => {
+  const f = fixture();
+  f.channels[0].subscribed("SUBSCRIBED");
+  await f.render().join("room-a");
+  await f.flush();
+  f.channels[0].trackResult = "timed out";
+  f.render().toggleMute();
+  await f.flush();
+  for (const callback of [...f.timers.values()]) callback();
+  await f.flush();
+  assert.equal(f.providers[0].disconnects, 0);
+  const replacement = f.channels.at(-1);
+  replacement.subscribed("SUBSCRIBED");
+  await f.flush();
+  assert.equal(replacement.tracks.at(-1).channel_id, "room-a");
+});
+
+test("Browsing a second server recovers its observer without moving the active call", async () => {
+  const f = fixture();
+  f.channels[0].subscribed("SUBSCRIBED");
+  await f.render().join("room-a");
+  await f.flush();
+  f.render("b");
+  await f.flush();
+  const observer = f.channels.at(-1);
+  observer.subscribed("SUBSCRIBED");
+  await f.flush();
+  assert.equal(observer.tracks.at(-1).channel_id, null);
+  observer.subscribed("TIMED_OUT");
+  for (const callback of [...f.timers.values()]) callback();
+  await f.flush();
+  const replacement = f.channels.at(-1);
+  assert.notEqual(replacement, observer);
+  replacement.subscribed("SUBSCRIBED");
+  replacement.snapshot = { other: [{ user_id: "other", channel_id: "room-b" }] };
+  replacement.events.sync();
+  await f.flush();
+  assert.equal(f.render().participantsByChannel["room-b"][0].user_id, "other");
+  assert.equal(f.render().activeChannelId, "room-a");
+  assert.equal(f.providers[0].disconnects, 0);
 });
 
 test("Browsing another server or home retains media and original presence; leave still disconnects", async () => {

@@ -15,8 +15,10 @@ import { listMediaDevices, type MediaDeviceList } from "@/services/voice";
 import type { AudioInputMode } from "@/types";
 import type { NoiseProcessingStatus, NoiseSuppressionMode } from "@/services/audio-processing";
 import { readNoiseMode, saveNoiseMode } from "@/services/noise-preference";
+import { readCallSounds, saveCallSounds } from "@/services/call-sounds";
 
 export interface AudioSettings {
+  callSoundsEnabled: boolean;
   inputDeviceId: string | null;
   outputDeviceId: string | null;
   inputVolume: number;
@@ -27,6 +29,7 @@ export interface AudioSettings {
 }
 
 export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
+  callSoundsEnabled: true,
   inputDeviceId: null,
   outputDeviceId: null,
   inputVolume: 100,
@@ -85,6 +88,7 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
       .then((prefs) => {
         if (cancelled) return;
         setSettings({
+          callSoundsEnabled: readCallSounds(user.id),
           inputDeviceId: prefs.input_device_id ?? null,
           outputDeviceId: prefs.output_device_id ?? null,
           inputVolume: prefs.input_volume ?? 100,
@@ -106,6 +110,8 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
       setSettings((prev) => {
         const next = { ...prev, ...patch };
         if (user) {
+          if (patch.callSoundsEnabled !== undefined)
+            saveCallSounds(user.id, next.callSoundsEnabled);
           if (patch.noiseSuppression !== undefined) saveNoiseMode(user.id, next.noiseSuppression);
           if (saveTimer.current) clearTimeout(saveTimer.current);
           saveTimer.current = setTimeout(() => {

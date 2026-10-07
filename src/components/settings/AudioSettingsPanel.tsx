@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { NoiseModeSelect, NoiseProcessingFeedback } from "@/components/voice/NoiseModeSelect";
 import { MicrophoneAudioPipeline } from "@/services/audio-processing";
 import { useAudioSettings, keyLabel } from "@/hooks/use-audio-settings";
@@ -263,6 +264,14 @@ export function AudioSettingsPanel({ compact = false }: { compact?: boolean }) {
         <div className="flex items-center gap-2">
           <Volume2 className="text-primary h-4 w-4" />
           <h3 className="text-sm font-semibold tracking-wide uppercase">Saída</h3>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <Label htmlFor="call-sounds">Sons de entrada e saída das chamadas</Label>
+          <Switch
+            id="call-sounds"
+            checked={settings.callSoundsEnabled}
+            onCheckedChange={(callSoundsEnabled) => update({ callSoundsEnabled })}
+          />
         </div>
 
         <div className="space-y-1.5">

@@ -10,6 +10,7 @@ import { useRouterState } from "@tanstack/react-router";
 import { ConnectedVoiceBar } from "@/components/voice/ConnectedVoiceBar";
 import { useMentionNotifications } from "@/hooks/use-mention-notifications";
 import { VoiceAfkManager } from "@/components/voice/VoiceAfkManager";
+import { CallSoundEffects } from "@/components/call/CallSoundEffects";
 
 const ServerContext = createContext<{
   serverId: string | null;
@@ -41,6 +42,7 @@ export function SessionCommunications({ children }: { children: ReactNode }) {
             <RemoteAudio />
             <VoiceAfkManager />
             <CallAudioPlayback />
+            <CallSoundEffects />
             <IncomingCallDialog />
             {children}
             {pathname !== "/app" && <ConnectedVoiceBar floating />}

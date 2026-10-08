@@ -50,7 +50,8 @@ export const friendsService = {
     const accepted = rows.filter((r) => r.status === "accepted");
     const pending = rows.filter((r) => r.status === "pending");
 
-    const otherId = (r: Friendship) => (r.requester_id === userId ? r.addressee_id : r.requester_id);
+    const otherId = (r: Friendship) =>
+      r.requester_id === userId ? r.addressee_id : r.requester_id;
     const ids = [...new Set([...accepted, ...pending].map(otherId))];
     if (ids.length === 0) return { friends: [], requests: [] };
 
@@ -227,9 +228,9 @@ export const conversationsService = {
     return (data as Conversation) ?? null;
   },
 
-  async members(conversationId: string): Promise<
-    (ConversationMember & { profile: Profile | null })[]
-  > {
+  async members(
+    conversationId: string,
+  ): Promise<(ConversationMember & { profile: Profile | null })[]> {
     const { data, error } = await supabase
       .from("conversation_members")
       .select("*")
@@ -410,6 +411,11 @@ export const directMessagesService = {
       const { data } = await supabase.from("direct_messages").select("*").in("id", replyIds);
       for (const row of data ?? []) replyMap.set(row.id, toDm(row));
     }
+    const missingReplyAuthors = [
+      ...new Set([...replyMap.values()].map((reply) => reply.sender_id)),
+    ].filter((id) => !profiles.has(id));
+    for (const profile of await profilesService.listByIds(missingReplyAuthors))
+      profiles.set(profile.id, profile);
 
     const reactionRows = await directMessagesService.listReactions(messages.map((m) => m.id));
     const byMessage = new Map<string, MessageReaction[]>();

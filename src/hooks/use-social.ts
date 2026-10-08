@@ -59,7 +59,11 @@ export function useConversations(userId: string | undefined) {
       void queryClient.invalidateQueries({ queryKey: ["conversations", userId] });
     const channel = supabase
       .channel(`social:conversations:${userId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "direct_messages" }, invalidate)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "direct_messages" },
+        invalidate,
+      )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "conversation_members" },
@@ -72,7 +76,7 @@ export function useConversations(userId: string | undefined) {
     };
   }, [userId, queryClient]);
 
-  const conversations = query.data ?? [];
+  const conversations = useMemo(() => query.data ?? [], [query.data]);
   const totalUnread = useMemo(
     () => conversations.reduce((sum, c) => sum + Number(c.unread_count ?? 0), 0),
     [conversations],

@@ -134,6 +134,7 @@ interface Peer {
   signalQueue: Promise<void>;
   state: RTCPeerConnectionState;
   restartTimer: ReturnType<typeof setTimeout> | null;
+  absenceTimer: ReturnType<typeof setTimeout> | null;
   createdAt: number;
 }
 
@@ -246,6 +247,7 @@ class MeshVoiceProvider implements VoiceProvider {
           // hello, which is what makes negotiation start only once BOTH sides
           // are actually subscribed (broadcast has no message history).
           this.broadcast({ hello: true });
+          this.emitAggregateState();
           if (!settled) {
             settled = true;
             resolve();
@@ -260,7 +262,9 @@ class MeshVoiceProvider implements VoiceProvider {
             settled = true;
             reject(new DOMException("Voice signaling closed", "AbortError"));
           } else if (!this.disposed && this.signaling === channel) {
-            this.events.onStateChange?.("reconnecting");
+            // Signaling carries negotiation, not the established media. A
+            // socket interruption must not report a healthy P2P call as lost.
+            this.emitAggregateState();
           }
         }
       });
@@ -336,10 +340,20 @@ class MeshVoiceProvider implements VoiceProvider {
     const wanted = new Set(userIds.filter((id) => id !== this.userId));
 
     for (const [id, peer] of this.peers) {
-      // Grace period: a peer that just announced itself over the signaling
-      // channel is kept even if the presence list has not caught up yet,
-      // otherwise a fresh connection is torn down right after being built.
-      if (!wanted.has(id) && Date.now() - peer.createdAt > 10_000) this.closePeer(id, peer);
+      if (wanted.has(id)) {
+        if (peer.absenceTimer) clearTimeout(peer.absenceTimer);
+        peer.absenceTimer = null;
+      } else if (!peer.absenceTimer) {
+        // A Presence resubscription can briefly return an empty room, even
+        // while media is flowing. Require continuous absence before teardown.
+        // Explicit bye/session replacement still closes the peer immediately.
+        peer.absenceTimer = setTimeout(() => {
+          peer.absenceTimer = null;
+          if (this.disposed || this.peers.get(id) !== peer) return;
+          this.closePeer(id, peer);
+          this.emitAggregateState();
+        }, 10_000);
+      }
     }
     for (const id of wanted) {
       if (!this.peers.has(id)) this.createPeer(id);
@@ -350,6 +364,7 @@ class MeshVoiceProvider implements VoiceProvider {
   /** Tear a single peer down without touching any of the others. */
   private closePeer(id: string, peer: Peer) {
     if (peer.restartTimer) clearTimeout(peer.restartTimer);
+    if (peer.absenceTimer) clearTimeout(peer.absenceTimer);
     peer.pc.onicecandidate = null;
     peer.pc.onnegotiationneeded = null;
     peer.pc.ontrack = null;
@@ -405,6 +420,7 @@ class MeshVoiceProvider implements VoiceProvider {
       signalQueue: Promise.resolve(),
       state: "new",
       restartTimer: null,
+      absenceTimer: null,
       createdAt: Date.now(),
     };
     this.peers.set(remoteId, peer);
@@ -919,14 +935,20 @@ class MeshVoiceProvider implements VoiceProvider {
       this.micStream
     ) {
       const generation = ++this.microphoneGeneration;
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: this.noiseSuppression !== "off",
-          autoGainControl: true,
-          ...(devices.microphoneId ? { deviceId: { exact: devices.microphoneId } } : {}),
-        },
-      });
+      const stream = await navigator.mediaDevices
+        .getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: this.noiseSuppression !== "off",
+            autoGainControl: true,
+            ...(devices.microphoneId ? { deviceId: { exact: devices.microphoneId } } : {}),
+          },
+        })
+        .catch((error: unknown) => {
+          if (!this.disposed && generation === this.microphoneGeneration)
+            this.devices = { ...this.devices, microphoneId: previous.microphoneId ?? null };
+          throw error;
+        });
       if (this.disposed || generation !== this.microphoneGeneration) {
         stopStream(stream);
         throw new DOMException("Voice session ended", "AbortError");

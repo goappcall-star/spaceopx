@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { loadVoiceProvider } from "./audio/pipeline-fixture.mjs";
 
-function fixture() {
+function fixture(environment = {}) {
   const sent = [];
   class Stream {
     getTracks() {
@@ -48,9 +48,18 @@ function fixture() {
       });
     }
     async addIceCandidate() {}
-    close() {}
+    close() {
+      this.closed = true;
+    }
   }
-  const provider = loadVoiceProvider({}, { MediaStream: Stream, RTCPeerConnection: Connection });
+  const provider = loadVoiceProvider(
+    {},
+    {
+      MediaStream: Stream,
+      RTCPeerConnection: Connection,
+      ...environment,
+    },
+  );
   provider.userId = "alice";
   provider.signaling = { send: async ({ payload }) => sent.push(payload) };
   const signal = (data) =>
@@ -65,6 +74,97 @@ test("A repeated initial offer cannot turn the receiver's answer into a new offe
   assert.equal(provider.peers.get("bob").pc.signalingState, "stable");
   assert.ok(sent.length > 0);
   assert.ok(sent.every((payload) => payload.description?.type === "answer"));
+});
+
+function recoveryFixture() {
+  const timers = new Map();
+  let nextId = 0;
+  const f = fixture({
+    setTimeout(callback) {
+      timers.set(++nextId, callback);
+      return nextId;
+    },
+    clearTimeout(id) {
+      timers.delete(id);
+    },
+  });
+  return { ...f, timers };
+}
+
+test("An empty Presence snapshot does not tear down established audio and recovery cancels removal", () => {
+  const { provider, timers } = recoveryFixture();
+  const peer = provider.createPeer("bob");
+  peer.createdAt = Date.now() - 60000;
+  peer.state = "connected";
+  provider.syncPeers([]);
+  assert.equal(peer.pc.closed, undefined);
+  assert.equal(timers.size, 1);
+  provider.syncPeers([]);
+  assert.equal(timers.size, 1);
+  provider.syncPeers(["bob"]);
+  assert.equal(timers.size, 0);
+  assert.equal(provider.peers.get("bob"), peer);
+});
+
+test("Continuous absence eventually removes the peer instead of retaining abandoned connections", () => {
+  const { provider, timers } = recoveryFixture();
+  const peer = provider.createPeer("bob");
+  provider.syncPeers([]);
+  const callback = [...timers.values()][0];
+  timers.clear();
+  callback();
+  assert.equal(peer.pc.closed, true);
+  assert.equal(provider.peers.has("bob"), false);
+});
+
+test("Explicit departure closes immediately and cancels pending Presence recovery", async () => {
+  const { provider, signal, timers } = recoveryFixture();
+  const peer = provider.createPeer("bob");
+  provider.syncPeers([]);
+  await signal({ bye: true });
+  assert.equal(peer.pc.closed, true);
+  assert.equal(provider.peers.has("bob"), false);
+  assert.equal(timers.size, 0);
+});
+
+test("Signaling closure and resubscription keep an established media connection active", async () => {
+  let notify;
+  const channel = {
+    on() {
+      return this;
+    },
+    subscribe(callback) {
+      notify = callback;
+      callback("SUBSCRIBED");
+      return this;
+    },
+    send: async () => "ok",
+  };
+  const { provider } = fixture({
+    navigator: {
+      mediaDevices: {
+        getUserMedia: async () => ({ getTracks: () => [], getAudioTracks: () => [] }),
+      },
+    },
+    require(id) {
+      if (id === "@/integrations/supabase/client")
+        return { supabase: { channel: () => channel, removeChannel: async () => {} } };
+      return {};
+    },
+  });
+  provider.startSpeakingDetection = async () => {};
+  const states = [];
+  await provider.connect("room", "alice", { onStateChange: (state) => states.push(state) });
+  const peer = provider.createPeer("bob");
+  peer.state = "connected";
+  notify("CLOSED");
+  assert.equal(states.at(-1), "connected");
+  notify("SUBSCRIBED");
+  assert.equal(states.at(-1), "connected");
+  assert.equal(provider.peers.get("bob"), peer);
+  peer.state = "disconnected";
+  notify("CLOSED");
+  assert.equal(states.at(-1), "reconnecting");
 });
 
 test("A repeated answer is harmless and distinct renegotiation still succeeds", async () => {

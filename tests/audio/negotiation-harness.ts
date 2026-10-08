@@ -96,7 +96,16 @@ async function run() {
     results.status = "FAIL";
     results.error = String(error);
     results.connections = providers.map((provider) =>
-      [...(provider as any).peers.values()].map((peer: any) => ({
+      [
+        ...(
+          provider as unknown as {
+            peers: Map<
+              string,
+              { pc: RTCPeerConnection; transceivers: { mic: RTCRtpTransceiver | null } }
+            >;
+          }
+        ).peers.values(),
+      ].map((peer) => ({
         signaling: peer.pc.signalingState,
         connection: peer.pc.connectionState,
         ice: peer.pc.iceConnectionState,

@@ -18,7 +18,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { useGlobalPresence } from "@/hooks/use-global-presence";
 import { usePeopleSearch } from "@/hooks/use-social";
-import { blocksService, conversationsService, friendsService, peopleService } from "@/services/social";
+import {
+  blocksService,
+  conversationsService,
+  friendsService,
+  peopleService,
+} from "@/services/social";
 import { cn } from "@/lib/utils";
 import type { ConversationOverview, FriendEntry, FriendRequestEntry, UserStatus } from "@/types";
 
@@ -107,7 +112,9 @@ export function SocialHome({
         <h1 className="mt-1 text-2xl font-semibold tracking-tight">
           <span className="text-brand-gradient">{TAB_TITLE[tab]}</span>
         </h1>
-        <p className="text-muted-foreground mt-1 text-sm">Seu squad, seus amigos, suas conversas.</p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Seu squad, seus amigos, suas conversas.
+        </p>
 
         <div className="mt-4 max-w-sm">
           <div className="relative">
@@ -304,7 +311,9 @@ export function SocialHome({
         ) : (
           <Section title={tab === "messages" ? "Conversas" : "Grupos"}>
             {(tab === "messages" ? directs : groups).length === 0 ? (
-              <Empty text={tab === "messages" ? "Nenhuma conversa ainda." : "Nenhum grupo ainda."} />
+              <Empty
+                text={tab === "messages" ? "Nenhuma conversa ainda." : "Nenhum grupo ainda."}
+              />
             ) : (
               <ul className="space-y-1.5">
                 {(tab === "messages" ? directs : groups).map((conversation) => (
@@ -314,7 +323,14 @@ export function SocialHome({
                       onClick={() => onOpenConversation(conversation.id)}
                       className="glass-panel hover:bg-surface-hover/60 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors"
                     >
-                      <Avatar frame={conversation.type === "group" ? undefined : conversation.otherProfile?.avatar_frame} className="h-10 w-10">
+                      <Avatar
+                        frame={
+                          conversation.type === "group"
+                            ? undefined
+                            : conversation.otherProfile?.avatar_frame
+                        }
+                        className="h-10 w-10"
+                      >
                         <AvatarImage
                           src={
                             (conversation.type === "group"
@@ -401,7 +417,9 @@ function FriendList({
               name={friend.profile.display_name}
               username={friend.profile.username}
               status={statusOf(friend.profile.id)}
-              presenceNode={<GamePresenceLine userId={friend.profile.id} presence={friend.presence} withLabel />}
+              presenceNode={
+                <GamePresenceLine userId={friend.profile.id} presence={friend.presence} withLabel />
+              }
               onStartDirect={onStartDirect}
               actions={
                 <>
@@ -592,7 +610,9 @@ function Row({
               @{username}
             </span>
             {presenceNode ?? (
-              <span className="text-muted-foreground block text-[11px]">{STATUS_LABEL[status]}</span>
+              <span className="text-muted-foreground block text-[11px]">
+                {STATUS_LABEL[status]}
+              </span>
             )}
           </span>
         </button>

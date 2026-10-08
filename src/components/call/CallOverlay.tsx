@@ -64,8 +64,8 @@ function CallAudio({ stream }: { stream: MediaStream | null }) {
     if (!el) return;
     const volume = Number.isFinite(settings.outputVolume) ? settings.outputVolume : 100;
     el.volume = receivedAudioVolume(100, volume, false);
-    if (settings.outputDeviceId && typeof el.setSinkId === "function")
-      void el.setSinkId(settings.outputDeviceId).catch(() => undefined);
+    if (typeof el.setSinkId === "function")
+      void el.setSinkId(settings.outputDeviceId ?? "").catch(() => undefined);
   }, [settings.outputVolume, settings.outputDeviceId, stream]);
 
   return (

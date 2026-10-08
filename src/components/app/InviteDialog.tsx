@@ -107,8 +107,8 @@ export function InviteDialog({ serverId, open, onOpenChange }: Props) {
         <DialogHeader>
           <DialogTitle>Convidar pessoas</DialogTitle>
           <DialogDescription>
-            Escolha a validade e o limite de usos. Apenas proprietário e administradores podem
-            criar convites.
+            Escolha a validade e o limite de usos. Apenas proprietário e administradores podem criar
+            convites.
           </DialogDescription>
         </DialogHeader>
 

@@ -51,9 +51,8 @@ function ForgotPasswordPage() {
     >
       {sent ? (
         <p className="text-muted-foreground text-sm">
-          Se existir uma conta para{" "}
-          <span className="text-foreground font-medium">{email}</span>, o link de redefinição já
-          está a caminho.
+          Se existir uma conta para <span className="text-foreground font-medium">{email}</span>, o
+          link de redefinição já está a caminho.
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">

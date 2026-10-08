@@ -19,11 +19,15 @@ export function useDirectMessages({ conversationId, userId, profiles }: Options)
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const profilesRef = useRef(profiles);
   profilesRef.current = profiles;
   const messagesRef = useRef<DirectMessageWithMeta[]>([]);
   messagesRef.current = messages;
+  const scopeRef = useRef({ conversationId, userId });
+  if (scopeRef.current.conversationId !== conversationId || scopeRef.current.userId !== userId)
+    scopeRef.current = { conversationId, userId };
 
   const hydrate = useCallback(
     (rows: DirectMessage[]) => directMessagesService.hydrate(rows, userId, profilesRef.current),
@@ -31,7 +35,12 @@ export function useDirectMessages({ conversationId, userId, profiles }: Options)
   );
 
   useEffect(() => {
+    setMessages([]);
+    messagesRef.current = [];
+    setLoadingMore(false);
+    setError(null);
     if (!conversationId) {
+      setLoading(false);
       setMessages([]);
       setHasMore(false);
       return;
@@ -46,8 +55,13 @@ export function useDirectMessages({ conversationId, userId, profiles }: Options)
         const rows = await directMessagesService.list(conversationId);
         const hydrated = await hydrate(rows);
         if (cancelled) return;
-        setMessages(hydrated);
+        setMessages((prev) => [
+          ...hydrated,
+          ...prev.filter((m) => !hydrated.some((row) => row.id === m.id)),
+        ]);
         setHasMore(rows.length === DM_PAGE_SIZE);
+      } catch {
+        if (!cancelled) setError("Não foi possível carregar esta conversa. Tente abrir novamente.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -87,7 +101,7 @@ export function useDirectMessages({ conversationId, userId, profiles }: Options)
           const row = payload.new as DirectMessage;
           if (messagesRef.current.some((m) => m.id === row.id)) return;
           const [hydrated] = await hydrate([{ ...row, attachments: row.attachments ?? [] }]);
-          if (!hydrated) return;
+          if (cancelled || !hydrated) return;
           setMessages((prev) =>
             prev.some((m) => m.id === hydrated.id) ? prev : [...prev, hydrated],
           );
@@ -140,25 +154,34 @@ export function useDirectMessages({ conversationId, userId, profiles }: Options)
   }, [conversationId, hydrate, userId]);
 
   const loadOlder = useCallback(async () => {
+    const scope = scopeRef.current;
     const oldest = messagesRef.current[0];
     if (!conversationId || !oldest || loadingMore) return;
     setLoadingMore(true);
     try {
       const rows = await directMessagesService.list(conversationId, oldest.created_at);
       const hydrated = await hydrate(rows);
-      setMessages((prev) => [...hydrated, ...prev]);
+      if (scopeRef.current !== scope) return;
+      setMessages((prev) => [
+        ...hydrated.filter((m) => !prev.some((row) => row.id === m.id)),
+        ...prev,
+      ]);
       setHasMore(rows.length === DM_PAGE_SIZE);
+    } catch {
+      if (scopeRef.current === scope)
+        toast.error("Não foi possível carregar as mensagens anteriores.");
     } finally {
-      setLoadingMore(false);
+      if (scopeRef.current === scope) setLoadingMore(false);
     }
   }, [conversationId, hydrate, loadingMore]);
 
   const send = useCallback(
     async (input: { content: string; replyToId?: string | null; attachments?: Attachment[] }) => {
       if (!conversationId) return;
+      const scope = scopeRef.current;
       const created = await directMessagesService.send({ conversationId, ...input });
       const [hydrated] = await hydrate([created]);
-      if (hydrated) {
+      if (scopeRef.current === scope && hydrated) {
         setMessages((prev) => (prev.some((m) => m.id === created.id) ? prev : [...prev, hydrated]));
       }
     },
@@ -211,5 +234,16 @@ export function useDirectMessages({ conversationId, userId, profiles }: Options)
     [userId],
   );
 
-  return { messages, loading, loadingMore, hasMore, loadOlder, send, edit, remove, toggleReaction };
+  return {
+    messages,
+    loading,
+    loadingMore,
+    hasMore,
+    error,
+    loadOlder,
+    send,
+    edit,
+    remove,
+    toggleReaction,
+  };
 }

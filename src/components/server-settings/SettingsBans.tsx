@@ -8,7 +8,10 @@ export function SettingsBans({ server, canUnban }: { server: Server; canUnban: b
   const { data: bans, isLoading } = useServerBans(server.id);
   const unban = useAdminMutation((banId: string) => serverAdminService.unbanUser(banId), {
     success: "Usuário desbanido.",
-    invalidate: [["server-bans", server.id], ["audit-logs", server.id]],
+    invalidate: [
+      ["server-bans", server.id],
+      ["audit-logs", server.id],
+    ],
   });
 
   return (

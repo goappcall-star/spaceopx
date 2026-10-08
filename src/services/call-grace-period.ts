@@ -8,7 +8,11 @@ export function createCallGracePeriod(onExpire: () => void) {
     start() {
       if (deadline !== null) return deadline;
       deadline = Date.now() + CALL_GRACE_MS;
-      timer = setTimeout(() => { timer = null; deadline = null; onExpire(); }, CALL_GRACE_MS);
+      timer = setTimeout(() => {
+        timer = null;
+        deadline = null;
+        onExpire();
+      }, CALL_GRACE_MS);
       return deadline;
     },
     cancel() {

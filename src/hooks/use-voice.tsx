@@ -1026,7 +1026,6 @@ export function VoiceProviderRoot({
       restrictions,
       connectionState,
       activeChannelId,
-      participantsByChannel,
       displayedParticipants,
       activeServerId,
       observedParticipants,

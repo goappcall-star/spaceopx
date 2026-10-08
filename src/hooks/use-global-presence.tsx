@@ -61,14 +61,28 @@ export function GlobalPresenceProvider({
       busy = true;
       try {
         const state = await window.lobbyxDesktop!.activity();
-        if (!disposed) { gameRef.current = state.enabled ? state.game : null; trackRef.current?.(); }
-      } catch { if (!disposed) { gameRef.current = null; trackRef.current?.(); } }
-      finally { busy = false; }
+        if (!disposed) {
+          gameRef.current = state.enabled ? state.game : null;
+          trackRef.current?.();
+        }
+      } catch {
+        if (!disposed) {
+          gameRef.current = null;
+          trackRef.current?.();
+        }
+      } finally {
+        busy = false;
+      }
     };
     void syncActivity();
     const timer = setInterval(() => void syncActivity(), 10000);
     window.addEventListener("lobbyx:activity-changed", syncActivity);
-    return () => { disposed = true; gameRef.current = null; clearInterval(timer); window.removeEventListener("lobbyx:activity-changed", syncActivity); };
+    return () => {
+      disposed = true;
+      gameRef.current = null;
+      clearInterval(timer);
+      window.removeEventListener("lobbyx:activity-changed", syncActivity);
+    };
   }, [userId]);
 
   useEffect(() => {
@@ -81,12 +95,25 @@ export function GlobalPresenceProvider({
     const connection = maintainPresence({
       create: () => supabase.channel("presence:global", { config: { presence: { key: userId } } }),
       remove: (channel) => supabase.removeChannel(channel),
-      payload: () => ({ user_id: userId, status: statusRef.current, at: Date.now(), game: gameRef.current }),
+      payload: () => ({
+        user_id: userId,
+        status: statusRef.current,
+        at: Date.now(),
+        game: gameRef.current,
+      }),
       available: () => !suspended && navigator.onLine,
-      connected: () => { if (!disposed) setConnection("online"); },
-      disconnected: () => { if (!disposed) { setConnection("reconnecting"); setStatuses({}); setGames({}); } },
+      connected: () => {
+        if (!disposed) setConnection("online");
+      },
+      disconnected: () => {
+        if (!disposed) {
+          setConnection("reconnecting");
+          setStatuses({});
+          setGames({});
+        }
+      },
       sync: (channel) => {
-        if(disposed) return;
+        if (disposed) return;
         const state = channel.presenceState<PresenceRow & { game?: unknown }>();
         setStatuses(resolvePresence(state));
         setGames(readDetectedGames(state));
@@ -95,7 +122,9 @@ export function GlobalPresenceProvider({
     const track = connection.track;
     trackRef.current = track;
     // A route remount must wait until the previous instance leaves this topic.
-    void presenceRelease.catch(() => undefined).then(() => disposed ? undefined : connection.start());
+    void presenceRelease
+      .catch(() => undefined)
+      .then(() => (disposed ? undefined : connection.start()));
     const offline = connection.offline;
     const online = track;
     const hide = () => {

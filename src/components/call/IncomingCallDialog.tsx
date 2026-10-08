@@ -13,7 +13,9 @@ function useRingtone(active: boolean) {
     let stopped = false;
     let timer: ReturnType<typeof setInterval> | null = null;
     try {
-      const Ctor = window.AudioContext ?? (window as never as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const Ctor =
+        window.AudioContext ??
+        (window as never as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const ctx = new Ctor();
       ctxRef.current = ctx;
       const beep = () => {

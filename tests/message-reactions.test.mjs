@@ -19,6 +19,14 @@ function load(file, imports) {
   );
   return exports;
 }
+function deferred() {
+  let resolve, reject;
+  const promise = new Promise((yes, no) => {
+    resolve = yes;
+    reject = no;
+  });
+  return { promise, resolve, reject };
+}
 const { groupReactions } = load("services/messages.ts", {
   "@/integrations/supabase/client": {},
   "@/services/profiles": {},
@@ -99,19 +107,21 @@ function fixture(kind) {
     imports,
   );
   const hook = module.useChannelMessages ?? module.useDirectMessages;
-  function render() {
+  const options = {
+    channelId: "room",
+    conversationId: "conversation",
+    userId: "me",
+    profiles,
+    enabled: true,
+  };
+  function render(next) {
+    Object.assign(options, next);
     let count = 0;
     do {
       dirty = false;
       cursor = 0;
       pending = [];
-      value = hook({
-        channelId: "room",
-        conversationId: "conversation",
-        userId: "me",
-        profiles,
-        enabled: true,
-      });
+      value = hook(options);
       pending.forEach((fn) => fn());
       assert.ok(++count < 20);
     } while (dirty);
@@ -126,12 +136,144 @@ function fixture(kind) {
     render,
     flush,
     events,
+    service,
     setRows: (r) => {
       rows = r;
     },
   };
 }
 for (const kind of ["server", "dm"]) {
+  const moveTo = (id) => ({ channelId: id, conversationId: id });
+  const message = (id) => ({ id, content: id, created_at: "2026-10-07T00:00:00Z", reactions: [] });
+  test(kind + ": a message received while history loads remains visible", async () => {
+    const f = fixture(kind);
+    await f.flush();
+    const pending = deferred();
+    f.service.list = () => pending.promise;
+    f.render(moveTo("pending-room"));
+    await f.events[(kind === "server" ? "messages" : "direct_messages") + ":INSERT"]({
+      new: message("new-realtime"),
+    });
+    await f.flush();
+    pending.resolve([message("older-history")]);
+    await f.flush();
+    assert.deepEqual(
+      Array.from(f.render().messages, (m) => m.id),
+      ["older-history", "new-realtime"],
+    );
+  });
+  test(kind + ": replies hydrate authors outside the current message page", async () => {
+    const profilesService = {
+      listByIds: async (ids) => ids.map((id) => ({ id, display_name: id })),
+    };
+    const supabase = {
+      from(table) {
+        return {
+          select() {
+            return this;
+          },
+          async in() {
+            return {
+              data: table.endsWith("reactions")
+                ? []
+                : [
+                    {
+                      id: "reply",
+                      author_id: "reply-author",
+                      sender_id: "reply-author",
+                      content: "Old message",
+                    },
+                  ],
+            };
+          },
+        };
+      },
+    };
+    const imports = {
+      "@/integrations/supabase/client": { supabase },
+      "@/services/profiles": { profilesService },
+      "@/services/messages": { groupReactions },
+      "@/services/uploads": {},
+    };
+    const module = load(kind === "server" ? "services/messages.ts" : "services/social.ts", imports);
+    const service = module.messagesService ?? module.directMessagesService;
+    const [hydrated] = await service.hydrate(
+      [
+        {
+          ...message("message"),
+          author_id: "current-author",
+          sender_id: "current-author",
+          reply_to_id: "reply",
+        },
+      ],
+      "me",
+    );
+    assert.equal(hydrated.replyTo.author.id, "reply-author");
+  });
+  test(kind + ": an old realtime hydration cannot enter the newly opened chat", async () => {
+    const f = fixture(kind);
+    await f.flush();
+    const pending = deferred();
+    f.service.hydrate = (rows) =>
+      rows[0]?.id === "old-realtime" ? pending.promise : Promise.resolve(rows);
+    const handler = f.events[(kind === "server" ? "messages" : "direct_messages") + ":INSERT"];
+    const event = handler({ new: message("old-realtime") });
+    f.render(moveTo("next"));
+    assert.equal(f.render().messages.length, 0);
+    pending.resolve([message("old-realtime")]);
+    await event;
+    await f.flush();
+    assert.equal(
+      f.render().messages.some((m) => m.id === "old-realtime"),
+      false,
+    );
+  });
+  test(kind + ": sending in one chat cannot append its reply after navigating away", async () => {
+    const f = fixture(kind);
+    await f.flush();
+    const pending = deferred();
+    f.service.send = () => pending.promise;
+    const sending = f.render().send({ content: "old" });
+    f.render(moveTo("next"));
+    await f.flush();
+    pending.resolve(message("old-send"));
+    await sending;
+    await f.flush();
+    assert.equal(
+      f.render().messages.some((m) => m.id === "old-send"),
+      false,
+    );
+  });
+  test(kind + ": older history cannot leak across chat changes", async () => {
+    const f = fixture(kind);
+    await f.flush();
+    const pending = deferred();
+    f.service.list = (_id, before) =>
+      before ? pending.promise : Promise.resolve([message("new-history")]);
+    const loading = f.render().loadOlder();
+    f.render(moveTo("next"));
+    await f.flush();
+    pending.resolve([message("old-page")]);
+    await loading;
+    await f.flush();
+    assert.deepEqual(
+      Array.from(f.render().messages, (m) => m.id),
+      ["new-history"],
+    );
+    assert.equal(f.render().loadingMore, false);
+  });
+  test(kind + ": history failure is handled and clears loading", async () => {
+    const f = fixture(kind);
+    await f.flush();
+    f.service.list = async () => {
+      throw Error("offline");
+    };
+    f.render(moveTo("offline"));
+    await f.flush();
+    assert.ok(f.render().error);
+    assert.equal(f.render().loading, false);
+    assert.equal(f.render().messages.length, 0);
+  });
   test(
     kind + ": reacting updates and removes the visible reaction without a realtime echo",
     async () => {

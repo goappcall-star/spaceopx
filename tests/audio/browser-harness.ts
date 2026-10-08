@@ -79,7 +79,7 @@ async function main() {
     const sender = createVoiceProvider(),
       receiver = createVoiceProvider();
     providers.push(sender, receiver);
-    const statuses: any[] = [];
+    const statuses: import("../../src/services/audio-processing").NoiseProcessingStatus[] = [];
     let remote: MediaStream | null = null;
     await sender.setNoiseSuppression("off");
     await receiver.setNoiseSuppression("off");
@@ -94,7 +94,10 @@ async function main() {
     sender.syncPeers(["receiver"]);
     receiver.syncPeers(["sender"]);
     await until(() => !!remote?.getAudioTracks().length);
-    const senderInternal = sender as any;
+    const senderInternal = sender as unknown as {
+      audioPipeline: MicrophoneAudioPipeline;
+      peers: Map<string, { transceivers: { mic: RTCRtpTransceiver } }>;
+    };
     const pipeline = senderInternal.audioPipeline as MicrophoneAudioPipeline;
     const peer = senderInternal.peers.get("receiver");
     const transmitted = peer.transceivers.mic.sender.track as MediaStreamTrack;
@@ -229,7 +232,8 @@ async function main() {
     prototype.addModule = () => Promise.reject(new Error("Simulated unavailable model"));
     const fallback = new MicrophoneAudioPipeline(() => undefined);
     fallback.attachMicrophone(switched.stream);
-    let fallbackStatus: any;
+    let fallbackStatus:
+      import("../../src/services/audio-processing").NoiseProcessingStatus | undefined;
     // Keep the same public code path; event captured via independent instance.
     const fallback2 = new MicrophoneAudioPipeline((status) => {
       fallbackStatus = status;

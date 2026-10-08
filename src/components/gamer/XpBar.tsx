@@ -3,15 +3,7 @@ import { Zap } from "lucide-react";
 import { levelProgress } from "@/services/gamer";
 import { cn } from "@/lib/utils";
 
-export function XpBar({
-  xp,
-  level,
-  className,
-}: {
-  xp: number;
-  level: number;
-  className?: string;
-}) {
+export function XpBar({ xp, level, className }: { xp: number; level: number; className?: string }) {
   const { current, need, percent } = levelProgress(xp, level);
 
   return (

@@ -140,6 +140,11 @@ export const messagesService = {
       const { data } = await supabase.from("messages").select("*").in("id", replyIds);
       for (const row of data ?? []) replyMap.set(row.id, toMessage(row));
     }
+    const missingReplyAuthors = [
+      ...new Set([...replyMap.values()].map((reply) => reply.author_id)),
+    ].filter((id) => !profiles.has(id));
+    for (const profile of await profilesService.listByIds(missingReplyAuthors))
+      profiles.set(profile.id, profile);
 
     const reactionRows = await messagesService.listReactions(messages.map((m) => m.id));
     const byMessage = new Map<string, MessageReaction[]>();

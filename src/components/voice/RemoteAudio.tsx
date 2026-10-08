@@ -6,6 +6,7 @@ import { useVoice } from "@/hooks/use-voice";
 import { receivedAudioVolume } from "@/lib/audio-volume";
 
 function AudioSink({
+  sinkId,
   stream,
   volume,
   deafened,
@@ -13,11 +14,12 @@ function AudioSink({
   onBlocked,
   unlockToken,
 }: {
+  sinkId: string;
   stream: MediaStream;
   volume: number;
   deafened: boolean;
   outputId?: string | undefined;
-  onBlocked: (blocked: boolean) => void;
+  onBlocked: (sinkId: string, blocked: boolean) => void;
   unlockToken: number;
 }) {
   const ref = useRef<HTMLAudioElement>(null);
@@ -27,11 +29,20 @@ function AudioSink({
     if (!el || !el.srcObject) return;
     try {
       await el.play();
-      onBlocked(false);
+      onBlocked(sinkId, false);
     } catch (error) {
-      if ((error as DOMException)?.name === "NotAllowedError") onBlocked(true);
+      if ((error as DOMException)?.name === "NotAllowedError") onBlocked(sinkId, true);
     }
-  }, [onBlocked]);
+  }, [onBlocked, sinkId]);
+
+  useEffect(() => {
+    const el = ref.current;
+    return () => {
+      el?.pause();
+      if (el) el.srcObject = null;
+      onBlocked(sinkId, false);
+    };
+  }, [onBlocked, sinkId]);
 
   useEffect(() => {
     const el = ref.current;
@@ -51,8 +62,8 @@ function AudioSink({
   useEffect(() => {
     const el = ref.current as
       (HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> }) | null;
-    if (!el || !outputId || typeof el.setSinkId !== "function") return;
-    void el.setSinkId(outputId).catch(() => undefined);
+    if (!el || typeof el.setSinkId !== "function") return;
+    void el.setSinkId(outputId ?? "").catch(() => undefined);
   }, [outputId]);
 
   return <audio ref={ref} autoPlay playsInline />;
@@ -64,6 +75,12 @@ export function RemoteAudio() {
   const { settings } = useAudioSettings();
   const [blocked, setBlocked] = useState(false);
   const [unlockToken, setUnlockToken] = useState(0);
+  const blockedSinks = useRef(new Set<string>());
+  const reportBlocked = useCallback((sinkId: string, value: boolean) => {
+    if (value) blockedSinks.current.add(sinkId);
+    else blockedSinks.current.delete(sinkId);
+    setBlocked(blockedSinks.current.size > 0);
+  }, []);
 
   return (
     <>
@@ -73,6 +90,7 @@ export function RemoteAudio() {
             stream ? (
               <AudioSink
                 key={`${userId}:${index}`}
+                sinkId={`${userId}:${index}`}
                 stream={stream}
                 volume={((volumes[userId] ?? 100) * settings.outputVolume) / 100}
                 deafened={
@@ -83,7 +101,7 @@ export function RemoteAudio() {
                   )
                 }
                 outputId={settings.outputDeviceId ?? undefined}
-                onBlocked={setBlocked}
+                onBlocked={reportBlocked}
                 unlockToken={unlockToken}
               />
             ) : null,
@@ -96,7 +114,6 @@ export function RemoteAudio() {
             size="sm"
             variant="outline"
             onClick={() => {
-              setBlocked(false);
               setUnlockToken((value) => value + 1);
             }}
           >

@@ -96,12 +96,13 @@ function InvitePage() {
   }
 
   if (isError || !preview) {
-    const state = INVALID_STATES['invite_not_found']!;
+    const state = INVALID_STATES["invite_not_found"]!;
     return <InvalidState {...state} />;
   }
 
   if (!preview.valid) {
-    const state = INVALID_STATES[preview.reason ?? "invite_not_found"] ?? INVALID_STATES['invite_not_found']!;
+    const state =
+      INVALID_STATES[preview.reason ?? "invite_not_found"] ?? INVALID_STATES["invite_not_found"]!;
     return <InvalidState {...state} />;
   }
 
@@ -123,7 +124,6 @@ function InvitePage() {
         />
       )}
       <div className="border-border bg-surface mb-5 flex items-center gap-3 rounded-xl border p-3">
-
         <Avatar className="ring-border h-14 w-14 rounded-2xl ring-1">
           <AvatarImage src={preview.server_icon_url ?? undefined} alt="" />
           <AvatarFallback className="bg-surface-elevated rounded-2xl text-sm">

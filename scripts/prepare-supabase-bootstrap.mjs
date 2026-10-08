@@ -1,6 +1,6 @@
-import { readFile, readdir, mkdir, writeFile } from 'node:fs/promises';
-const dir = new URL('../supabase/migrations/', import.meta.url);
-const files = (await readdir(dir)).filter(name => name.endsWith('.sql')).sort();
+import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
+const dir = new URL("../supabase/migrations/", import.meta.url);
+const files = (await readdir(dir)).filter((name) => name.endsWith(".sql")).sort();
 const header = `-- LobbyX: instalacao em um projeto Supabase VAZIO.
 -- Destino previsto: txkwmarzcyfbkizphjww. Confira o projeto no painel.
 -- Execute todo o arquivo no SQL Editor. Nao executar no backend do Lovable.
@@ -20,8 +20,10 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 `;
 let output = header;
 for (const file of files) {
- const sql = (await readFile(new URL(file,dir),'utf8')).replace(/^\uFEFF/,'').replace(/^\s*(BEGIN|COMMIT);\s*$/gm,'');
- output += `\n-- MIGRATION: ${file}\n${sql}\n`;
+  const sql = (await readFile(new URL(file, dir), "utf8"))
+    .replace(/^\uFEFF/, "")
+    .replace(/^\s*(BEGIN|COMMIT);\s*$/gm, "");
+  output += `\n-- MIGRATION: ${file}\n${sql}\n`;
 }
 output += `
 -- Buckets privados; acesso controlado pelas politicas criadas acima.
@@ -35,7 +37,7 @@ SELECT 'Estrutura LobbyX criada com sucesso' AS resultado,
  (SELECT count(*) FROM pg_tables WHERE schemaname='public') AS tabelas,
  (SELECT count(*) FROM storage.buckets) AS buckets;
 `;
-const destination = new URL('../../outputs/migracao-supabase/',import.meta.url);
-await mkdir(destination,{recursive:true});
-await writeFile(new URL('01-criar-banco-lobbyx.sql',destination),output);
+const destination = new URL("../../outputs/migracao-supabase/", import.meta.url);
+await mkdir(destination, { recursive: true });
+await writeFile(new URL("01-criar-banco-lobbyx.sql", destination), output);
 console.log(`Generated ${files.length} migrations, ${Buffer.byteLength(output)} bytes.`);

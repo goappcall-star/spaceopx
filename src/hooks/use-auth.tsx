@@ -23,8 +23,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    let disposed = false;
+    let receivedEvent = false;
     // Listener first, then the initial read — avoids missing an early event.
     const { data: subscription } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (disposed) return;
+      receivedEvent = true;
       setSession(nextSession);
       setLoading(false);
       if (event === "SIGNED_OUT") {
@@ -34,12 +38,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
+    void supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (disposed || receivedEvent) return;
+        setSession(data.session);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!disposed && !receivedEvent) setLoading(false);
+      });
 
-    return () => subscription.subscription.unsubscribe();
+    return () => {
+      disposed = true;
+      subscription.subscription.unsubscribe();
+    };
   }, [queryClient]);
 
   const userId = session?.user.id ?? null;

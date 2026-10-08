@@ -51,13 +51,9 @@ export function useGamePresenceMap(userIds: string[]) {
     // otherwise supabase-js reuses a channel that is already subscribed.
     const channel = supabase
       .channel(`game-presence:${key.slice(0, 40)}:${Math.random().toString(36).slice(2, 8)}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "user_game_presence" },
-        () => {
-          void queryClient.invalidateQueries({ queryKey: ["game-presence-map", key] });
-        },
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_game_presence" }, () => {
+        void queryClient.invalidateQueries({ queryKey: ["game-presence-map", key] });
+      })
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);

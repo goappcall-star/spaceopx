@@ -48,8 +48,18 @@ export function DirectChatView({
     return map;
   }, [members]);
 
-  const { messages, loading, loadingMore, hasMore, loadOlder, send, edit, remove, toggleReaction } =
-    useDirectMessages({ conversationId: conversation.id, userId, profiles });
+  const {
+    messages,
+    loading,
+    loadingMore,
+    hasMore,
+    error,
+    loadOlder,
+    send,
+    edit,
+    remove,
+    toggleReaction,
+  } = useDirectMessages({ conversationId: conversation.id, userId, profiles });
 
   const { typingNames, notifyTyping } = useTyping(conversation.id, userId, displayName);
 
@@ -97,7 +107,10 @@ export function DirectChatView({
             className="flex min-w-0 items-center gap-3 text-left"
           >
             <span className="relative">
-              <Avatar frame={isGroup ? undefined : other?.avatar_frame} className="ring-border h-8 w-8 ring-1">
+              <Avatar
+                frame={isGroup ? undefined : other?.avatar_frame}
+                className="ring-border h-8 w-8 ring-1"
+              >
                 <AvatarImage
                   src={(isGroup ? conversation.avatar_url : other?.avatar_url) ?? undefined}
                   alt=""
@@ -266,7 +279,12 @@ export function DirectChatView({
           </div>
         )}
 
-        {!loading && messages.length === 0 && (
+        {error && (
+          <p role="alert" className="text-destructive px-5 py-3 text-sm">
+            {error}
+          </p>
+        )}
+        {!loading && !error && messages.length === 0 && (
           <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
             <p className="text-foreground text-xl font-semibold tracking-tight">{title}</p>
             <p className="max-w-sm text-sm">Este é o começo da sua conversa. Manda a primeira.</p>

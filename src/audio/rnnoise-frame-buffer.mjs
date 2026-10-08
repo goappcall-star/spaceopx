@@ -14,7 +14,8 @@ export class RnnoiseFrameBuffer {
   }
 
   process(input, output) {
-    if (input.length > 512 || input.length !== output.length) throw new Error("Unsupported audio quantum");
+    if (input.length > 512 || input.length !== output.length)
+      throw new Error("Unsupported audio quantum");
     for (let i = 0; i < input.length; i++) {
       this.frame[this.inputSize++] = input[i] * 32768;
       if (this.inputSize === 480) {

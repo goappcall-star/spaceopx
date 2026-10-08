@@ -60,7 +60,10 @@ export function VoiceRoom({
     hiddenVideos,
   } = useVoice();
 
-  const participants = participantsByChannel[channel.id] ?? [];
+  const participants = useMemo(
+    () => participantsByChannel[channel.id] ?? [],
+    [participantsByChannel, channel.id],
+  );
   const inThisRoom = activeChannelId === channel.id;
   const canConnect = hasPermission(me, "connect");
   const presenceMap = useGamePresenceMap(participants.map((p) => p.user_id));

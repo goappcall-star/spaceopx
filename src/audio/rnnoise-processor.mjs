@@ -21,13 +21,20 @@ class LobbyXRnnoiseProcessor extends AudioWorkletProcessor {
       this.port.postMessage({ type: "error", message: "RNNoise requires 48 kHz" });
       return;
     }
-    model ??= Rnnoise.load().catch((error) => { model = null; throw error; });
-    void model.then((rnnoise) => {
-      if (this.closed) return;
-      if (rnnoise.frameSize !== 480) throw new Error("Unexpected RNNoise frame size");
-      this.processor = new RnnoiseFrameBuffer(rnnoise.createDenoiseState());
-      this.port.postMessage({ type: "ready", bufferDelayMs: 512 / 48 });
-    }).catch(() => this.port.postMessage({ type: "error", message: "RNNoise initialization failed" }));
+    model ??= Rnnoise.load().catch((error) => {
+      model = null;
+      throw error;
+    });
+    void model
+      .then((rnnoise) => {
+        if (this.closed) return;
+        if (rnnoise.frameSize !== 480) throw new Error("Unexpected RNNoise frame size");
+        this.processor = new RnnoiseFrameBuffer(rnnoise.createDenoiseState());
+        this.port.postMessage({ type: "ready", bufferDelayMs: 512 / 48 });
+      })
+      .catch(() =>
+        this.port.postMessage({ type: "error", message: "RNNoise initialization failed" }),
+      );
   }
 
   process(inputs, outputs) {

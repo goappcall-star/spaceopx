@@ -29,6 +29,13 @@ export function useChannelMessages({ channelId, userId, profiles, enabled }: Opt
   profilesRef.current = profiles;
   const messagesRef = useRef<MessageWithMeta[]>([]);
   messagesRef.current = messages;
+  const scopeRef = useRef({ channelId, enabled, userId });
+  if (
+    scopeRef.current.channelId !== channelId ||
+    scopeRef.current.enabled !== enabled ||
+    scopeRef.current.userId !== userId
+  )
+    scopeRef.current = { channelId, enabled, userId };
 
   const hydrate = useCallback(
     (rows: Message[]) => messagesService.hydrate(rows, userId, profilesRef.current),
@@ -37,7 +44,12 @@ export function useChannelMessages({ channelId, userId, profiles, enabled }: Opt
 
   // Initial load + realtime subscription, scoped to one channel at a time.
   useEffect(() => {
+    setMessages([]);
+    messagesRef.current = [];
+    setLoadingMore(false);
+    setError(null);
     if (!channelId || !enabled) {
+      setLoading(false);
       setMessages([]);
       setHasMore(false);
       return;
@@ -54,7 +66,10 @@ export function useChannelMessages({ channelId, userId, profiles, enabled }: Opt
         const rows = await messagesService.list(channelId);
         const hydrated = await hydrate(rows);
         if (cancelled) return;
-        setMessages(hydrated);
+        setMessages((prev) => [
+          ...hydrated,
+          ...prev.filter((m) => !hydrated.some((row) => row.id === m.id)),
+        ]);
         setHasMore(rows.length === MESSAGE_PAGE_SIZE);
       } catch (err) {
         if (!cancelled) setError((err as Error).message);
@@ -98,7 +113,7 @@ export function useChannelMessages({ channelId, userId, profiles, enabled }: Opt
           const row = payload.new as Message;
           if (messagesRef.current.some((m) => m.id === row.id)) return;
           const [hydrated] = await hydrate([row]);
-          if (!hydrated) return;
+          if (cancelled || !hydrated) return;
           setMessages((prev) =>
             prev.some((m) => m.id === hydrated.id) ? prev : [...prev, hydrated],
           );
@@ -164,16 +179,24 @@ export function useChannelMessages({ channelId, userId, profiles, enabled }: Opt
   }, [channelId, enabled, hydrate, userId]);
 
   const loadOlder = useCallback(async () => {
+    const scope = scopeRef.current;
     const oldest = messagesRef.current[0];
     if (!channelId || !oldest || loadingMore) return;
     setLoadingMore(true);
     try {
       const rows = await messagesService.list(channelId, oldest.created_at);
       const hydrated = await hydrate(rows);
-      setMessages((prev) => [...hydrated, ...prev]);
+      if (scopeRef.current !== scope) return;
+      setMessages((prev) => [
+        ...hydrated.filter((m) => !prev.some((row) => row.id === m.id)),
+        ...prev,
+      ]);
       setHasMore(rows.length === MESSAGE_PAGE_SIZE);
+    } catch {
+      if (scopeRef.current === scope)
+        toast.error("Não foi possível carregar as mensagens anteriores.");
     } finally {
-      setLoadingMore(false);
+      if (scopeRef.current === scope) setLoadingMore(false);
     }
   }, [channelId, hydrate, loadingMore]);
 
@@ -185,9 +208,10 @@ export function useChannelMessages({ channelId, userId, profiles, enabled }: Opt
       mentions?: string[];
     }) => {
       if (!channelId) return;
+      const scope = scopeRef.current;
       const created = await messagesService.send({ channelId, ...input });
       const [hydrated] = await hydrate([created]);
-      if (hydrated) {
+      if (scopeRef.current === scope && hydrated) {
         setMessages((prev) => (prev.some((m) => m.id === created.id) ? prev : [...prev, hydrated]));
       }
     },

@@ -3,6 +3,32 @@ import assert from "node:assert/strict";
 import { pipelineFixture, loadVoiceProvider } from "./audio/pipeline-fixture.mjs";
 import { RnnoiseFrameBuffer } from "../src/audio/rnnoise-frame-buffer.mjs";
 
+test("A failed microphone switch preserves the current track and allows retrying the same device", async () => {
+  const f = pipelineFixture();
+  let attempts = 0;
+  const provider = loadVoiceProvider(f.exports, {
+    navigator: {
+      mediaDevices: {
+        getUserMedia: async () => {
+          if (++attempts === 1) throw new DOMException("Device unavailable", "NotFoundError");
+          return f.stream("retry-mic");
+        },
+      },
+    },
+  });
+  provider.micStream = f.input;
+  await provider.startSpeakingDetection();
+  const outgoing = provider.outgoingAudioTrack();
+  await assert.rejects(provider.setDevices({ microphoneId: "retry-mic" }), /unavailable/);
+  assert.equal(provider.micStream, f.input);
+  assert.equal(provider.outgoingAudioTrack(), outgoing);
+  await provider.setDevices({ microphoneId: "retry-mic" });
+  assert.equal(attempts, 2);
+  assert.equal(provider.outgoingAudioTrack(), outgoing);
+  await provider.audioPipeline.dispose();
+  await f.pipeline.dispose();
+});
+
 test("Frame adapter keeps exactly 512 samples of delay, normalization, and order across frame boundaries", () => {
   const buffer = new RnnoiseFrameBuffer({
     processFrame(frame) {

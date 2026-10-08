@@ -55,6 +55,7 @@ const AudioSettingsContext = createContext<AudioSettingsContextValue | undefined
 /** Single persistent source of truth for audio hardware and voice input preferences. */
 export function AudioSettingsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const userId = user?.id;
   const [settings, setSettings] = useState<AudioSettings>(DEFAULT_AUDIO_SETTINGS);
   const [loaded, setLoaded] = useState(false);
   const [devices, setDevices] = useState<MediaDeviceList>({
@@ -78,32 +79,38 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    if (!user) {
+    setLoaded(false);
+    setSettings(DEFAULT_AUDIO_SETTINGS);
+    if (!userId) {
       setSettings(DEFAULT_AUDIO_SETTINGS);
       setLoaded(false);
       return;
     }
     void preferencesService
-      .get(user.id)
+      .get(userId)
       .then((prefs) => {
         if (cancelled) return;
         setSettings({
-          callSoundsEnabled: readCallSounds(user.id),
+          callSoundsEnabled: readCallSounds(userId),
           inputDeviceId: prefs.input_device_id ?? null,
           outputDeviceId: prefs.output_device_id ?? null,
           inputVolume: prefs.input_volume ?? 100,
           outputVolume: prefs.output_volume ?? 100,
           inputMode: prefs.input_mode ?? "open",
           pttKey: prefs.ptt_key ?? "KeyV",
-          noiseSuppression: readNoiseMode(user.id),
+          noiseSuppression: readNoiseMode(userId),
         });
         setLoaded(true);
       })
-      .catch(() => setLoaded(true));
+      .catch(() => {
+        if (!cancelled) setLoaded(true);
+      });
     return () => {
       cancelled = true;
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = null;
     };
-  }, [user]);
+  }, [userId]);
 
   const update = useCallback(
     (patch: Partial<AudioSettings>) => {

@@ -36,8 +36,18 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
   const canSend = hasPermission(me, "send_messages");
   const canModerate = hasPermission(me, "manage_channel");
 
-  const { messages, loading, loadingMore, hasMore, loadOlder, send, edit, remove, toggleReaction } =
-    useChannelMessages({ channelId: channel.id, serverId, userId, profiles, enabled: true });
+  const {
+    messages,
+    loading,
+    loadingMore,
+    hasMore,
+    error,
+    loadOlder,
+    send,
+    edit,
+    remove,
+    toggleReaction,
+  } = useChannelMessages({ channelId: channel.id, serverId, userId, profiles, enabled: true });
 
   const displayName = me?.profile?.display_name ?? "Alguém";
   const { typingNames, notifyTyping } = useTyping(channel.id, userId, displayName);
@@ -77,6 +87,11 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
       </header>
 
       <div ref={scrollRef} className="scrollbar-slim bg-ambient flex-1 overflow-y-auto py-4">
+        {error && (
+          <p role="alert" className="text-destructive px-5 py-3 text-sm">
+            Não foi possível carregar o chat. Tente abrir o canal novamente.
+          </p>
+        )}
         {loading && (
           <div className="space-y-5 px-5">
             {[0, 1, 2, 3].map((index) => (
@@ -104,7 +119,7 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
           </div>
         )}
 
-        {!loading && messages.length === 0 && (
+        {!loading && !error && messages.length === 0 && (
           <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
             <span className="surface-elevated glow-soft flex h-16 w-16 items-center justify-center rounded-2xl">
               <MessagesSquare className="text-primary h-7 w-7" />

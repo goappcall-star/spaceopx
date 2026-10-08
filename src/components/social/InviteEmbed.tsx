@@ -66,7 +66,14 @@ export function InviteEmbed({ code }: { code: string }) {
       {!data.valid ? (
         <p className="text-muted-foreground mt-3 text-xs">Convite indisponível.</p>
       ) : data.already_member ? (
-        <Button size="sm" variant="secondary" className="mt-3 w-full" onClick={() => void navigate({ to: "/app", search: { server: data.server_id ?? undefined } })}>
+        <Button
+          size="sm"
+          variant="secondary"
+          className="mt-3 w-full"
+          onClick={() =>
+            void navigate({ to: "/app", search: { server: data.server_id ?? undefined } })
+          }
+        >
           Abrir servidor
         </Button>
       ) : (

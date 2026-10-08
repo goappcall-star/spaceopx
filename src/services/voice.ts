@@ -281,11 +281,16 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   private async performDisconnect() {
-    const departure = this.signaling?.send({
-      type: "broadcast",
-      event: "signal",
-      payload: { from: this.userId, from_session: this.sessionId, to: "*", bye: true },
-    });
+    const departure = this.signaling
+      ?.send(
+        {
+          type: "broadcast",
+          event: "signal",
+          payload: { from: this.userId, from_session: this.sessionId, to: "*", bye: true },
+        },
+        { timeout: 500 },
+      )
+      .catch(() => undefined);
     this.disposed = true;
     this.cameraGeneration += 1;
     this.screenGeneration += 1;
@@ -328,6 +333,9 @@ class MeshVoiceProvider implements VoiceProvider {
     this.pendingSignaling = null;
     if (channel) {
       await departure?.catch(() => undefined);
+      // Bound the transport acknowledgement before a rapid return can reuse
+      // this topic. The local media has already been fully released above.
+      await channel.unsubscribe?.(500).catch(() => undefined);
       await supabase.removeChannel(channel);
     }
     this.speaking = false;

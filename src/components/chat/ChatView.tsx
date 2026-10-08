@@ -86,7 +86,10 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
         )}
       </header>
 
-      <div ref={scrollRef} className="scrollbar-slim bg-ambient flex-1 overflow-y-auto py-4">
+      <div
+        ref={scrollRef}
+        className="scrollbar-slim bg-ambient min-h-0 flex-1 overflow-y-auto py-4"
+      >
         {error && (
           <p role="alert" className="text-destructive px-5 py-3 text-sm">
             Não foi possível carregar o chat. Tente abrir o canal novamente.

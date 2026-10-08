@@ -65,7 +65,7 @@ export function SettingsRoles({ server, readOnly }: { server: Server; readOnly: 
   const permissionsLocked = locked || ownerRole;
 
   return (
-    <div className="grid gap-5 md:grid-cols-[220px_1fr]">
+    <div className="grid min-w-0 gap-5 lg:grid-cols-[180px_minmax(0,1fr)]">
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold">Cargos</h3>

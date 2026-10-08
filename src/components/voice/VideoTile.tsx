@@ -89,7 +89,7 @@ export function VideoTile({ tile, volume, onVolumeChange, className, large }: Pr
           onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}
-          className="pointer-events-auto absolute inset-x-2 top-2 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+          className="pointer-events-auto absolute inset-x-2 top-2 flex items-center gap-2 opacity-100 sm:opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
         >
           <Volume2 className="h-3.5 w-3.5 shrink-0 text-white/80" />
           <Slider

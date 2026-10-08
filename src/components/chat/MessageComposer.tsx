@@ -190,7 +190,7 @@ export function MessageComposer({
           <Button
             size="icon"
             variant="ghost"
-            className="h-9 w-9"
+            className="h-9 w-9 shrink-0"
             aria-label="Anexar arquivo"
             disabled={disabled || uploading}
             onClick={() => fileRef.current?.click()}
@@ -213,17 +213,17 @@ export function MessageComposer({
                 void submit();
               }
             }}
-            className="max-h-40 min-h-9 resize-none border-0 bg-transparent px-1 py-2 text-sm shadow-none hover:border-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0"
+            className="max-h-40 min-h-9 min-w-0 flex-1 resize-none border-0 bg-transparent px-1 py-2 text-sm shadow-none hover:border-0 focus-visible:border-0 focus-visible:shadow-none focus-visible:ring-0"
           />
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button size="icon" variant="ghost" className="h-9 w-9" aria-label="Emojis">
+              <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" aria-label="Emojis">
                 <Smile className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-1.5" align="end">
-              <div className="flex gap-1">
+              <div className="grid grid-cols-4 gap-1 sm:flex">
                 {QUICK_EMOJIS.map((emoji) => (
                   <button
                     key={emoji}
@@ -240,7 +240,7 @@ export function MessageComposer({
 
           <Button
             size="icon"
-            className="h-9 w-9"
+            className="h-9 w-9 shrink-0"
             aria-label="Enviar mensagem"
             disabled={disabled || sending || uploading}
             onClick={() => void submit()}

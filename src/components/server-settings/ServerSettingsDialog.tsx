@@ -57,10 +57,24 @@ export function ServerSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[85vh] max-w-4xl gap-0 overflow-hidden p-0 sm:max-w-4xl">
+      <DialogContent className="h-[90dvh] max-w-4xl gap-0 overflow-hidden p-0 sm:max-w-4xl">
         <DialogTitle className="sr-only">Configurações de {server.name}</DialogTitle>
-        <div className="flex h-full min-h-0">
-          <nav className="bg-surface border-border scrollbar-slim hidden w-56 shrink-0 overflow-y-auto border-r p-3 sm:block">
+        <div className="flex h-full min-h-0 flex-col md:flex-row">
+          <label className="border-border border-b p-3 pr-12 md:hidden">
+            <span className="sr-only">Seção das configurações do servidor</span>
+            <select
+              value={section}
+              onChange={(event) => setSection(event.target.value as SectionId)}
+              className="bg-surface border-border h-11 w-full min-w-0 rounded-lg border px-3 text-sm"
+            >
+              {sections.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <nav className="bg-surface border-border scrollbar-slim hidden w-56 shrink-0 overflow-y-auto border-r p-3 md:block">
             <p className="text-caption truncate px-2 pt-1 pb-3">{server.name}</p>
             {groups.map((group) => (
               <div key={group} className="mb-3">
@@ -88,7 +102,7 @@ export function ServerSettingsDialog({
             ))}
           </nav>
 
-          <div className="scrollbar-slim min-w-0 flex-1 overflow-y-auto p-5 sm:p-6">
+          <div className="scrollbar-slim min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-6">
             <header className="mb-5">
               <h2 className="text-lg font-semibold tracking-tight">
                 {sections.find((s) => s.id === section)?.label}

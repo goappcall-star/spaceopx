@@ -13,10 +13,10 @@ export function AppSidebarDrawer({
   return (
     <div
       className={cn(
-        "absolute top-12 bottom-0 z-40 max-w-full md:contents",
+        "absolute top-12 bottom-0 z-40 max-w-full lg:contents",
         side === "left"
-          ? "left-0 max-md:[&>aside:last-child]:w-[calc(100vw-76px)]"
-          : "right-0 overflow-y-auto bg-surface max-md:[&>aside]:!flex [&>aside]:h-full",
+          ? "left-0 max-lg:[&>aside:last-child]:w-[min(320px,calc(100vw-76px))]"
+          : "right-0 overflow-y-auto bg-surface max-lg:[&>aside]:!flex [&>aside]:h-full",
         open ? "flex" : "hidden",
       )}
     >

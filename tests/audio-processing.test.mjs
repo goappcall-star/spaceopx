@@ -3,6 +3,33 @@ import assert from "node:assert/strict";
 import { pipelineFixture, loadVoiceProvider } from "./audio/pipeline-fixture.mjs";
 import { RnnoiseFrameBuffer } from "../src/audio/rnnoise-frame-buffer.mjs";
 
+test("Leaving bounds signaling acknowledgements while releasing the old microphone and peers", async () => {
+  const f = pipelineFixture();
+  const provider = loadVoiceProvider(f.exports);
+  provider.micStream = f.input;
+  await provider.startSpeakingDetection();
+  const destination = provider.outgoingAudioTrack();
+  const operations = [];
+  provider.signaling = {
+    async send(payload, options) {
+      assert.equal(payload.payload.bye, true);
+      assert.equal(options.timeout, 500);
+      operations.push("bye");
+    },
+    async unsubscribe(timeout) {
+      assert.equal(timeout, 500);
+      assert.equal(destination.readyState, "ended");
+      assert.equal(f.input.getAudioTracks()[0].readyState, "ended");
+      operations.push("unsubscribe");
+    },
+  };
+  await provider.disconnect();
+  assert.deepEqual(operations, ["bye", "unsubscribe"]);
+  assert.equal(provider.signaling, null);
+  assert.equal(provider.audioPipeline, null);
+  await f.pipeline.dispose();
+});
+
 test("A failed microphone switch preserves the current track and allows retrying the same device", async () => {
   const f = pipelineFixture();
   let attempts = 0;

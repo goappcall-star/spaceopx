@@ -5,8 +5,9 @@ import vm from "node:vm";
 import ts from "typescript";
 
 // Exercise the actual provider with deterministic hooks, signaling and media.
-function fixture() {
+function fixture({ cacheTopics = false, delayedRemoval = false } = {}) {
   const timers = new Map();
+  const timerDelays = new Map();
   const intervals = new Map(),
     missedRequests = [];
   const restrictionRows = [],
@@ -22,6 +23,7 @@ function fixture() {
     channels = [],
     moveChannels = [],
     providers = [];
+  const removals = [];
   const memo = (fn, deps) => {
     const index = cursor++,
       old = slots[index];
@@ -52,9 +54,11 @@ function fixture() {
       const index = cursor++,
         old = slots[index];
       if (!old || deps.some((dep, i) => !Object.is(dep, old.deps[i]))) {
-        pending.push(() => {
-          old?.cleanup?.();
-          slots[index] = { deps, cleanup: fn() };
+        pending.push({
+          cleanup: () => old?.cleanup?.(),
+          start: () => {
+            slots[index] = { deps, cleanup: fn() };
+          },
         });
       }
     },
@@ -68,6 +72,10 @@ function fixture() {
   };
   const supabase = {
     channel(topic) {
+      if (cacheTopics) {
+        const existing = channels.find((ch) => ch.topic === topic && !ch.removed);
+        if (existing) return existing;
+      }
       const ch = {
         topic,
         tracks: [],
@@ -80,6 +88,7 @@ function fixture() {
           return this;
         },
         subscribe(fn) {
+          this.subscribeCalls = (this.subscribeCalls ?? 0) + 1;
           this.subscribed = fn;
           return this;
         },
@@ -89,8 +98,9 @@ function fixture() {
         async send(event) {
           this.sent.push(event);
         },
-        async track(payload) {
+        async track(payload, options) {
           this.tracks.push(payload);
+          this.trackOptions = options;
           return this.trackResult ?? "ok";
         },
         async untrack() {
@@ -144,6 +154,8 @@ function fixture() {
       };
     },
     async removeChannel(ch) {
+      if (delayedRemoval && ch.topic.startsWith("voice:"))
+        await new Promise((resolve) => removals.push(resolve));
       ch.removed = true;
     },
   };
@@ -213,8 +225,9 @@ function fixture() {
     crypto: { randomUUID: () => Math.random().toString() },
     localStorage: { getItem: () => null },
     window: { addEventListener() {}, removeEventListener() {} },
-    setTimeout: (callback) => {
+    setTimeout: (callback, delay) => {
       timers.set(++timerId, callback);
+      timerDelays.set(timerId, delay);
       return timerId;
     },
     clearTimeout: (id) => timers.delete(id),
@@ -233,14 +246,18 @@ function fixture() {
       cursor = 0;
       pending = [];
       value = exports.VoiceProviderRoot(props).value;
-      pending.forEach((effect) => effect());
+      pending.forEach((effect) => effect.cleanup());
+      pending.forEach((effect) => effect.start());
       assert.ok(++count < 20, "render settles");
     } while (dirty);
     return value;
   }
   async function flush() {
-    for (let i = 0; i < 12; i++) await Promise.resolve();
-    render();
+    // Effects can initiate asynchronous release and then another effect render.
+    for (let pass = 0; pass < 3; pass++) {
+      for (let i = 0; i < 12; i++) await Promise.resolve();
+      render();
+    }
   }
   render();
   return {
@@ -249,11 +266,13 @@ function fixture() {
     channels,
     providers,
     timers,
+    timerDelays,
     moveChannels,
     intervals,
     missedRequests,
     restrictionRows,
     restrictionChannels,
+    removals,
     failRestrictions: () => {
       restrictionFailure = true;
     },
@@ -278,6 +297,200 @@ test("Speech bursts publish without continually restarting the pending update", 
   f.timers.delete(firstTimer);
   await f.flush();
   assert.equal(f.channels[0].tracks.at(-1).speaking, true);
+});
+
+test("Recovery waits for cached topic removal before resubscribing, so old cleanup cannot close the new Presence", async () => {
+  const f = fixture({ cacheTopics: true, delayedRemoval: true });
+  const old = f.channels[0];
+  old.subscribed("SUBSCRIBED");
+  await f.render().join("room-a");
+  await f.flush();
+  old.trackResult = "timed out";
+  f.render().toggleMute();
+  await f.flush();
+  for (const callback of [...f.timers.values()]) callback();
+  f.timers.clear();
+  await f.flush();
+  assert.equal(f.channels.length, 1, "must not reuse the channel awaiting removal");
+  assert.equal(old.subscribeCalls, 1, "must not subscribe the cached old object again");
+  assert.equal(f.removals.length, 1);
+  assert.equal(f.providers[0].disconnects, 0);
+  f.removals.shift()();
+  await f.flush();
+  const replacement = f.channels.at(-1);
+  assert.notEqual(replacement, old);
+  assert.equal(old.removed, true);
+  replacement.subscribed("SUBSCRIBED");
+  await f.flush();
+  old.subscribed("CLOSED");
+  await f.flush();
+  assert.equal(replacement.removed, false);
+  assert.equal(f.timers.size, 0, "old events cannot start a new recovery loop");
+  assert.equal(f.render().connectionState, "connected");
+});
+
+test("Observer to active room handoff also waits for the cached topic to be released", async () => {
+  const f = fixture({ cacheTopics: true, delayedRemoval: true });
+  await f.render().join("room-a");
+  f.render("b");
+  const observer = f.channels.find((ch) => ch.topic === "voice:b");
+  await f.render().join("room-b", "b");
+  await f.flush();
+  assert.equal(f.channels.filter((ch) => ch.topic === "voice:b").length, 1);
+  for (const release of f.removals.splice(0)) release();
+  await f.flush();
+  const active = f.channels.filter((ch) => ch.topic === "voice:b").at(-1);
+  assert.notEqual(active, observer);
+  active.subscribed("SUBSCRIBED");
+  await f.flush();
+  assert.equal(active.tracks.at(-1).channel_id, "room-b");
+  assert.equal(active.removed, false);
+});
+
+test("A successful publication cancels a recovery scheduled by a temporary failure", async () => {
+  const f = fixture();
+  const ch = f.channels[0];
+  ch.subscribed("SUBSCRIBED");
+  await f.render().join("room-a");
+  await f.flush();
+  ch.trackResult = "timed out";
+  f.render().toggleMute();
+  await f.flush();
+  assert.equal(f.timers.size, 1);
+  ch.trackResult = "ok";
+  f.render().toggleMute();
+  await f.flush();
+  assert.equal(f.timers.size, 0);
+  assert.equal(f.channels.length, 1);
+  assert.equal(ch.removed, false);
+});
+
+test("Repeated publication failures back off instead of rebuilding every two seconds", async () => {
+  const f = fixture();
+  f.channels[0].trackResult = "timed out";
+  f.channels[0].subscribed("SUBSCRIBED");
+  await f.render().join("room-a");
+  await f.flush();
+  let [id, retry] = [...f.timers.entries()][0];
+  assert.equal(f.timerDelays.get(id), 2000);
+  f.timers.delete(id);
+  retry();
+  await f.flush();
+  const next = f.channels.at(-1);
+  next.trackResult = "timed out";
+  next.subscribed("SUBSCRIBED");
+  await f.flush();
+  [id] = [...f.timers.entries()][0];
+  assert.equal(f.timerDelays.get(id), 4000);
+  next.trackResult = "ok";
+  // The normal heartbeat confirms recovery without opening another channel.
+  for (const heartbeat of f.intervals.values()) heartbeat();
+  await f.flush();
+  assert.equal(f.timers.size, 0);
+});
+
+test("A direct room move shows the destination immediately while old media teardown is pending", async () => {
+  const f = fixture();
+  await f.render().join("room-a");
+  await f.flush();
+  let release;
+  f.providers[0].disconnect = () =>
+    new Promise((resolve) => {
+      release = resolve;
+    });
+  const moving = f.render().join("room-b");
+  const value = f.render();
+  assert.equal(value.activeChannelId, "room-b");
+  assert.equal(value.connectionState, "connecting");
+  assert.equal(value.participantsByChannel["room-b"].filter((p) => p.user_id === "me").length, 1);
+  assert.equal(
+    value.participantsByChannel["room-a"]?.some((p) => p.user_id === "me") ?? false,
+    false,
+  );
+  release();
+  await moving;
+  await f.flush();
+  assert.equal(f.render().connectionState, "connected");
+});
+
+test("A stalled Presence publication cannot block connecting to the next room", async () => {
+  const f = fixture();
+  const ch = f.channels[0];
+  ch.subscribed("SUBSCRIBED");
+  await f.render().join("room-a");
+  await f.flush();
+  let release;
+  const originalTrack = ch.track.bind(ch);
+  ch.track = async (payload, options) => {
+    await originalTrack(payload, options);
+    return new Promise((resolve) => {
+      release = resolve;
+    });
+  };
+  f.render().toggleMute();
+  await f.flush();
+  assert.ok(release);
+  const moving = f.render().join("room-b");
+  const finished = await Promise.race([
+    moving.then(() => true),
+    new Promise((resolve) => setImmediate(() => resolve(false))),
+  ]);
+  release("ok");
+  ch.track = originalTrack;
+  assert.equal(finished, true);
+  assert.equal(f.render().activeChannelId, "room-b");
+  assert.equal(f.render().connectionState, "connected");
+  assert.equal(ch.trackOptions.timeout, 2000);
+});
+
+test("A delayed snapshot of the old room cannot duplicate or move the local participant back", async () => {
+  const f = fixture();
+  const ch = f.channels[0];
+  ch.subscribed("SUBSCRIBED");
+  await f.render().join("room-a");
+  await f.flush();
+  const oldSession = f.render().participantsByChannel["room-a"][0].voice_session_id;
+  await f.render().join("room-b");
+  ch.snapshot = {
+    me: [
+      { user_id: "me", channel_id: "room-a", voice_session_id: oldSession, updated_at: Date.now() },
+    ],
+  };
+  ch.events.sync();
+  await f.flush();
+  const rooms = f.render().participantsByChannel;
+  assert.equal(rooms["room-b"].filter((p) => p.user_id === "me").length, 1);
+  assert.equal(rooms["room-a"]?.some((p) => p.user_id === "me") ?? false, false);
+});
+
+test("Rapid A to B to A discards the superseded join and keeps only the final local slot", async () => {
+  const f = fixture();
+  await f.render().join("room-a");
+  await f.flush();
+  let release;
+  f.providers[0].disconnect = () =>
+    new Promise((resolve) => {
+      release = resolve;
+    });
+  const first = f.render().join("room-b");
+  f.render();
+  const last = f.render().join("room-a");
+  assert.equal(f.render().activeChannelId, "room-a");
+  release();
+  await Promise.all([first, last]);
+  await f.flush();
+  assert.equal(f.providers.length, 2);
+  assert.equal(
+    f.render().participantsByChannel["room-a"].filter((p) => p.user_id === "me").length,
+    1,
+  );
+  assert.equal(
+    f.render().participantsByChannel["room-b"]?.some((p) => p.user_id === "me") ?? false,
+    false,
+  );
+  await f.render().leave();
+  await f.render().join("room-b");
+  assert.equal(f.render().activeChannelId, "room-b");
 });
 
 test("An idle observer stays registered without becoming a voice participant and sees room moves", async () => {

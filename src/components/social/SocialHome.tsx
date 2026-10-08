@@ -525,7 +525,7 @@ function AddFriendPanel({ onDone }: { onDone: () => void }) {
             onKeyDown={(event) => event.key === "Enter" && void submit()}
             placeholder="@username"
             aria-label="Username do amigo"
-            className="min-w-52 flex-1"
+            className="min-w-0 basis-full sm:basis-auto flex-1"
           />
           <Button onClick={() => void submit()} disabled={busy}>
             <UserPlus className="mr-1.5 h-4 w-4" />
@@ -584,14 +584,14 @@ function Row({
   onStartDirect: (conversationId: string) => void;
 }) {
   return (
-    <li className="glass-panel hover:bg-surface-hover/50 group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors">
+    <li className="glass-panel hover:bg-surface-hover/50 group flex flex-wrap items-center gap-3 rounded-xl px-3 py-2.5 transition-colors">
       <QuickProfile
         userId={userId}
         side="bottom"
-        className="min-w-0 flex-1"
+        className="min-w-0 basis-full flex-1 sm:basis-auto"
         onStartDirect={onStartDirect}
       >
-        <button type="button" className="flex min-w-0 flex-1 items-center gap-3 text-left">
+        <button type="button" className="flex w-full min-w-0 flex-1 items-center gap-3 text-left">
           <div className="relative shrink-0">
             <Avatar frame={avatarFrame} className="ring-border h-10 w-10 ring-1">
               <AvatarImage src={avatarUrl ?? undefined} alt="" />
@@ -617,7 +617,7 @@ function Row({
           </span>
         </button>
       </QuickProfile>
-      <div className="flex shrink-0 items-center gap-1.5 opacity-70 transition-opacity group-hover:opacity-100">
+      <div className="flex flex-wrap shrink-0 items-center gap-1.5 opacity-70 transition-opacity group-hover:opacity-100">
         {actions}
       </div>
     </li>

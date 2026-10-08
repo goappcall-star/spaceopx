@@ -12,6 +12,7 @@ async function run() {
     realWebRTC: true,
     realMicrophone: false,
     repeatOffers: new URLSearchParams(location.search).has("repeat-offers"),
+    presencePulses: new URLSearchParams(location.search).has("presence-pulses"),
   };
   const NativePeer = RTCPeerConnection;
   const originalCapture = navigator.mediaDevices.getUserMedia;
@@ -63,6 +64,24 @@ async function run() {
           !!received[0]!["bob"]?.audio &&
           !!received[1]!["alice"]?.audio,
       );
+      if (results.presencePulses) {
+        const before = [received[0]!["bob"]!.audio, received[1]!["alice"]!.audio];
+        for (let pulse = 0; pulse < 20; pulse++) {
+          peers.forEach((peer) => peer.syncPeers([]));
+          await pause(50);
+          peers[0]!.syncPeers(["bob"]);
+          peers[1]!.syncPeers(["alice"]);
+          await pause(50);
+          if (
+            !states.every((state) => state === "connected") ||
+            before[0] !== received[0]!["bob"]?.audio ||
+            before[1] !== received[1]!["alice"]?.audio
+          )
+            throw Error("Uma recuperação temporária de Presence recriou ou desconectou o áudio");
+        }
+        results[`${room}:presence`] =
+          "PASS: 20 recuperações sem recriar streams nem reconectar WebRTC";
+      }
       for (let i = 0; i < 2; i++) {
         results.stage = `${room}: áudio recebido por ${i}`;
         const remote = received[i]![i === 0 ? "bob" : "alice"]!.audio!;

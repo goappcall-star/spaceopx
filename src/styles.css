@@ -497,18 +497,13 @@
 @media (max-width: 767px) {
   .settings-layout {
     grid-template-columns: minmax(0, 1fr);
+    align-content: start;
   }
   .settings-sidebar {
     padding: 16px;
   }
   .settings-sidebar nav {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    max-height: 220px;
-  }
-  .settings-sidebar nav > div {
-    min-width: 190px;
+    display: none;
   }
 }
 

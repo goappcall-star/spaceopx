@@ -33,9 +33,9 @@ const STATE_COPY: Record<string, string> = {
 function gridClass(count: number) {
   if (count <= 1) return "grid-cols-1";
   if (count === 2) return "grid-cols-1 sm:grid-cols-2";
-  if (count <= 4) return "grid-cols-2";
-  if (count <= 9) return "grid-cols-2 lg:grid-cols-3";
-  return "grid-cols-2 lg:grid-cols-4";
+  if (count <= 4) return "grid-cols-1 sm:grid-cols-2";
+  if (count <= 9) return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
+  return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4";
 }
 
 export function VoiceRoom({
@@ -121,7 +121,7 @@ export function VoiceRoom({
 
   if (!inThisRoom) {
     return (
-      <div className="bg-hero-glow flex flex-1 flex-col items-center justify-center gap-6 overflow-y-auto p-8">
+      <div className="bg-hero-glow flex flex-1 flex-col items-center justify-center gap-4 overflow-y-auto p-4 sm:gap-6 sm:p-8">
         <div className="text-center">
           <h2 className="text-2xl font-semibold">🔊 {channel.name}</h2>
           <p className="text-muted-foreground mt-1 text-sm">
@@ -165,7 +165,7 @@ export function VoiceRoom({
 
   return (
     <div className="bg-hero-glow flex flex-1 flex-col overflow-hidden">
-      <header className="border-border flex items-center justify-between gap-3 border-b px-4 py-2.5">
+      <header className="border-border flex flex-wrap items-center justify-between gap-3 border-b px-4 py-2.5">
         <div className="min-w-0">
           <h2 className="truncate text-sm font-semibold">🔊 {channel.name}</h2>
           <p

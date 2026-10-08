@@ -59,8 +59,8 @@ export function ProfileCosmeticPicker({
   );
   return (
     <>
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4">
+        <div className="min-w-0">
           <p className="text-sm font-semibold">{label}</p>
           <p className="text-muted-foreground text-xs mt-1">{currentChoice.name}</p>
         </div>

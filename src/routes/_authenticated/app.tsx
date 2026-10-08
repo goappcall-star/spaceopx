@@ -239,8 +239,8 @@ function AppPage() {
   return (
     <>
       <ProfileDialogProvider onStartDirect={openConversation}>
-        <div className="bg-background relative flex h-dvh min-h-0 overflow-hidden pt-12 md:pt-0">
-          <header className="absolute inset-x-0 top-0 z-40 flex h-12 items-center justify-between border-b border-border bg-surface px-3 md:hidden">
+        <div className="bg-background relative flex h-dvh min-h-0 overflow-hidden pt-12 lg:pt-0">
+          <header className="absolute inset-x-0 top-0 z-40 flex h-12 items-center justify-between border-b border-border bg-surface px-3 lg:hidden">
             <Button
               variant="ghost"
               size="icon"
@@ -259,6 +259,7 @@ function AppPage() {
               variant="ghost"
               size="icon"
               aria-label="Mostrar membros"
+              disabled={view !== "servers" || !activeServer}
               onClick={() => {
                 setMobileMembers(!mobileMembers);
                 setMobileNav(false);
@@ -270,7 +271,7 @@ function AppPage() {
           {(mobileNav || mobileMembers) && (
             <button
               aria-label="Fechar painel lateral"
-              className="absolute inset-0 z-30 bg-black/60 md:hidden"
+              className="absolute inset-0 z-30 bg-black/60 lg:hidden"
               onClick={() => {
                 setMobileNav(false);
                 setMobileMembers(false);
@@ -292,6 +293,7 @@ function AppPage() {
                 setActiveChannelId(null);
                 setActiveConversationId(null);
                 setVoiceReturn(null);
+                setMobileNav(false);
               }}
               activeServerId={activeServerId}
               onSelect={(id) => {
@@ -300,7 +302,10 @@ function AppPage() {
               }}
               onAdd={() => setCreateOpen(true)}
               socialActive={view === "social"}
-              onSelectSocial={() => setView("social")}
+              onSelectSocial={() => {
+                setView("social");
+                setMobileNav(false);
+              }}
               socialBadge={totalUnread + pendingRequests}
             />
 
@@ -310,6 +315,7 @@ function AppPage() {
                 onTabChange={(tab) => {
                   setSocialTab(tab);
                   setActiveConversationId(null);
+                  setMobileNav(false);
                 }}
                 conversations={conversations}
                 activeConversationId={activeConversationId}

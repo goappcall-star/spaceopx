@@ -73,6 +73,37 @@ const VoiceContext = createContext<VoiceContextValue | undefined>(undefined);
 const VOLUME_KEY = "securechat:voice-volumes";
 const DEVICE_KEY = "securechat:voice-devices";
 
+// The SDK caches channels by topic. A replacement must wait for the previous
+// owner (including an observer) to finish removing that exact subscription.
+const presenceReleases = new Map<string, Promise<void>>();
+function ownPresenceTopic(topic: string, start: () => () => Promise<void>) {
+  let disposed = false;
+  let cleanup: (() => Promise<void>) | undefined;
+  const previous = presenceReleases.get(topic);
+  const ready = previous?.then(() => {
+    if (!disposed) cleanup = start();
+  });
+  if (!previous) cleanup = start();
+  return () => {
+    disposed = true;
+    const release = (ready ? ready.then(() => cleanup?.()) : Promise.resolve(cleanup?.())).catch(
+      () => undefined,
+    );
+    presenceReleases.set(topic, release);
+    void release.then(() => {
+      if (presenceReleases.get(topic) === release) presenceReleases.delete(topic);
+    });
+  };
+}
+
+async function releasePresence(channel: RealtimeChannel) {
+  // Bound departure acknowledgements, then remove before any replacement is
+  // created. Never disconnect the shared Realtime client or the RTC channel.
+  await channel.untrack({ timeout: 1000 }).catch(() => undefined);
+  await channel.unsubscribe?.(500).catch(() => undefined);
+  await supabase.removeChannel(channel);
+}
+
 type VoicePresenceMeta = VoiceParticipant & {
   channel_id: string | null;
   voice_session_id?: string;
@@ -211,6 +242,9 @@ export function VoiceProviderRoot({
   const channelRef = useRef<RealtimeChannel | null>(null);
   const subscribedRef = useRef(false);
   const retryPresenceRef = useRef<((channel: RealtimeChannel) => void) | null>(null);
+  const presenceRecoveredRef = useRef<(() => void) | null>(null);
+  const presenceFailuresRef = useRef(0);
+  const observerFailuresRef = useRef(0);
   const publishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const publishQueueRef = useRef<Promise<void>>(Promise.resolve());
   const sessionIdRef = useRef(crypto.randomUUID());
@@ -247,19 +281,24 @@ export function VoiceProviderRoot({
         if (snapshot.activeChannelId && voiceServerRef.current !== channelServerRef.current) return;
         // Observers remain subscribed to Presence, but a null room is never rendered.
         const result = await channel
-          .track({
-            user_id: userId,
-            channel_id: snapshot.activeChannelId,
-            muted: snapshot.muted,
-            deafened: snapshot.deafened,
-            speaking: snapshot.speaking,
-            camera: snapshot.cameraOn,
-            screen: snapshot.screenOn,
-            voice_session_id: snapshot.voiceSessionId,
-            updated_at: Date.now(),
-          })
+          .track(
+            {
+              user_id: userId,
+              channel_id: snapshot.activeChannelId,
+              muted: snapshot.muted,
+              deafened: snapshot.deafened,
+              speaking: snapshot.speaking,
+              camera: snapshot.cameraOn,
+              screen: snapshot.screenOn,
+              voice_session_id: snapshot.voiceSessionId,
+              updated_at: Date.now(),
+            },
+            { timeout: 2000 },
+          )
           .catch(() => "error" as const);
-        if (result !== "ok") retryPresenceRef.current?.(channel);
+        if (channelRef.current !== channel) return;
+        if (result === "ok") presenceRecoveredRef.current?.();
+        else retryPresenceRef.current?.(channel);
       });
   }, [userId]);
 
@@ -290,152 +329,175 @@ export function VoiceProviderRoot({
       return;
     }
 
-    const channel = supabase.channel(`voice:${presenceServerId}`, {
-      config: { presence: { key: `${userId}:${sessionIdRef.current}`, enabled: true } },
-    });
-    let disposed = false;
-    let retryTimer: ReturnType<typeof setTimeout> | null = null;
-    const retry = (failed: RealtimeChannel) => {
-      if (disposed || failed !== channel || retryTimer) return;
-      retryTimer = setTimeout(() => {
-        if (!disposed) setPresenceRevision((value) => value + 1);
-      }, 2000);
-    };
-    retryPresenceRef.current = retry;
-
-    const sync = () => {
-      if (channelRef.current !== channel) return;
-      const next = readOccupancy(channel.presenceState<VoicePresenceMeta>());
-      for (const [roomId, entries] of Object.entries(next)) {
-        // Never resurrect this tab's old slot while its untrack is in flight.
-        next[roomId] = entries.filter(
-          (entry) =>
-            !(
-              entry.user_id === userId &&
-              entry.voice_session_id === sessionIdRef.current &&
-              !stateRef.current.activeChannelId
-            ),
-        );
-      }
-      // Presence round-trips must never make the local participant blink out.
-      // The local lifecycle remains authoritative until leave() clears it.
-      const local = stateRef.current;
-      if (local.activeChannelId) {
-        const room = next[local.activeChannelId] ?? [];
-        next[local.activeChannelId] = [
-          ...room.filter((participant) => participant.user_id !== userId),
-          {
-            user_id: userId,
-            voice_session_id: sessionIdRef.current,
-            muted: local.muted,
-            deafened: local.deafened,
-            speaking: local.speaking,
-            camera: local.cameraOn,
-            screen: local.screenOn,
-          },
-        ];
-      }
-      setParticipants(next);
-    };
-
-    channelServerRef.current = presenceServerId;
-    channelRef.current = channel;
-    channel
-      .on("broadcast", { event: "occupancy-refresh" }, () => publishNow())
-      .on("presence", { event: "sync" }, sync)
-      .subscribe((status) => {
-        // A late CLOSED/TIMED_OUT callback from the previous server must not
-        // disable publishing on the replacement subscription.
-        if (channelRef.current !== channel) return;
-        if (status === "SUBSCRIBED") {
-          if (retryTimer) clearTimeout(retryTimer);
-          retryTimer = null;
-          subscribedRef.current = true;
-          sync();
-          void channel.send({ type: "broadcast", event: "occupancy-refresh", payload: {} });
-          publishNow();
-        } else {
-          subscribedRef.current = false;
-          if (["CLOSED", "CHANNEL_ERROR", "TIMED_OUT"].includes(status)) retry(channel);
-        }
+    return ownPresenceTopic(`voice:${presenceServerId}`, () => {
+      const channel = supabase.channel(`voice:${presenceServerId}`, {
+        config: { presence: { key: `${userId}:${sessionIdRef.current}`, enabled: true } },
       });
-    channelRef.current = channel;
+      let disposed = false;
+      let retryTimer: ReturnType<typeof setTimeout> | null = null;
+      const retry = (failed: RealtimeChannel) => {
+        if (disposed || failed !== channel || retryTimer) return;
+        retryTimer = setTimeout(
+          () => {
+            if (!disposed) setPresenceRevision((value) => value + 1);
+          },
+          Math.min(30000, 2000 * 2 ** Math.min(presenceFailuresRef.current++, 4)),
+        );
+      };
+      const recovered = () => {
+        if (disposed || channelRef.current !== channel) return;
+        if (retryTimer) clearTimeout(retryTimer);
+        retryTimer = null;
+        presenceFailuresRef.current = 0;
+      };
+      retryPresenceRef.current = retry;
+      presenceRecoveredRef.current = recovered;
 
-    const releaseOnUnload = () => {
-      void channel.untrack();
-    };
-    window.addEventListener("pagehide", releaseOnUnload);
-    // Restore an occupancy entry lost during a temporary signaling interruption.
-    const heartbeat = setInterval(publishNow, 15000);
-    const restorePresence = () => publishNow();
-    window.addEventListener("pageshow", restorePresence);
-    window.addEventListener("online", restorePresence);
+      const sync = () => {
+        if (channelRef.current !== channel) return;
+        const next = readOccupancy(channel.presenceState<VoicePresenceMeta>());
+        for (const [roomId, entries] of Object.entries(next)) {
+          // Never resurrect this tab's old slot while its untrack is in flight.
+          next[roomId] = entries.filter(
+            (entry) =>
+              !(
+                entry.user_id === userId &&
+                entry.voice_session_id === sessionIdRef.current &&
+                !stateRef.current.activeChannelId
+              ),
+          );
+        }
+        // Presence round-trips must never make the local participant blink out.
+        // The local lifecycle remains authoritative until leave() clears it.
+        const local = stateRef.current;
+        if (local.activeChannelId) {
+          const room = next[local.activeChannelId] ?? [];
+          next[local.activeChannelId] = [
+            ...room.filter((participant) => participant.user_id !== userId),
+            {
+              user_id: userId,
+              voice_session_id: sessionIdRef.current,
+              muted: local.muted,
+              deafened: local.deafened,
+              speaking: local.speaking,
+              camera: local.cameraOn,
+              screen: local.screenOn,
+            },
+          ];
+        }
+        setParticipants(next);
+      };
 
-    return () => {
-      disposed = true;
-      if (retryTimer) clearTimeout(retryTimer);
-      if (retryPresenceRef.current === retry) retryPresenceRef.current = null;
-      clearInterval(heartbeat);
-      window.removeEventListener("pageshow", restorePresence);
-      window.removeEventListener("online", restorePresence);
-      window.removeEventListener("pagehide", releaseOnUnload);
-      if (channelRef.current === channel) {
-        channelRef.current = null;
-        subscribedRef.current = false;
-      }
-      void channel.untrack().finally(() => supabase.removeChannel(channel));
-    };
+      channelServerRef.current = presenceServerId;
+      channelRef.current = channel;
+      channel
+        .on("broadcast", { event: "occupancy-refresh" }, () => publishNow())
+        .on("presence", { event: "sync" }, sync)
+        .subscribe((status) => {
+          // A late CLOSED/TIMED_OUT callback from the previous server must not
+          // disable publishing on the replacement subscription.
+          if (disposed || channelRef.current !== channel) return;
+          if (status === "SUBSCRIBED") {
+            if (retryTimer) clearTimeout(retryTimer);
+            retryTimer = null;
+            subscribedRef.current = true;
+            sync();
+            void channel.send({ type: "broadcast", event: "occupancy-refresh", payload: {} });
+            publishNow();
+          } else {
+            subscribedRef.current = false;
+            if (["CLOSED", "CHANNEL_ERROR", "TIMED_OUT"].includes(status)) retry(channel);
+          }
+        });
+      channelRef.current = channel;
+
+      const releaseOnUnload = () => {
+        void channel.untrack();
+      };
+      window.addEventListener("pagehide", releaseOnUnload);
+      // Restore an occupancy entry lost during a temporary signaling interruption.
+      const heartbeat = setInterval(publishNow, 15000);
+      const restorePresence = () => publishNow();
+      window.addEventListener("pageshow", restorePresence);
+      window.addEventListener("online", restorePresence);
+
+      return () => {
+        disposed = true;
+        if (retryTimer) clearTimeout(retryTimer);
+        if (retryPresenceRef.current === retry) retryPresenceRef.current = null;
+        if (presenceRecoveredRef.current === recovered) presenceRecoveredRef.current = null;
+        clearInterval(heartbeat);
+        window.removeEventListener("pageshow", restorePresence);
+        window.removeEventListener("online", restorePresence);
+        window.removeEventListener("pagehide", releaseOnUnload);
+        if (channelRef.current === channel) {
+          channelRef.current = null;
+          subscribedRef.current = false;
+        }
+        return releasePresence(channel);
+      };
+    });
   }, [presenceServerId, userId, publishNow, presenceRevision]);
 
   // Browsing another server observes its rooms without moving our call.
   useEffect(() => {
     setObservedParticipants({});
     if (!serverId || serverId === presenceServerId || !userId) return;
-    let disposed = false;
-    const channel = supabase.channel(`voice:${serverId}`, {
-      config: { presence: { key: `${userId}:${sessionIdRef.current}:observer`, enabled: true } },
-    });
-    let retryTimer: ReturnType<typeof setTimeout> | null = null;
-    const retry = () => {
-      if (disposed || retryTimer) return;
-      retryTimer = setTimeout(() => {
-        if (!disposed) setObserverRevision((value) => value + 1);
-      }, 2000);
-    };
-    const announce = async () => {
-      try {
-        if (
-          (await channel.track({ user_id: userId, channel_id: null, updated_at: Date.now() })) !==
-          "ok"
-        )
-          retry();
-      } catch {
-        retry();
-      }
-    };
-    channel
-      .on("presence", { event: "sync" }, () => {
-        if (disposed) return;
-        setObservedParticipants(readOccupancy(channel.presenceState<VoicePresenceMeta>()));
-      })
-      .subscribe((status) => {
-        if (disposed) return;
-        if (status === "SUBSCRIBED") {
-          if (retryTimer) clearTimeout(retryTimer);
-          retryTimer = null;
-          void announce();
-          void channel.send({ type: "broadcast", event: "occupancy-refresh", payload: {} });
-        } else if (["CLOSED", "CHANNEL_ERROR", "TIMED_OUT"].includes(status)) retry();
+    return ownPresenceTopic(`voice:${serverId}`, () => {
+      let disposed = false;
+      const channel = supabase.channel(`voice:${serverId}`, {
+        config: { presence: { key: `${userId}:${sessionIdRef.current}:observer`, enabled: true } },
       });
-    const heartbeat = setInterval(() => {
-      void announce();
-    }, 15000);
-    return () => {
-      disposed = true;
-      clearInterval(heartbeat);
-      if (retryTimer) clearTimeout(retryTimer);
-      void supabase.removeChannel(channel);
-    };
+      let retryTimer: ReturnType<typeof setTimeout> | null = null;
+      const retry = () => {
+        if (disposed || retryTimer) return;
+        retryTimer = setTimeout(
+          () => {
+            if (!disposed) setObserverRevision((value) => value + 1);
+          },
+          Math.min(30000, 2000 * 2 ** Math.min(observerFailuresRef.current++, 4)),
+        );
+      };
+      const announce = async () => {
+        try {
+          const result = await channel.track(
+            { user_id: userId, channel_id: null, updated_at: Date.now() },
+            { timeout: 2000 },
+          );
+          if (disposed) return;
+          if (result === "ok") {
+            if (retryTimer) clearTimeout(retryTimer);
+            retryTimer = null;
+            observerFailuresRef.current = 0;
+          } else retry();
+        } catch {
+          retry();
+        }
+      };
+      channel
+        .on("presence", { event: "sync" }, () => {
+          if (disposed) return;
+          setObservedParticipants(readOccupancy(channel.presenceState<VoicePresenceMeta>()));
+        })
+        .subscribe((status) => {
+          if (disposed) return;
+          if (status === "SUBSCRIBED") {
+            if (retryTimer) clearTimeout(retryTimer);
+            retryTimer = null;
+            void announce();
+            void channel.send({ type: "broadcast", event: "occupancy-refresh", payload: {} });
+          } else if (["CLOSED", "CHANNEL_ERROR", "TIMED_OUT"].includes(status)) retry();
+        });
+      const heartbeat = setInterval(() => {
+        void announce();
+      }, 15000);
+      return () => {
+        disposed = true;
+        clearInterval(heartbeat);
+        if (retryTimer) clearTimeout(retryTimer);
+        return releasePresence(channel);
+      };
+    });
   }, [serverId, presenceServerId, userId, observerRevision]);
 
   // Every state change publishes at once; only the noisy `speaking` flag is
@@ -503,6 +565,7 @@ export function VoiceProviderRoot({
     // Invalidate callbacks immediately. The queued teardown then removes the
     // exact current presence slot before another session is allowed to start.
     lifecycleGenerationRef.current += 1;
+    pendingJoinChannelRef.current = null;
     const teardown = `voice-teardown-${lifecycleGenerationRef.current}`;
     reportDesktopCall(teardown, true);
     const disconnecting = detachCurrent();
@@ -512,7 +575,6 @@ export function VoiceProviderRoot({
       .catch(() => undefined)
       .then(async () => {
         await disconnecting;
-        await publishQueueRef.current;
       })
       .finally(() => clearDesktopCall(teardown));
     return lifecycleQueueRef.current;
@@ -533,31 +595,30 @@ export function VoiceProviderRoot({
       lifecycleGenerationRef.current = generation;
       const disconnecting = detachCurrent();
 
+      // Show the requested room immediately; socket acknowledgements are not
+      // authoritative for the local participant's position during a move.
+      sessionIdRef.current = crypto.randomUUID();
+      sessionStartedAtRef.current = Date.now();
+      voiceServerRef.current = callServerId;
+      setActiveServerId(callServerId);
+      if (listenOnly) setMuted(true);
+      stateRef.current = {
+        ...stateRef.current,
+        activeChannelId: channelId,
+        muted: listenOnly || stateRef.current.muted,
+        speaking: false,
+        cameraOn: false,
+        screenOn: false,
+      };
+      setConnectionState("connecting");
+      setActiveChannelId(channelId);
+      schedulePublish(true);
+
       lifecycleQueueRef.current = lifecycleQueueRef.current
         .catch(() => undefined)
         .then(async () => {
           await disconnecting;
-          await publishQueueRef.current;
           if (generation !== lifecycleGenerationRef.current) return;
-
-          // Every entry is a distinct voice session. Presence from a previous
-          // entry can no longer be mistaken for, or clean up, this one.
-          sessionIdRef.current = crypto.randomUUID();
-          sessionStartedAtRef.current = Date.now();
-          voiceServerRef.current = callServerId;
-          setActiveServerId(callServerId);
-          if (listenOnly) setMuted(true);
-          stateRef.current = {
-            ...stateRef.current,
-            activeChannelId: channelId,
-            muted: listenOnly || stateRef.current.muted,
-            speaking: false,
-            cameraOn: false,
-            screenOn: false,
-          };
-          setConnectionState("connecting");
-          setActiveChannelId(channelId);
-          schedulePublish(true);
 
           const provider = createVoiceProvider();
           providerRef.current = provider;
@@ -641,13 +702,12 @@ export function VoiceProviderRoot({
             setActiveChannelId(null);
             schedulePublish(true);
             setConnectionState("error");
-          } finally {
-            if (pendingJoinChannelRef.current === channelId) pendingJoinChannelRef.current = null;
           }
         });
-      lifecycleQueueRef.current = lifecycleQueueRef.current.finally(() =>
-        clearDesktopCall(transition),
-      );
+      lifecycleQueueRef.current = lifecycleQueueRef.current.finally(() => {
+        if (generation === lifecycleGenerationRef.current) pendingJoinChannelRef.current = null;
+        clearDesktopCall(transition);
+      });
       return lifecycleQueueRef.current;
     },
     [
@@ -970,7 +1030,13 @@ export function VoiceProviderRoot({
           screen: Boolean(media.screen),
         });
     }
-    return { ...participantsByChannel, [activeChannelId]: room };
+    const rooms = Object.fromEntries(
+      Object.entries(participantsByChannel).map(([id, participants]) => [
+        id,
+        participants.filter((participant) => participant.user_id !== userId),
+      ]),
+    );
+    return { ...rooms, [activeChannelId]: room };
   }, [
     participantsByChannel,
     activeChannelId,

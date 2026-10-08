@@ -92,7 +92,7 @@ export function QuickProfile({
         onMouseEnter={() => timer.current && clearTimeout(timer.current)}
         onMouseLeave={scheduleClose}
         onOpenAutoFocus={(event) => !isMobile && event.preventDefault()}
-        className="glass-panel w-80 overflow-visible p-0"
+        className="glass-panel w-80 max-w-[calc(100vw-48px)] overflow-visible p-0"
       >
         <QuickProfileCard
           userId={userId}
@@ -136,7 +136,7 @@ export function QuickProfileCard({
   return (
     <div className="relative rounded-2xl">
       <ProfileFrameDecoration value={profile.profile_frame} />
-      <div className="max-h-[70vh] overflow-y-auto rounded-2xl">
+      <div className="max-h-[min(70dvh,var(--radix-popover-content-available-height))] overflow-y-auto rounded-2xl">
         <VisualBanner
           src={profile.banner_url}
           className="bg-brand-gradient h-32 w-full bg-cover bg-center sm:h-36"

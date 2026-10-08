@@ -330,7 +330,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
                 </div>
               </div>
             ) : (
-              <div className="flex justify-center gap-5 overflow-x-auto py-3">
+              <div className="flex gap-5 overflow-x-auto py-3 sm:justify-center">
                 {tiles.map((tile) =>
                   tile.stream ? (
                     <VideoTile key={tile.userId} tile={tile} className="h-32 w-48 shrink-0" />
@@ -494,7 +494,7 @@ export function CallWorkspace({
   }, [engaged, peerId, groupId]);
   return (
     <>
-      <main className="flex min-w-0 flex-1 flex-col">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col">
         <CallOverlay showPanel={showPanel} />
         {children}
       </main>

@@ -1,6 +1,29 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { maintainPresence } from "../src/services/presence-connection.ts";
+import { createClient } from "@supabase/supabase-js";
+
+test("The installed Supabase SDK caches a topic until its pending removal completes", async () => {
+  const client = createClient("https://example.invalid", "public-test-key", {
+    auth: { persistSession: false, autoRefreshToken: false },
+    realtime: { timeout: 10 },
+  });
+  const old = client.channel("voice:test");
+  const unsubscribe = old.unsubscribe.bind(old);
+  let release;
+  old.unsubscribe = async () => {
+    await new Promise((resolve) => {
+      release = resolve;
+    });
+    return unsubscribe(1);
+  };
+  const removing = client.removeChannel(old);
+  assert.equal(client.channel("voice:test"), old);
+  release();
+  await removing;
+  assert.notEqual(client.channel("voice:test"), old);
+  await client.removeAllChannels();
+});
 const flush = async () => {
   for (let i = 0; i < 12; i++) await Promise.resolve();
 };

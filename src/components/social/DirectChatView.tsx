@@ -100,11 +100,11 @@ export function DirectChatView({
   return (
     <>
       {!inThisCall && (
-        <header className="border-border bg-background/70 relative z-10 flex h-14 shrink-0 items-center gap-3 border-b px-5 backdrop-blur-xl">
+        <header className="border-border bg-background/70 relative z-10 flex h-14 shrink-0 items-center gap-2 border-b px-3 sm:gap-3 sm:px-5 backdrop-blur-xl">
           <button
             type="button"
             onClick={() => (isGroup ? setMembersOpen(true) : other && onOpenProfile(other.id))}
-            className="flex min-w-0 items-center gap-3 text-left"
+            className="flex min-w-0 flex-1 items-center gap-3 text-left"
           >
             <span className="relative">
               <Avatar
@@ -251,7 +251,10 @@ export function DirectChatView({
         </header>
       )}
 
-      <div ref={scrollRef} className="scrollbar-slim bg-ambient flex-1 overflow-y-auto py-4">
+      <div
+        ref={scrollRef}
+        className="scrollbar-slim bg-ambient min-h-0 flex-1 overflow-y-auto py-4"
+      >
         {loading && (
           <div className="space-y-5 px-5">
             {[0, 1, 2].map((index) => (

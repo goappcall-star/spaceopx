@@ -149,7 +149,27 @@ export function SettingsShell({
             </button>
           )}
         </div>
-        <nav aria-label="Configurações" className="space-y-5">
+        <label className="block md:hidden">
+          <span className="sr-only">Seção das configurações</span>
+          <select
+            value={active}
+            className="bg-surface border-border h-11 w-full rounded-lg border px-3 text-sm"
+            onChange={(event) => {
+              const id = event.target.value;
+              void navigate({
+                to: id === "voice" ? "/settings/voice" : "/settings/profile",
+                search: id === "voice" ? {} : { section: id },
+              });
+            }}
+          >
+            {items.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <nav aria-label="Configurações" className="hidden space-y-5 md:block">
           {["Conta", "Experiência", "Jogos e apps"].map((group) => {
             const filtered = items.filter((item) => item.group === group);
             return (
@@ -188,7 +208,7 @@ export function SettingsShell({
             <p className="text-muted-foreground px-3 text-sm">Nenhuma configuração encontrada.</p>
           )}
         </nav>
-        <div className="border-border text-muted-foreground mt-7 border-t px-3 pt-4 text-xs">
+        <div className="border-border text-muted-foreground mt-7 hidden border-t px-3 pt-4 text-xs md:block">
           LobbyX · Configurações
         </div>
       </aside>

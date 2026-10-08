@@ -1,5 +1,15 @@
 # LobbyX — relatório de auditoria técnica
 
+## Atualização após publicação — 7 de outubro de 2026
+
+As correções deste relatório e as correções posteriores de reconexão foram publicadas no WEB e no Desktop **0.1.39**, commit `a0086ff`. A migration `20261007010000_audit_role_permission_integrity.sql` foi aplicada ao Supabase de produção após backup: funções/trigger verificados e registros preservados. O preflight não encontrou vínculos de cargos entre servidores diferentes.
+
+Na correção posterior, uma ausência temporária no Presence deixa de desfazer imediatamente a conexão WebRTC: o peer é mantido por até 10 segundos de ausência contínua, com cancelamento quando reaparece. Saída explícita e substituição de sessão continuam imediatas. A queda da sinalização também deixa de indicar perda de uma conexão de mídia saudável.
+
+Validação final: **133 testes passaram**, incluindo quatro regressões novas; TypeScript, lint (zero erros, 44 avisos), build WEB e geração/verificação do instalador passaram. O domínio público retornou HTTP 200 em `/` e `/app`; o bundle de voz servido foi comparado ao build local. O `latest.yml` público corresponde aos metadados locais verificados do instalador 0.1.39. Release: https://github.com/goappcall-star/spaceopx/releases/tag/v0.1.39.
+
+As referências a alterações locais e pendências de publicação nas seções abaixo registram o estado **anterior** à publicação. Os limites de testes em hardware/redes reais continuam válidos.
+
 Data: 7 de outubro de 2026 (America/Sao_Paulo). Base: código local posterior à versão publicada 0.1.38, commit `acdaf4f`.
 
 Foram corrigidos os problemas confirmados abaixo. As alterações estão locais: não houve publicação, alteração de dados de usuários ou aplicação de migrations no Supabase de produção. Esta auditoria amplia a cobertura de regressão; não representa garantia de ausência de qualquer bug em todas as redes, dispositivos ou contas.

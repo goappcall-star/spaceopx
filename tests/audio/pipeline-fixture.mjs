@@ -171,7 +171,11 @@ export function loadVoiceProvider(audioExports, additions = {}) {
     ...additions,
   };
   const source = fs
-    .readFileSync(new URL("../../src/services/voice.ts", import.meta.url), "utf8")
+    .readFileSync(
+      process.env.LOBBYX_VOICE_SERVICE_FIXTURE ??
+        new URL("../../src/services/voice.ts", import.meta.url),
+      "utf8",
+    )
     .replaceAll("import.meta.env", "({})");
   vm.runInNewContext(
     ts.transpileModule(source, {

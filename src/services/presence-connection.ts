@@ -5,6 +5,7 @@ export function maintainPresence(options: {
   create: () => RealtimeChannel;
   remove: (channel: RealtimeChannel) => Promise<unknown>;
   payload: () => object;
+  payloadKey?: (payload: object) => string;
   connected: () => void;
   disconnected: () => void;
   sync: (channel: RealtimeChannel) => void;
@@ -16,6 +17,10 @@ export function maintainPresence(options: {
     tracking = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let failures = 0;
+  let lastPayloadKey: string | null = null;
+  let trackPending = false;
+  let confirmed = false;
+  let publicationEpoch = 0;
   let work = Promise.resolve();
   const cancelRetry = () => {
     if (timer !== undefined) clearTimeout(timer);
@@ -23,14 +28,15 @@ export function maintainPresence(options: {
   };
   const retry = () => {
     if (stopped) return;
-    options.disconnected();
+    if (!subscribed || !confirmed) options.disconnected();
     if (timer !== undefined || !options.available()) return;
     timer = setTimeout(
       () => {
         timer = undefined;
-        void restart();
+        if (channel && subscribed) void track();
+        else void restart();
       },
-      Math.min(30000, 2000 * 2 ** Math.min(failures++, 4)),
+      subscribed ? Math.min(30000, 2000 * 2 ** Math.min(failures++, 4)) : 30000,
     );
   };
   const track = async () => {
@@ -40,21 +46,42 @@ export function maintainPresence(options: {
       retry();
       return;
     }
-    if (tracking) return;
+    if (tracking) {
+      trackPending = true;
+      return;
+    }
+    const payload = options.payload();
+    const key = options.payloadKey?.(payload);
+    if (key !== undefined && key === lastPayloadKey) return;
     tracking = true;
+    const epoch = publicationEpoch;
     try {
-      const result = await current.track(options.payload());
-      if (stopped || channel !== current) return;
+      const result = await current.track(payload);
+      if (stopped || channel !== current || epoch !== publicationEpoch) return;
       if (result === "ok") {
+        confirmed = true;
+        lastPayloadKey = key ?? null;
         failures = 0;
         cancelRetry();
         options.connected();
         options.sync(current);
-      } else retry();
+      } else {
+        lastPayloadKey = null;
+        retry();
+      }
     } catch {
-      if (!stopped && channel === current) retry();
+      if (!stopped && channel === current && epoch === publicationEpoch) {
+        lastPayloadKey = null;
+        retry();
+      }
     } finally {
-      if (channel === current) tracking = false;
+      if (channel === current) {
+        tracking = false;
+        if (trackPending) {
+          trackPending = false;
+          void track();
+        }
+      }
     }
   };
   const restart = () => {
@@ -67,6 +94,9 @@ export function maintainPresence(options: {
         channel = null;
         subscribed = false;
         tracking = false;
+        lastPayloadKey = null;
+        trackPending = false;
+        confirmed = false;
         if (old) await options.remove(old);
         if (stopped || !options.available()) return;
         const current = options.create();
@@ -79,6 +109,7 @@ export function maintainPresence(options: {
           if (stopped || channel !== current) return;
           subscribed = state === "SUBSCRIBED";
           if (subscribed) {
+            lastPayloadKey = null;
             cancelRetry();
             void track();
           } else retry();
@@ -93,6 +124,10 @@ export function maintainPresence(options: {
       void track();
     },
     offline: () => {
+      publicationEpoch++;
+      lastPayloadKey = null;
+      confirmed = false;
+      trackPending = false;
       options.disconnected();
       cancelRetry();
       if (channel) void channel.untrack().catch(() => undefined);

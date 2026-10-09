@@ -27,7 +27,7 @@ test("The installed Supabase SDK caches a topic until its pending removal comple
 const flush = async () => {
   for (let i = 0; i < 12; i++) await Promise.resolve();
 };
-function fixture() {
+function fixture(options = {}) {
   const channels = [];
   const removed = [];
   let online = 0,
@@ -43,7 +43,9 @@ function fixture() {
           this.event = fn;
           return this;
         },
-        async track() {
+        tracks: [],
+        async track(payload) {
+          this.tracks.push(payload);
           return this.result;
         },
         async untrack() {},
@@ -59,6 +61,7 @@ function fixture() {
     connected: () => online++,
     disconnected: () => offline++,
     sync: () => {},
+    ...options,
   });
   return { manager, channels, removed, online: () => online, offline: () => offline };
 }
@@ -70,7 +73,7 @@ test("A closed channel is replaced and can confirm presence again", async (t) =>
   await flush();
   assert.equal(f.online(), 1);
   f.channels[0].event("CLOSED");
-  t.mock.timers.tick(2000);
+  t.mock.timers.tick(30000);
   await flush();
   assert.equal(f.channels.length, 2);
   assert.equal(f.removed[0], f.channels[0]);
@@ -91,9 +94,9 @@ test("A failed presence announcement does not falsely report online", async (t) 
   await flush();
   assert.equal(f.online(), 0);
   assert.ok(f.offline() > 0);
-  t.mock.timers.tick(2000);
+  t.mock.timers.tick(30000);
   await flush();
-  assert.equal(f.channels.length, 2);
+  assert.equal(f.channels.length, 1);
   await f.manager.stop();
 });
 test("Leaving cancels retries and ignores late connection events", async (t) => {
@@ -108,4 +111,85 @@ test("Leaving cancels retries and ignores late connection events", async (t) => 
   await flush();
   assert.equal(f.channels.length, 1);
   assert.equal(f.online(), 0);
+});
+
+test("Unchanged status/game polls do not create Presence traffic, real changes and reconnect still publish", async () => {
+  let status = "online",
+    clock = 0;
+  const f = fixture({ payload: () => ({ status, at: ++clock }), payloadKey: () => status });
+  await f.manager.start();
+  f.channels[0].event("SUBSCRIBED");
+  await flush();
+  for (let i = 0; i < 100; i++) {
+    f.manager.track();
+    await flush();
+  }
+  assert.equal(f.channels[0].tracks.length, 1);
+  status = "dnd";
+  f.manager.track();
+  await flush();
+  assert.equal(f.channels[0].tracks.length, 2);
+  f.channels[0].event("SUBSCRIBED");
+  await flush();
+  assert.equal(f.channels[0].tracks.length, 3);
+  await f.manager.stop();
+});
+
+test("A status change during an in-flight publication is coalesced and not lost", async () => {
+  let status = "online",
+    release;
+  const f = fixture({ payload: () => ({ status }), payloadKey: () => status });
+  await f.manager.start();
+  f.channels[0].track = async (payload) => {
+    f.channels[0].tracks.push(payload);
+    if (payload.status === "online")
+      await new Promise((resolve) => {
+        release = resolve;
+      });
+    return "ok";
+  };
+  f.channels[0].event("SUBSCRIBED");
+  await flush();
+  status = "dnd";
+  f.manager.track();
+  release();
+  await flush();
+  assert.deepEqual(
+    f.channels[0].tracks.map((p) => p.status),
+    ["online", "dnd"],
+  );
+  await f.manager.stop();
+});
+
+test("Returning online republishes unchanged presence and ignores an offline stale acknowledgement", async () => {
+  let available = true,
+    release;
+  const f = fixture({ available: () => available, payloadKey: () => "online" });
+  await f.manager.start();
+  f.channels[0].track = async (payload) => {
+    f.channels[0].tracks.push(payload);
+    if (f.channels[0].tracks.length === 1)
+      await new Promise((resolve) => {
+        release = resolve;
+      });
+    return "ok";
+  };
+  f.channels[0].event("SUBSCRIBED");
+  await flush();
+  available = false;
+  f.manager.offline();
+  release();
+  await flush();
+  assert.equal(f.online(), 0);
+  available = true;
+  f.manager.track();
+  await flush();
+  assert.equal(f.channels[0].tracks.length, 2);
+  available = false;
+  f.manager.offline();
+  available = true;
+  f.manager.track();
+  await flush();
+  assert.equal(f.channels[0].tracks.length, 3);
+  await f.manager.stop();
 });

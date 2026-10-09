@@ -12,6 +12,7 @@ async function run() {
     realWebRTC: true,
     realMicrophone: false,
     repeatOffers: new URLSearchParams(location.search).has("repeat-offers"),
+    longPresenceGap: new URLSearchParams(location.search).has("long-presence-gap"),
     presencePulses: new URLSearchParams(location.search).has("presence-pulses"),
   };
   const NativePeer = RTCPeerConnection;
@@ -64,6 +65,21 @@ async function run() {
           !!received[0]!["bob"]?.audio &&
           !!received[1]!["alice"]?.audio,
       );
+      if (results.longPresenceGap) {
+        const before = [received[0]!["bob"]!.audio, received[1]!["alice"]!.audio];
+        results.stage = `${room}: 12 segundos sem Presence`;
+        peers.forEach((peer) => peer.syncPeers([]));
+        await pause(12000);
+        if (
+          before[0] !== received[0]!["bob"]?.audio ||
+          before[1] !== received[1]!["alice"]?.audio ||
+          !states.every((state) => state === "connected")
+        )
+          throw Error("Presence ausente destruiu áudio conectado");
+        peers[0]!.syncPeers(["bob"]);
+        peers[1]!.syncPeers(["alice"]);
+        results[`${room}:longGap`] = "PASS: mesmos streams após 12 segundos sem Presence";
+      }
       if (results.presencePulses) {
         const before = [received[0]!["bob"]!.audio, received[1]!["alice"]!.audio];
         for (let pulse = 0; pulse < 20; pulse++) {

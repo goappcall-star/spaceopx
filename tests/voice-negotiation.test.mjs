@@ -179,3 +179,53 @@ test("A repeated answer is harmless and distinct renegotiation still succeeds", 
   assert.equal(peer.pc.signalingState, "stable");
   assert.equal(peer.pc.remoteDescription.sdp, "new-offer");
 });
+
+test("A prolonged Presence outage cannot close connected WebRTC audio; dead ICE still cleans up", () => {
+  const { provider, timers } = recoveryFixture();
+  const peer = provider.createPeer("bob");
+  peer.pc.connectionState = "connected";
+  peer.pc.iceConnectionState = "connected";
+  peer.state = "connected";
+  provider.syncPeers([]);
+  for (let i = 0; i < 8; i++) {
+    const fn = [...timers.values()][0];
+    timers.clear();
+    fn();
+    assert.equal(peer.pc.closed, undefined);
+    assert.equal(provider.peers.get("bob"), peer);
+  }
+  peer.pc.connectionState = "disconnected";
+  peer.pc.iceConnectionState = "disconnected";
+  const fn = [...timers.values()][0];
+  timers.clear();
+  fn();
+  assert.equal(peer.pc.closed, true);
+  assert.equal(provider.peers.has("bob"), false);
+});
+
+test("Late signaling from a retired session cannot replace the current participant", async () => {
+  const { provider, signal } = fixture();
+  await signal({ hello: true });
+  const first = provider.peers.get("bob");
+  await signal({ hello: true, from_session: "new-session" });
+  const current = provider.peers.get("bob");
+  assert.notEqual(first, current);
+  assert.equal(first.pc.closed, true);
+  for (const payload of [
+    { hello: true },
+    { description: { type: "offer", sdp: "old" } },
+    { candidate: { candidate: "old" } },
+    { bye: true },
+  ])
+    await signal(payload);
+  assert.equal(provider.peers.get("bob"), current);
+  assert.equal(current.pc.closed, undefined);
+  await signal({ bye: true, from_session: "new-session" });
+  assert.equal(provider.peers.has("bob"), false);
+  provider.syncPeers(["bob"]);
+  assert.equal(provider.peers.has("bob"), false, "cached occupancy cannot undo an explicit bye");
+  await signal({ hello: true, from_session: "new-session" });
+  assert.equal(provider.peers.has("bob"), false);
+  await signal({ hello: true, from_session: "return-session" });
+  assert.equal(provider.peers.has("bob"), true, "a genuine new session can return immediately");
+});

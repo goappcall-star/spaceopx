@@ -147,6 +147,8 @@ class MeshVoiceProvider implements VoiceProvider {
   private events: VoiceProviderEvents = {};
   private userId = "";
   private readonly sessionId = crypto.randomUUID();
+  private readonly retiredSessions = new Set<string>();
+  private readonly departedPeers = new Set<string>();
   private signaling: RealtimeChannel | null = null;
   private pendingSignaling: RealtimeChannel | null = null;
   private peers = new Map<string, Peer>();
@@ -355,16 +357,29 @@ class MeshVoiceProvider implements VoiceProvider {
         // A Presence resubscription can briefly return an empty room, even
         // while media is flowing. Require continuous absence before teardown.
         // Explicit bye/session replacement still closes the peer immediately.
-        peer.absenceTimer = setTimeout(() => {
+        const confirmAbsence = () => {
           peer.absenceTimer = null;
           if (this.disposed || this.peers.get(id) !== peer) return;
+          // Presence can be unavailable longer than ten seconds while P2P
+          // audio still flows. Never destroy that healthy media connection.
+          // Explicit bye closes immediately; a dead peer eventually fails ICE.
+          if (
+            peer.pc.connectionState === "connected" &&
+            ["connected", "completed"].includes(peer.pc.iceConnectionState)
+          ) {
+            peer.absenceTimer = setTimeout(confirmAbsence, 5000);
+            return;
+          }
           this.closePeer(id, peer);
           this.emitAggregateState();
-        }, 10_000);
+        };
+        peer.absenceTimer = setTimeout(confirmAbsence, 10_000);
       }
     }
     for (const id of wanted) {
-      if (!this.peers.has(id)) this.createPeer(id);
+      // Cached occupancy must not recreate a peer after its explicit bye.
+      // A new signaling session announces its return independently.
+      if (!this.peers.has(id) && !this.departedPeers.has(id)) this.createPeer(id);
     }
     this.emitAggregateState();
   }
@@ -683,6 +698,8 @@ class MeshVoiceProvider implements VoiceProvider {
   private async onSignal(payload: SignalPayload) {
     if (this.disposed || payload.from === this.userId) return;
     if (payload.to !== this.userId && payload.to !== "*") return;
+    if (payload.from_session && this.retiredSessions.has(`${payload.from}:${payload.from_session}`))
+      return;
 
     // A participant that leaves and immediately returns has a new signaling
     // session. Never negotiate that session over the closed peer connection.
@@ -699,6 +716,11 @@ class MeshVoiceProvider implements VoiceProvider {
         existing &&
         (!existing.remoteSessionId || existing.remoteSessionId === payload.from_session)
       ) {
+        if (existing.remoteSessionId || payload.from_session)
+          this.retireSession(payload.from, existing.remoteSessionId ?? payload.from_session!);
+        this.departedPeers.add(payload.from);
+        if (this.departedPeers.size > 256)
+          this.departedPeers.delete(this.departedPeers.values().next().value!);
         this.closePeer(payload.from, existing);
         this.emitAggregateState();
       }
@@ -710,6 +732,7 @@ class MeshVoiceProvider implements VoiceProvider {
       existing.remoteSessionId &&
       existing.remoteSessionId !== payload.from_session
     ) {
+      this.retireSession(payload.from, existing.remoteSessionId);
       this.closePeer(payload.from, existing);
     }
 
@@ -741,6 +764,7 @@ class MeshVoiceProvider implements VoiceProvider {
     }
 
     if (payload.hello) {
+      this.departedPeers.delete(payload.from);
       const peer = this.peers.get(payload.from) ?? this.createPeer(payload.from);
       if (payload.from_session) peer.remoteSessionId = payload.from_session;
       // Reply directly so the newcomer learns about us too (but never loop).
@@ -759,11 +783,18 @@ class MeshVoiceProvider implements VoiceProvider {
       return;
     }
 
+    this.departedPeers.delete(payload.from);
     const peer = this.peers.get(payload.from) ?? this.createPeer(payload.from);
     if (payload.from_session) peer.remoteSessionId = payload.from_session;
     const operation = peer.signalQueue.then(() => this.applySignal(peer, payload));
     peer.signalQueue = operation.catch(() => undefined);
     await operation;
+  }
+
+  private retireSession(userId: string, sessionId: string) {
+    this.retiredSessions.add(`${userId}:${sessionId}`);
+    if (this.retiredSessions.size > 256)
+      this.retiredSessions.delete(this.retiredSessions.values().next().value!);
   }
 
   private async applySignal(peer: Peer, payload: SignalPayload) {

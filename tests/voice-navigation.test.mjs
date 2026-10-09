@@ -14,6 +14,7 @@ function fixture({ cacheTopics = false, delayedRemoval = false } = {}) {
     restrictionChannels = [];
   let restrictionFailure = false;
   let timerId = 0;
+  let now = Date.now();
   let cursor = 0,
     pending = [],
     dirty = false,
@@ -207,7 +208,11 @@ function fixture({ cacheTopics = false, delayedRemoval = false } = {}) {
   };
   const exports = {};
   const code = ts.transpileModule(
-    fs.readFileSync(new URL("../src/hooks/use-voice.tsx", import.meta.url), "utf8"),
+    fs.readFileSync(
+      process.env.LOBBYX_VOICE_HOOK_FIXTURE ??
+        new URL("../src/hooks/use-voice.tsx", import.meta.url),
+      "utf8",
+    ),
     {
       compilerOptions: {
         module: ts.ModuleKind.CommonJS,
@@ -221,6 +226,11 @@ function fixture({ cacheTopics = false, delayedRemoval = false } = {}) {
     require: (name) => {
       assert.ok(name in imports, `Unexpected dependency ${name}`);
       return imports[name];
+    },
+    Date: class extends Date {
+      static now() {
+        return now;
+      }
     },
     crypto: { randomUUID: () => Math.random().toString() },
     localStorage: { getItem: () => null },
@@ -262,6 +272,9 @@ function fixture({ cacheTopics = false, delayedRemoval = false } = {}) {
   render();
   return {
     render,
+    advanceTime: (ms) => {
+      now += ms;
+    },
     flush,
     channels,
     providers,
@@ -279,24 +292,101 @@ function fixture({ cacheTopics = false, delayedRemoval = false } = {}) {
   };
 }
 
-test("Speech bursts publish without continually restarting the pending update", async () => {
+test("Sidebar keeps participant positions across reordered presence, speech and room moves", async () => {
+  const f = fixture();
+  const ch = f.channels[0];
+  ch.subscribed("SUBSCRIBED");
+  const member = (id, channel = "room-a") => ({
+    user_id: id,
+    channel_id: channel,
+    voice_session_id: id + "-session",
+    updated_at: 1,
+    muted: false,
+    speaking: false,
+  });
+  ch.snapshot = { nico: [member("nico")], ruan: [member("ruan")] };
+  ch.events.sync();
+  await f.flush();
+  const ids = (room = "room-a") =>
+    Array.from(f.render().participantsByChannel[room] ?? [], (p) => p.user_id);
+  assert.deepEqual(ids(), ["nico", "ruan"]);
+  for (let i = 0; i < 20; i++) {
+    const nico = { ...member("nico"), updated_at: i + 2, speaking: i % 2 === 0 };
+    const ruan = { ...member("ruan"), updated_at: i + 2, muted: i % 2 === 1 };
+    ch.snapshot = i % 2 ? { nico: [nico], ruan: [ruan] } : { ruan: [ruan], nico: [nico] };
+    ch.events.sync();
+    await f.flush();
+    assert.deepEqual(ids(), ["nico", "ruan"]);
+    assert.equal(f.render().participantsByChannel["room-a"][0].speaking, nico.speaking);
+  }
+  ch.snapshot = { extra: [member("extra")], ruan: [member("ruan")], nico: [member("nico")] };
+  ch.events.sync();
+  await f.flush();
+  assert.deepEqual(
+    ids(),
+    ["nico", "ruan", "extra"],
+    "new users append without moving existing users",
+  );
+  ch.snapshot = {
+    extra: [member("extra")],
+    ruan: [member("ruan", "room-b")],
+    nico: [member("nico")],
+  };
+  ch.events.sync();
+  await f.flush();
+  assert.deepEqual(ids(), ["nico", "extra"]);
+  assert.deepEqual(ids("room-b"), ["ruan"]);
+  ch.snapshot = { extra: [member("extra")], ruan: [member("ruan", null)], nico: [member("nico")] };
+  ch.events.sync();
+  await f.flush();
+  assert.deepEqual(ids("room-b"), []);
+});
+
+test("Active call keeps local and remote positions through presence resync and speech", async () => {
+  const f = fixture();
+  const ch = f.channels[0];
+  ch.subscribed("SUBSCRIBED");
+  await f.render().join("room-a");
+  await f.flush();
+  const self = f.render().participantsByChannel["room-a"][0];
+  const peer = {
+    user_id: "peer",
+    channel_id: "room-a",
+    voice_session_id: "peer-session",
+    updated_at: 1,
+    speaking: false,
+  };
+  ch.snapshot = { peer: [peer], me: [{ ...self, channel_id: "room-a", updated_at: 1 }] };
+  ch.events.sync();
+  await f.flush();
+  for (let i = 0; i < 20; i++) {
+    ch.snapshot =
+      i % 2
+        ? { me: [{ ...self, channel_id: "room-a", updated_at: i + 2 }], peer: [peer] }
+        : { peer: [peer] };
+    ch.events.sync();
+    f.providers[0].callbacks.onSpeakingChange(i % 2 === 0);
+    await f.flush();
+    assert.deepEqual(
+      Array.from(f.render().participantsByChannel["room-a"], (p) => p.user_id),
+      ["me", "peer"],
+    );
+  }
+});
+
+test("Speech bursts update indicators without sending Presence events", async () => {
   const f = fixture();
   f.channels[0].subscribed("SUBSCRIBED");
   await f.render().join("room-a");
   await f.flush();
-  f.providers[0].callbacks.onSpeakingChange(true);
-  f.render();
-  const firstTimer = [...f.timers.keys()][0];
-  assert.ok(firstTimer);
-  f.providers[0].callbacks.onSpeakingChange(false);
-  f.render();
-  f.providers[0].callbacks.onSpeakingChange(true);
-  f.render();
-  assert.equal([...f.timers.keys()][0], firstTimer);
-  f.timers.get(firstTimer)();
-  f.timers.delete(firstTimer);
-  await f.flush();
-  assert.equal(f.channels[0].tracks.at(-1).speaking, true);
+  const before = f.channels[0].tracks.length;
+  for (let i = 0; i < 100; i++) {
+    f.providers[0].callbacks.onSpeakingChange(i % 2 === 0);
+    f.render();
+    await f.flush();
+  }
+  assert.equal(f.channels[0].tracks.length, before);
+  assert.equal(f.timers.size, 0);
 });
 
 test("Recovery waits for cached topic removal before resubscribing, so old cleanup cannot close the new Presence", async () => {
@@ -305,8 +395,7 @@ test("Recovery waits for cached topic removal before resubscribing, so old clean
   old.subscribed("SUBSCRIBED");
   await f.render().join("room-a");
   await f.flush();
-  old.trackResult = "timed out";
-  f.render().toggleMute();
+  old.subscribed("CLOSED");
   await f.flush();
   for (const callback of [...f.timers.values()]) callback();
   f.timers.clear();
@@ -377,9 +466,7 @@ test("Repeated publication failures back off instead of rebuilding every two sec
   retry();
   await f.flush();
   const next = f.channels.at(-1);
-  next.trackResult = "timed out";
-  next.subscribed("SUBSCRIBED");
-  await f.flush();
+  assert.equal(f.channels.length, 1);
   [id] = [...f.timers.entries()][0];
   assert.equal(f.timerDelays.get(id), 4000);
   next.trackResult = "ok";
@@ -440,7 +527,7 @@ test("A stalled Presence publication cannot block connecting to the next room", 
   assert.equal(finished, true);
   assert.equal(f.render().activeChannelId, "room-b");
   assert.equal(f.render().connectionState, "connected");
-  assert.equal(ch.trackOptions.timeout, 2000);
+  assert.equal(ch.trackOptions.timeout, 10000);
 });
 
 test("A delayed snapshot of the old room cannot duplicate or move the local participant back", async () => {
@@ -541,7 +628,7 @@ test("A closed observer subscription is recreated without joining a call", async
   assert.equal(f.providers.length, 0);
 });
 
-test("A failed occupancy publication replaces only Presence, keeping the call alive", async () => {
+test("A failed occupancy publication retries the same subscription, keeping the call alive", async () => {
   const f = fixture();
   f.channels[0].subscribed("SUBSCRIBED");
   await f.render().join("room-a");
@@ -552,10 +639,12 @@ test("A failed occupancy publication replaces only Presence, keeping the call al
   for (const callback of [...f.timers.values()]) callback();
   await f.flush();
   assert.equal(f.providers[0].disconnects, 0);
-  const replacement = f.channels.at(-1);
-  replacement.subscribed("SUBSCRIBED");
+  assert.equal(f.channels.length, 1);
+  assert.equal(f.channels[0].removed, false);
+  f.channels[0].trackResult = "ok";
+  for (const callback of [...f.timers.values()]) callback();
   await f.flush();
-  assert.equal(replacement.tracks.at(-1).channel_id, "room-a");
+  assert.equal(f.channels[0].tracks.at(-1).channel_id, "room-a");
 });
 
 test("Browsing a second server recovers its observer without moving the active call", async () => {
@@ -567,6 +656,8 @@ test("Browsing a second server recovers its observer without moving the active c
   await f.flush();
   const observer = f.channels.at(-1);
   observer.subscribed("SUBSCRIBED");
+  observer.snapshot = { other: [{ user_id: "other", channel_id: "room-b" }] };
+  observer.events.sync();
   await f.flush();
   assert.equal(observer.tracks.at(-1).channel_id, null);
   observer.subscribed("TIMED_OUT");
@@ -574,6 +665,7 @@ test("Browsing a second server recovers its observer without moving the active c
   await f.flush();
   const replacement = f.channels.at(-1);
   assert.notEqual(replacement, observer);
+  assert.equal(f.render().participantsByChannel["room-b"][0].user_id, "other");
   replacement.subscribed("SUBSCRIBED");
   replacement.snapshot = { other: [{ user_id: "other", channel_id: "room-b" }] };
   replacement.events.sync();
@@ -701,6 +793,10 @@ test("A server observer receives occupied rooms without capturing a microphone",
   assert.equal(f.providers.length, 0);
   assert.ok(ch.sent.some((e) => e.event === "occupancy-refresh"));
   ch.snapshot = {};
+  ch.events.sync();
+  await f.flush();
+  assert.equal(f.render().participantsByChannel["room-a"].length, 1);
+  f.advanceTime(31000);
   ch.events.sync();
   await f.flush();
   assert.equal(f.render().participantsByChannel["room-a"], undefined);
@@ -860,4 +956,55 @@ test("A missed realtime command is recovered while in call and applied without a
   await f.flush();
   await f.flush();
   assert.equal(f.render().activeChannelId, "room-b");
+});
+
+test("Idle heartbeats and refresh requests do not repeatedly track an unchanged occupied room", async () => {
+  const f = fixture();
+  const ch = f.channels[0];
+  ch.subscribed("SUBSCRIBED");
+  await f.render().join("room-a");
+  await f.flush();
+  ch.snapshot = { me: [ch.tracks.at(-1)] };
+  ch.events.sync();
+  await f.flush();
+  const before = ch.tracks.length;
+  for (let i = 0; i < 60; i++) {
+    for (const fn of f.intervals.values()) fn();
+    ch.events["occupancy-refresh"]();
+    await f.flush();
+  }
+  assert.equal(ch.tracks.length, before);
+  assert.equal(f.channels.length, 1);
+});
+
+test("Missing occupancy is retained across recovery but room moves and session departure apply immediately", async () => {
+  const f = fixture();
+  const ch = f.channels[0];
+  ch.subscribed("SUBSCRIBED");
+  await f.flush();
+  const peer = {
+    user_id: "peer",
+    voice_session_id: "peer-session",
+    channel_id: "room-a",
+    updated_at: 10,
+  };
+  ch.snapshot = { peer: [peer] };
+  ch.events.sync();
+  await f.flush();
+  ch.snapshot = {};
+  ch.events.sync();
+  await f.flush();
+  f.advanceTime(15000);
+  ch.events.sync();
+  await f.flush();
+  assert.equal(f.render().participantsByChannel["room-a"][0].user_id, "peer");
+  ch.snapshot = { peer: [{ ...peer, channel_id: "room-b", updated_at: 20 }] };
+  ch.events.sync();
+  await f.flush();
+  assert.equal(f.render().participantsByChannel["room-a"], undefined);
+  assert.equal(f.render().participantsByChannel["room-b"].length, 1);
+  ch.snapshot = { peer: [{ ...peer, channel_id: null, updated_at: 30 }] };
+  ch.events.sync();
+  await f.flush();
+  assert.equal(f.render().participantsByChannel["room-b"], undefined);
 });

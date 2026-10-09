@@ -101,6 +101,8 @@ export function GlobalPresenceProvider({
         at: Date.now(),
         game: gameRef.current,
       }),
+      // Clock ticks and repeated game polls are not presence state changes.
+      payloadKey: () => JSON.stringify({ status: statusRef.current, game: gameRef.current }),
       available: () => !suspended && navigator.onLine,
       connected: () => {
         if (!disposed) setConnection("online");

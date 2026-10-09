@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import { VISUAL_QUALITY_BOOTSTRAP } from "../src/lib/visual-quality.ts";
 const exports = {};
 vm.runInNewContext(
   ts.transpileModule(fs.readFileSync("src/lib/theme.ts", "utf8"), {
@@ -45,4 +46,16 @@ test("Unavailable storage does not prevent the page from starting", () => {
       },
     }),
   );
+});
+
+test("Theme and performance bootstraps can share the same inline script", () => {
+  const document = { documentElement: { dataset: {}, style: {}, classList: { toggle() {} } } };
+  assert.doesNotThrow(() =>
+    vm.runInNewContext(exports.THEME_BOOTSTRAP + VISUAL_QUALITY_BOOTSTRAP, {
+      document,
+      localStorage: { getItem: () => null },
+      matchMedia: () => ({ matches: true }),
+    }),
+  );
+  assert.equal(document.documentElement.dataset.visualQuality, "optimized");
 });

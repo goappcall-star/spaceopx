@@ -15,6 +15,7 @@ import { useAudioSettings } from "@/hooks/use-audio-settings";
 import { supabase } from "@/integrations/supabase/client";
 import { createVoiceProvider, type RemoteMedia, type VoiceProvider } from "@/services/voice";
 import { createCallGracePeriod } from "@/services/call-grace-period";
+import { validIncomingRing } from "@/lib/call-security";
 import type { Profile } from "@/types";
 import { reportDesktopCall, clearDesktopCall, beginDesktopCall } from "@/services/desktop-updates";
 
@@ -25,7 +26,7 @@ import { reportDesktopCall, clearDesktopCall, beginDesktopCall } from "@/service
  * the only difference is the room id (`call-<callId>`) and the ring/accept
  * handshake, which travels over Supabase Realtime broadcast:
  *
- *   calls:user:<userId>   inbox — receives "ring" from anyone
+ *   calls:user:<userId>   private inbox — only authorized contacts may send rings
  *   callsig:<callId>      per-call control channel (accept/decline/cancel/end/busy)
  */
 
@@ -355,6 +356,7 @@ export function CallProviderRoot({
       });
       channel.on("broadcast", { event: "control" }, ({ payload }) => {
         if (callIdRef.current !== callId) return;
+        if (!payload || typeof payload !== "object") return;
         const type = (payload as { type: Control }).type;
         if (type === "accept") {
           const remoteId = peerRef.current?.id;
@@ -367,11 +369,23 @@ export function CallProviderRoot({
         else if (type === "busy") void finish("busy");
         else if (type === "end") waitAfterPeerLeft();
       });
-      await new Promise<void>((resolve) => {
-        channel.subscribe((state) => {
-          if (state === "SUBSCRIBED") resolve();
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error("call_control_timeout")), 15_000);
+          channel.subscribe((state) => {
+            if (state === "SUBSCRIBED") {
+              clearTimeout(timeout);
+              resolve();
+            } else if (["CHANNEL_ERROR", "TIMED_OUT", "CLOSED"].includes(state)) {
+              clearTimeout(timeout);
+              reject(new Error("call_control_unavailable"));
+            }
+          });
         });
-      });
+      } catch (error) {
+        await supabase.removeChannel(channel);
+        throw error;
+      }
       if (callIdRef.current !== callId) {
         await supabase.removeChannel(channel);
         return;
@@ -390,6 +404,7 @@ export function CallProviderRoot({
     });
 
     inbox.on("broadcast", { event: "ring" }, ({ payload }) => {
+      if (!validIncomingRing(payload, userId)) return;
       const ring = payload as RingPayload;
       if (statusRef.current !== "idle" && statusRef.current !== "ended") {
         // Already busy — tell the caller immediately.
@@ -409,7 +424,7 @@ export function CallProviderRoot({
       setVideo(ring.video);
       setEndReason(null);
       setStatus("incoming");
-      void openControl(ring.callId);
+      void openControl(ring.callId).catch(() => finish("failed"));
       if (ringTimer.current) clearTimeout(ringTimer.current);
       ringTimer.current = setTimeout(() => void finish("unanswered"), RING_TIMEOUT_MS);
     });
@@ -518,22 +533,33 @@ export function CallProviderRoot({
       setVideo(withVideo);
       setEndReason(null);
       setStatus("outgoing");
-      await openControl(callId);
+      try {
+        await openControl(callId);
+      } catch {
+        toast.error("Não foi possível iniciar a chamada.");
+        await finish("failed");
+        return;
+      }
 
       // Ring the callee's personal inbox.
       const inbox = supabase.channel(`calls:user:${target.id}`, {
         config: { broadcast: { self: false, ack: false } },
       });
-      inbox.subscribe((state) => {
-        if (state !== "SUBSCRIBED") return;
-        void inbox
-          .send({
-            type: "broadcast",
-            event: "ring",
-            payload: { callId, video: withVideo, from: me } satisfies RingPayload,
-          })
-          .then(() => supabase.removeChannel(inbox));
-      });
+      // Send through authenticated HTTP without subscribing to someone else's
+      // private inbox. RLS separately authorizes sending and receiving.
+      void inbox
+        .send({
+          type: "broadcast",
+          event: "ring",
+          payload: { callId, video: withVideo, from: me } satisfies RingPayload,
+        })
+        .then(async (result) => {
+          await supabase.removeChannel(inbox);
+          if (result !== "ok" && callIdRef.current === callId) {
+            toast.error("Não foi possível chamar este usuário.");
+            await finish("failed");
+          }
+        });
 
       if (ringTimer.current) clearTimeout(ringTimer.current);
       ringTimer.current = setTimeout(() => {

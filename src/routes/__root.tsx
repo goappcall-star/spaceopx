@@ -20,6 +20,7 @@ import { AudioSettingsProvider } from "@/hooks/use-audio-settings";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DesktopUpdates } from "@/components/app/DesktopUpdates";
+import { redactSecrets } from "@/lib/redact-secrets.mjs";
 
 function NotFoundComponent() {
   return (
@@ -44,7 +45,7 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
-  console.error(error);
+  console.error(redactSecrets(error instanceof Error ? (error.stack ?? error.message) : error));
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
@@ -121,10 +122,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const nonce = useRouter().options.ssr?.nonce;
   return (
     <html lang="pt-BR" className="dark" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP + VISUAL_QUALITY_BOOTSTRAP }} />
+        <meta property="csp-nonce" content={nonce} />
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP + VISUAL_QUALITY_BOOTSTRAP }}
+        />
         <HeadContent />
       </head>
       <body>

@@ -2,9 +2,10 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { secureResponse, withSecurityNonce } from "./lib/security-headers";
 
 type ServerEntry = {
-  fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
+  fetch: (request: Request) => Promise<Response> | Response;
 };
 
 let serverEntryPromise: Promise<ServerEntry> | undefined;
@@ -45,17 +46,34 @@ function isH3SwallowedErrorBody(body: string): boolean {
 }
 
 export default {
-  async fetch(request: Request, env: unknown, ctx: unknown) {
+  async fetch(request: Request) {
+    const development = import.meta.env.DEV;
+    const url = new URL(request.url);
+    if (
+      !development &&
+      url.protocol === "http:" &&
+      !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
+    ) {
+      url.protocol = "https:";
+      return Response.redirect(url, 308);
+    }
+    const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(24))));
+    // Replace, never trust, a caller-supplied nonce. Read only inside SSR.
+    const securedRequest = withSecurityNonce(request, nonce);
     try {
       const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      const response = await handler.fetch(securedRequest);
+      return secureResponse(await normalizeCatastrophicSsrResponse(response), nonce, development);
     } catch (error) {
       console.error(error);
-      return new Response(renderErrorPage(), {
-        status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
+      return secureResponse(
+        new Response(renderErrorPage(), {
+          status: 500,
+          headers: { "content-type": "text/html; charset=utf-8" },
+        }),
+        nonce,
+        development,
+      );
     }
   },
 };

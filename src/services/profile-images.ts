@@ -7,6 +7,7 @@ const SIGNED_URL_TTL = 60 * 60 * 24 * 365; // 1 year
 export type ImageBucket = "avatars" | "banners";
 
 export function validateImage(file: File): string | null {
+  if (file.size < 1) return "A imagem está vazia.";
   if (!ALLOWED_IMAGE_MIME.includes(file.type)) return "Envie uma imagem PNG, JPG, WEBP ou GIF.";
   if (file.size > MAX_IMAGE_BYTES) return "Imagem maior que 4 MB.";
   return null;

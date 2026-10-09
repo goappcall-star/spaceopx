@@ -1,13 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Channel, ChannelType } from "@/types";
+import { boundedText } from "@/lib/input-validation.mjs";
 
 export const channelsService = {
   async update(serverId: string, id: string, name: string, description: string) {
-    if (!name.trim() || name.trim().length > 80)
-      throw new Error("Use um nome de 1 a 80 caracteres.");
     const { error } = await supabase
       .from("channels")
-      .update({ name: name.trim(), description: description.trim() || null })
+      .update({
+        name: boundedText(name, "Nome do canal", 60, 1),
+        description: boundedText(description, "Descrição", 1000) || null,
+      })
       .eq("server_id", serverId)
       .eq("id", id)
       .select()
@@ -47,7 +49,7 @@ export const channelsService = {
       .from("channels")
       .insert({
         server_id: serverId,
-        name: name.trim().toLowerCase(),
+        name: boundedText(name, "Nome do canal", 60, 1).toLowerCase(),
         type,
         ...(isAfk ? { is_afk: true } : {}),
         ...(categoryId ? { category_id: categoryId } : {}),

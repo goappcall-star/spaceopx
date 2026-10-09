@@ -7,6 +7,7 @@ const SIGNED_URL_TTL = 60 * 60 * 24 * 365;
 export type ServerImageKind = "icon" | "banner";
 
 export function validateServerImage(file: File): string | null {
+  if (file.size < 1) return "A imagem está vazia.";
   if (!ALLOWED.includes(file.type)) return "Envie uma imagem PNG, JPG, WEBP ou GIF.";
   if (file.size > MAX_SERVER_IMAGE_BYTES) return "Imagem maior que 8 MB.";
   return null;

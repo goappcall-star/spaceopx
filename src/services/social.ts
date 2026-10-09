@@ -2,6 +2,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { profilesService } from "@/services/profiles";
 import { groupReactions } from "@/services/messages";
 import { validateFile } from "@/services/uploads";
+import {
+  validateMessage,
+  validReaction,
+  boundedText,
+  safeImageUrl,
+} from "@/lib/input-validation.mjs";
 import type {
   Attachment,
   Conversation,
@@ -284,8 +290,10 @@ export const conversationsService = {
   },
 
   async rename(conversationId: string, name: string, avatarUrl?: string | null) {
-    const patch: { name: string; avatar_url?: string | null } = { name: name.trim() };
-    if (avatarUrl !== undefined) patch.avatar_url = avatarUrl;
+    const patch: { name: string; avatar_url?: string | null } = {
+      name: boundedText(name, "Nome do grupo", 80, 1),
+    };
+    if (avatarUrl !== undefined) patch.avatar_url = safeImageUrl(avatarUrl);
     const { error } = await supabase.from("conversations").update(patch).eq("id", conversationId);
     if (error) throw error;
   },
@@ -333,7 +341,7 @@ export const directMessagesService = {
       .insert({
         conversation_id: input.conversationId,
         sender_id: me,
-        content: input.content.trim(),
+        content: validateMessage(input.content, input.attachments),
         reply_to_id: input.replyToId ?? null,
         attachments: (input.attachments ?? []) as never,
       })
@@ -346,7 +354,7 @@ export const directMessagesService = {
   async edit(id: string, content: string): Promise<DirectMessage> {
     const { data, error } = await supabase
       .from("direct_messages")
-      .update({ content: content.trim(), edited_at: new Date().toISOString() })
+      .update({ content: validateMessage(content), edited_at: new Date().toISOString() })
       .eq("id", id)
       .select("*")
       .single();
@@ -376,7 +384,7 @@ export const directMessagesService = {
   async addReaction(messageId: string, userId: string, emoji: string) {
     const { error } = await supabase
       .from("direct_message_reactions")
-      .insert({ message_id: messageId, user_id: userId, emoji });
+      .insert({ message_id: messageId, user_id: userId, emoji: validReaction(emoji) });
     if (error && error.code !== "23505") throw error;
   },
 

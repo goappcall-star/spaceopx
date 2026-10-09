@@ -37,6 +37,6 @@ test("Missing configuration and privileged keys stop the build", () => {
         SUPABASE_URL: "https://example.supabase.co",
         SUPABASE_PUBLISHABLE_KEY: "sb_secret_private",
       }),
-    /never a Supabase secret key/,
+    /Privileged keys are forbidden/,
   );
 });

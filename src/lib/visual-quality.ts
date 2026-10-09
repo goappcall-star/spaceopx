@@ -7,4 +7,4 @@ export function resolveVisualQuality(saved: unknown, reduced: boolean): VisualQu
       ? "optimized"
       : "normal";
 }
-export const VISUAL_QUALITY_BOOTSTRAP = `(()=>{try{document.documentElement.dataset.visualQuality=(function(s,r){return s==="normal"||s==="optimized"||s==="maximum"?s:r?"optimized":"normal"})(localStorage.getItem('lobbyx:visual-quality'),matchMedia('(prefers-reduced-motion: reduce)').matches)}catch{}})()`;
+export const VISUAL_QUALITY_BOOTSTRAP = `(()=>{try{document.documentElement.dataset.visualQuality=(function(s,r){return s==="normal"||s==="optimized"||s==="maximum"?s:r?"optimized":"normal"})(localStorage.getItem('lobbyx:visual-quality'),matchMedia('(prefers-reduced-motion: reduce)').matches)}catch{}})();`;

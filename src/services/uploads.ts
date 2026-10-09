@@ -16,6 +16,7 @@ const ALLOWED_MIME = [
 ];
 
 export function validateFile(file: File): string | null {
+  if (file.size < 1 || file.name.length > 255) return "Arquivo vazio ou nome muito longo.";
   if (file.size > MAX_ATTACHMENT_BYTES) return "Arquivo maior que 10 MB.";
   if (!ALLOWED_MIME.includes(file.type)) return "Tipo de arquivo não permitido.";
   return null;

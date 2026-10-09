@@ -84,22 +84,13 @@ export interface VoiceProvider {
 }
 
 /**
- * STUN is always on. TURN is optional and configured through public env vars
- * (never a committed secret) — needed on networks where direct P2P is blocked.
+ * STUN is always on. Never bundle long-lived TURN credentials in a client.
+ * A configured relay must use an authenticated short-lived credential service.
  */
 function buildIceServers(): RTCIceServer[] {
   const servers: RTCIceServer[] = [
     { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
   ];
-  const env = import.meta.env as Record<string, string | undefined>;
-  const turnUrl = env["VITE_TURN_URL"];
-  if (turnUrl) {
-    servers.push({
-      urls: turnUrl.split(",").map((url) => url.trim()),
-      ...(env["VITE_TURN_USERNAME"] ? { username: env["VITE_TURN_USERNAME"] } : {}),
-      ...(env["VITE_TURN_CREDENTIAL"] ? { credential: env["VITE_TURN_CREDENTIAL"] } : {}),
-    });
-  }
   return servers;
 }
 
@@ -696,6 +687,24 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   private async onSignal(payload: SignalPayload) {
+    if (
+      !payload ||
+      typeof payload !== "object" ||
+      typeof payload.from !== "string" ||
+      typeof payload.to !== "string" ||
+      payload.from.length > 128 ||
+      payload.to.length > 128 ||
+      (payload.from_session !== undefined &&
+        (typeof payload.from_session !== "string" || payload.from_session.length > 100)) ||
+      (payload.description &&
+        (typeof payload.description.sdp !== "string" ||
+          payload.description.sdp.length > 262144 ||
+          !["offer", "answer", "pranswer", "rollback"].includes(payload.description.type))) ||
+      (payload.candidate &&
+        (typeof payload.candidate.candidate !== "string" ||
+          payload.candidate.candidate.length > 8192))
+    )
+      return;
     if (this.disposed || payload.from === this.userId) return;
     if (payload.to !== this.userId && payload.to !== "*") return;
     if (payload.from_session && this.retiredSessions.has(`${payload.from}:${payload.from_session}`))

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import ts from "typescript";
 import vm from "node:vm";
+import * as validation from "../src/lib/input-validation.mjs";
 function load(file, dependencies = {}) {
   const exports = {};
   vm.runInNewContext(
@@ -12,6 +13,7 @@ function load(file, dependencies = {}) {
     {
       exports,
       require: (id) => {
+        if (id === "@/lib/input-validation.mjs") return validation;
         if (!(id in dependencies)) throw Error(id);
         return dependencies[id];
       },

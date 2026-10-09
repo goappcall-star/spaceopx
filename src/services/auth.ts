@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { boundedText, validEmail, validPassword, validUsername } from "@/lib/input-validation.mjs";
 
 export interface SignUpInput {
   email: string;
@@ -31,19 +32,21 @@ export const authService = {
   },
 
   async completeRegistration(username: string) {
-    const { error } = await supabase.rpc("complete_registration", { chosen_username: username });
+    const { error } = await supabase.rpc("complete_registration", {
+      chosen_username: validUsername(username),
+    });
     if (error) throw error;
   },
 
   async signUp({ email, password, username, displayName }: SignUpInput) {
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
+      email: validEmail(email),
+      password: validPassword(password),
       options: {
         emailRedirectTo: `${window.location.origin}/app`,
         data: {
-          username: username.trim().toLowerCase(),
-          display_name: displayName.trim(),
+          username: validUsername(username),
+          display_name: boundedText(displayName, "Nome de exibição", 60, 1),
         },
       },
     });
@@ -52,7 +55,10 @@ export const authService = {
   },
 
   async signIn(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: validEmail(email),
+      password: validPassword(password, 1),
+    });
     if (error) throw error;
     return data;
   },
@@ -63,14 +69,14 @@ export const authService = {
   },
 
   async requestPasswordReset(email: string) {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(validEmail(email), {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     if (error) throw error;
   },
 
   async updatePassword(password: string) {
-    const { error } = await supabase.auth.updateUser({ password });
+    const { error } = await supabase.auth.updateUser({ password: validPassword(password) });
     if (error) throw error;
   },
 

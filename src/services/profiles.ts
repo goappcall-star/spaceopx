@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Profile, UserStatus } from "@/types";
 import { normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
 import { validateProfileStatus } from "@/lib/profile-status";
+import { boundedText, safeImageUrl } from "@/lib/input-validation.mjs";
 import {
   NAMEPLATE_COSMETICS,
   normalizeProfileCosmetic,
@@ -30,12 +31,13 @@ function sanitize(update: ProfileUpdate): ProfileUpdate {
     clean.profile_frame = normalizeProfileCosmetic(update.profile_frame);
   if (update.avatar_frame !== undefined)
     clean.avatar_frame = normalizeAvatarFrame(update.avatar_frame);
-  if (update.display_name !== undefined) clean.display_name = update.display_name.trim();
-  if (update.avatar_url !== undefined) clean.avatar_url = update.avatar_url?.trim() || null;
-  if (update.banner_url !== undefined) clean.banner_url = update.banner_url?.trim() || null;
-  if (update.bio !== undefined) clean.bio = update.bio?.trim() || null;
+  if (update.display_name !== undefined)
+    clean.display_name = boundedText(update.display_name, "Nome de exibição", 60, 1);
+  if (update.avatar_url !== undefined) clean.avatar_url = safeImageUrl(update.avatar_url);
+  if (update.banner_url !== undefined) clean.banner_url = safeImageUrl(update.banner_url);
+  if (update.bio !== undefined) clean.bio = boundedText(update.bio ?? "", "Bio", 1000) || null;
   if (update.custom_status !== undefined)
-    clean.custom_status = update.custom_status?.trim() || null;
+    clean.custom_status = boundedText(update.custom_status ?? "", "Status", 128) || null;
   if (update.status !== undefined) {
     validateProfileStatus(update.status);
     clean.status = update.status;

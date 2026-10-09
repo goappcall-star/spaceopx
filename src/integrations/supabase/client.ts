@@ -2,9 +2,10 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 import { brokeredPreviewStorage } from "./previewAuthStorage";
+import { assertPublicSupabaseKey, assertSupabaseUrl } from "@/lib/supabase-key-policy.mjs";
 
 function isNewSupabaseApiKey(value: string): boolean {
-  return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
+  return value.startsWith("sb_publishable_");
 }
 
 function createSupabaseFetch(supabaseKey: string): typeof fetch {
@@ -50,6 +51,8 @@ function createSupabaseClient() {
     throw new Error(message);
   }
 
+  assertPublicSupabaseKey(SUPABASE_PUBLISHABLE_KEY);
+  assertSupabaseUrl(SUPABASE_URL);
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     global: {
       fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
@@ -63,6 +66,8 @@ function createSupabaseClient() {
   });
 }
 
+import { realtimeChannelOptions } from "@/lib/realtime-rollout.mjs";
+
 let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
 
 // Import the supabase client like this:
@@ -70,6 +75,14 @@ let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
 export const supabase = new Proxy({} as ReturnType<typeof createSupabaseClient>, {
   get(_, prop, receiver) {
     if (!_supabase) _supabase = createSupabaseClient();
+    if (prop === "channel") {
+      const client = _supabase;
+      return (...args: Parameters<typeof client.channel>) =>
+        client.channel(
+          args[0],
+          realtimeChannelOptions(args[1], import.meta.env["VITE_PRIVATE_REALTIME_ENABLED"]),
+        );
+    }
     return Reflect.get(_supabase, prop, receiver);
   },
 });

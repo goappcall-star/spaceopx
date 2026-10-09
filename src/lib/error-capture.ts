@@ -1,4 +1,5 @@
 // Captures the original Error out-of-band so server.ts can recover the stack
+import { redactSecrets, redactedJson } from "./redact-secrets.mjs";
 // when h3 has already swallowed the throw into a generic 500 Response.
 
 let lastCapturedError: { error: unknown; at: number } | undefined;
@@ -28,7 +29,7 @@ export function describeError(error: unknown): string {
     parts.push(`${label}${current.stack ?? `${current.name}: ${current.message}`}${status}`);
     current = current.cause;
   }
-  return parts.join("\n").slice(0, DESCRIPTION_LENGTH_LIMIT);
+  return redactSecrets(parts.join("\n")).slice(0, DESCRIPTION_LENGTH_LIMIT);
 }
 
 function describeStatus(error: Error): string {
@@ -39,9 +40,9 @@ function describeStatus(error: Error): string {
 
 function safeStringify(value: unknown): string {
   try {
-    return JSON.stringify(value) ?? String(value);
+    return redactedJson(value);
   } catch {
-    return String(value);
+    return redactSecrets(String(value));
   }
 }
 
@@ -55,7 +56,7 @@ function isErrorLike(value: unknown): value is Error {
 const originalConsoleError = console.error.bind(console);
 console.error = (...args: unknown[]) => {
   const expanded = args.map((arg) => {
-    if (!isErrorLike(arg)) return arg;
+    if (!isErrorLike(arg)) return typeof arg === "string" ? redactSecrets(arg) : safeStringify(arg);
     record(arg);
     return describeError(arg);
   });

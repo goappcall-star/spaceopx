@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import fs from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
+import * as validation from "../src/lib/input-validation.mjs";
 import { safeRedirect } from "../src/lib/redirect.ts";
 const require = createRequire(import.meta.url);
 const { authCallback } = require("../desktop/auth-link.cjs");
@@ -47,7 +48,7 @@ function service(supabase, protocol = "https:") {
   ).outputText;
   const context = {
     exports: {},
-    require: () => ({ supabase }),
+    require: (id) => (id === "@/lib/input-validation.mjs" ? validation : { supabase }),
     localStorage: { setItem: (k, v) => saved.set(k, v) },
     window: {
       location: { protocol, origin: "https://lobbyx.example", assign: (url) => (assigned = url) },

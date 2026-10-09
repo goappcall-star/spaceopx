@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Server, ServerInteractions, ServerVisibility } from "@/types";
+import { boundedText, safeImageUrl } from "@/lib/input-validation.mjs";
 
 export interface CreateServerInput {
   name: string;
@@ -48,9 +49,12 @@ export const serversService = {
 
   /** Transactional: server + OWNER/ADMIN/MEMBER roles + membership + #geral. */
   async create({ name, description, iconUrl }: CreateServerInput): Promise<string> {
-    const args: { _name: string; _description?: string; _icon_url?: string } = { _name: name };
-    if (description?.trim()) args._description = description.trim();
-    if (iconUrl?.trim()) args._icon_url = iconUrl.trim();
+    const args: { _name: string; _description?: string; _icon_url?: string } = {
+      _name: boundedText(name, "Nome do servidor", 60, 2),
+    };
+    if (description?.trim()) args._description = boundedText(description, "Descrição", 1000);
+    const icon = safeImageUrl(iconUrl);
+    if (icon) args._icon_url = icon;
     const { data, error } = await supabase.rpc("create_server", args);
     if (error) throw error;
     return data as string;
@@ -66,9 +70,15 @@ export const serversService = {
       Pick<Server, "name" | "description" | "icon_url" | "banner_url" | "visibility">
     > & { interactions?: ServerInteractions },
   ): Promise<Server> {
+    const clean = { ...patch };
+    if (clean.name !== undefined) clean.name = boundedText(clean.name, "Nome do servidor", 60, 2);
+    if (clean.description !== undefined)
+      clean.description = boundedText(clean.description ?? "", "Descrição", 1000) || null;
+    if (clean.icon_url !== undefined) clean.icon_url = safeImageUrl(clean.icon_url);
+    if (clean.banner_url !== undefined) clean.banner_url = safeImageUrl(clean.banner_url);
     const { data, error } = await supabase
       .from("servers")
-      .update(patch as Record<string, never>)
+      .update(clean as Record<string, never>)
 
       .eq("id", serverId)
       .select("*")

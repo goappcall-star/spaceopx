@@ -7,6 +7,7 @@ const { createPermissionStore } = require("./permissions.cjs");
 const { installActivity } = require("./activity.cjs");
 const { classifyMediaRequest } = require("./media-permission.cjs");
 const { pathToFileURL } = require("node:url");
+const { trusted, externalHttps, htmlSecurityHeaders } = require("./security.cjs");
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -34,14 +35,6 @@ function receiveAuth(args) {
     void window.loadURL(next);
   }
 }
-const trusted = (url) => {
-  try {
-    const value = new URL(url);
-    return value.protocol === "lobbyx:" && value.hostname === "app";
-  } catch {
-    return false;
-  }
-};
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on("second-instance", (_event, args) => {
@@ -78,7 +71,13 @@ else {
           if (path.extname(relative)) return new Response("Not found", { status: 404 });
           file = path.join(root, "_shell.html");
         }
-        return net.fetch(pathToFileURL(file).toString());
+        const response = await net.fetch(pathToFileURL(file).toString());
+        if (path.extname(file) !== ".html") return response;
+        const html = await response.text();
+        const headers = new Headers(response.headers);
+        for (const [key, value] of Object.entries(htmlSecurityHeaders(html)))
+          headers.set(key, value);
+        return new Response(html, { status: response.status, headers });
       });
       window = new BrowserWindow({
         width: 1280,
@@ -96,6 +95,7 @@ else {
           contextIsolation: true,
           sandbox: true,
           webSecurity: true,
+          webviewTag: false,
           partition: "persist:lobbyx",
         },
       });
@@ -183,15 +183,18 @@ else {
         }
       });
       window.webContents.setWindowOpenHandler(({ url }) => {
-        if (/^https:\/\//i.test(url)) void shell.openExternal(url);
+        if (externalHttps(url)) void shell.openExternal(url);
         return { action: "deny" };
       });
-      window.webContents.on("will-navigate", (event, url) => {
+      const guardNavigation = (event, url) => {
         if (!trusted(url)) {
           event.preventDefault();
-          if (/^https:\/\//i.test(url)) void shell.openExternal(url);
+          if (externalHttps(url)) void shell.openExternal(url);
         }
-      });
+      };
+      window.webContents.on("will-navigate", guardNavigation);
+      window.webContents.on("will-redirect", guardNavigation);
+      window.webContents.on("will-attach-webview", (event) => event.preventDefault());
       window.on("closed", () => {
         window = null;
       });

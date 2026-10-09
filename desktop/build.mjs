@@ -4,6 +4,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadEnv } from "vite";
 import { supabaseBuildEnv } from "../scripts/supabase-build-env.mjs";
+const scan = spawnSync(process.execPath, ["scripts/security-scan.mjs"], { stdio: "inherit" });
+if (scan.status !== 0) process.exit(scan.status ?? 1);
 const env = supabaseBuildEnv({ ...loadEnv("production", process.cwd(), ""), ...process.env });
 const result = spawnSync(process.execPath, ["node_modules/vite/bin/vite.js", "build"], {
   stdio: "inherit",

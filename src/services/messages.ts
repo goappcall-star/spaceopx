@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { profilesService } from "@/services/profiles";
+import { validateMessage, validReaction } from "@/lib/input-validation.mjs";
 import type {
   Attachment,
   ChannelReadState,
@@ -60,12 +61,15 @@ export const messagesService = {
     attachments?: Attachment[];
     mentions?: string[];
   }): Promise<Message> {
+    const content = validateMessage(input.content, input.attachments, input.mentions);
+    const user = (await supabase.auth.getUser()).data.user;
+    if (!user) throw new Error("Entre na sua conta para enviar mensagens.");
     const { data, error } = await supabase
       .from("messages")
       .insert({
         channel_id: input.channelId,
-        author_id: (await supabase.auth.getUser()).data.user?.id as string,
-        content: input.content.trim(),
+        author_id: user.id,
+        content,
         reply_to_id: input.replyToId ?? null,
         attachments: (input.attachments ?? []) as never,
         mentions: input.mentions ?? [],
@@ -79,7 +83,7 @@ export const messagesService = {
   async edit(id: string, content: string): Promise<Message> {
     const { data, error } = await supabase
       .from("messages")
-      .update({ content: content.trim(), edited_at: new Date().toISOString() })
+      .update({ content: validateMessage(content), edited_at: new Date().toISOString() })
       .eq("id", id)
       .select("*")
       .single();
@@ -105,7 +109,7 @@ export const messagesService = {
   async addReaction(messageId: string, userId: string, emoji: string): Promise<void> {
     const { error } = await supabase
       .from("message_reactions")
-      .insert({ message_id: messageId, user_id: userId, emoji });
+      .insert({ message_id: messageId, user_id: userId, emoji: validReaction(emoji) });
     if (error && error.code !== "23505") throw error;
   },
 

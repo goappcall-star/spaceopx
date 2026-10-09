@@ -1,3 +1,5 @@
+import { redactSecrets } from "./redact-secrets.mjs";
+
 type LovableErrorOptions = {
   mechanism?: "manual" | "onerror" | "unhandledrejection" | "react_error_boundary";
   handled?: boolean;
@@ -26,7 +28,7 @@ declare global {
 export function reportLovableError(error: unknown, context: Record<string, unknown> = {}) {
   if (typeof window === "undefined") return;
   window.__lovableEvents?.captureException?.(
-    error,
+    new Error(redactSecrets(error instanceof Error ? error.message : String(error))),
     {
       source: "react_error_boundary",
       route: window.location.pathname,
@@ -51,8 +53,8 @@ export function reportLovableError(error: unknown, context: Record<string, unkno
         : String(error);
   const stack = error instanceof Error ? error.stack : undefined;
   window.__lovableReportRuntimeError?.({
-    message,
-    ...(stack !== undefined && { stack }),
+    message: redactSecrets(message),
+    ...(stack !== undefined && { stack: redactSecrets(stack) }),
     filename: window.location.pathname,
   });
 }

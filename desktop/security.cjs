@@ -27,7 +27,12 @@ function externalHttps(url) {
 function htmlSecurityHeaders(html) {
   const hashes = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
     .filter((match) => match[1].trim())
-    .map((match) => `'sha256-${createHash("sha256").update(match[1]).digest("base64")}'`);
+    // HTML tokenization normalizes CR/CRLF and replaces nulls in script text.
+    // Hash the text Chromium executes, not the original serialized bytes.
+    .map((match) => {
+      const script = match[1].replace(/\r\n?/g, "\n").replaceAll("\0", "\uFFFD");
+      return `'sha256-${createHash("sha256").update(script).digest("base64")}'`;
+    });
   return {
     "Content-Security-Policy": [
       "default-src 'self'",

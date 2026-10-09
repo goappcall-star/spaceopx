@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -18,6 +19,23 @@ import { redactSecrets, redactedJson } from "../src/lib/redact-secrets.mjs";
 import { securityHeaders, secureResponse, withSecurityNonce } from "../src/lib/security-headers.ts";
 import { validIncomingRing } from "../src/lib/call-security.ts";
 import { realtimeChannelOptions } from "../src/lib/realtime-rollout.mjs";
+
+test("Desktop CSP hashes the script text normalized by the HTML parser", () => {
+  const script = 'self.router={i:"__root__\0"};\r\nself.ready=true;\r';
+  const normalized = 'self.router={i:"__root__\uFFFD"};\nself.ready=true;\n';
+  const hash = (text) => createHash("sha256").update(text).digest("base64");
+  const csp = htmlSecurityHeaders('<script nonce="build-nonce">' + script + "</script>")[
+    "Content-Security-Policy"
+  ];
+  assert.ok(csp.includes("'sha256-" + hash(normalized) + "'"));
+  assert.ok(!csp.includes(hash(script)));
+  assert.ok(
+    !csp
+      .split(";")
+      .find((part) => part.trim().startsWith("script-src"))
+      .includes("'unsafe-inline'"),
+  );
+});
 
 test("Source-only deployments still scan credentials without Git and never print their values", () => {
   const dir = mkdtempSync(path.join(tmpdir(), "lobbyx-source-scan-"));

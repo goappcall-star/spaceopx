@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { assertPublicSupabaseKey, assertSupabaseUrl } from "../src/lib/supabase-key-policy.mjs";
 import { supabaseBuildEnv } from "../scripts/supabase-build-env.mjs";
 import {
@@ -13,6 +18,28 @@ import { redactSecrets, redactedJson } from "../src/lib/redact-secrets.mjs";
 import { securityHeaders, secureResponse, withSecurityNonce } from "../src/lib/security-headers.ts";
 import { validIncomingRing } from "../src/lib/call-security.ts";
 import { realtimeChannelOptions } from "../src/lib/realtime-rollout.mjs";
+
+test("Source-only deployments still scan credentials without Git and never print their values", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "lobbyx-source-scan-"));
+  const scanner = fileURLToPath(new URL("../scripts/security-scan.mjs", import.meta.url));
+  const secret = "sb_secret_" + "x".repeat(40);
+  try {
+    writeFileSync(path.join(dir, ".env.local"), "SERVER_SECRET=" + secret);
+    writeFileSync(path.join(dir, "app.js"), "export const safe = true;");
+    const run = (args = []) =>
+      spawnSync(process.execPath, [scanner, ...args], { cwd: dir, encoding: "utf8" });
+    const clean = run();
+    assert.equal(clean.status, 0, clean.stderr + clean.stdout);
+    writeFileSync(path.join(dir, "app.js"), "export const key = '" + secret + "';");
+    const blocked = run();
+    assert.equal(blocked.status, 1);
+    assert.ok(blocked.stdout.includes("Supabase secret key"));
+    assert.ok(!blocked.stdout.includes(secret));
+    assert.notEqual(run(["--history"]).status, 0);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
 
 test("Private realtime rollout is explicit and preserves presence/broadcast options", () => {
   const options = { config: { presence: { key: "member" }, broadcast: { ack: true } } };

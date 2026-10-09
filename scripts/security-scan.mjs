@@ -29,15 +29,50 @@ function inspect(text, file) {
   }
   for (const kind of kinds) findings.set(`${file}:${kind}`, { file, kind });
 }
-for (const file of git(["ls-files", "--cached", "--others", "--exclude-standard", "-z"])
-  .split("\0")
-  .filter(Boolean)) {
+// Vercel's source bundle has no .git metadata. Scan the uploaded source tree
+// there; never turn a missing checkout into a disabled secret check.
+function sourceFiles() {
+  const listing = spawnSync(
+    "git",
+    ["ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+    { encoding: "utf8", maxBuffer: 128 * 1024 * 1024 },
+  );
+  if (existsSync(".git") && listing.status === 0) return listing.stdout.split("\0").filter(Boolean);
+  const files = [];
+  const ignored = new Set([
+    "node_modules",
+    ".git",
+    ".vercel",
+    ".output",
+    ".nitro",
+    ".wrangler",
+    "dist",
+  ]);
+  const walk = (directory) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const file = path.join(directory, entry.name);
+      if (entry.isSymbolicLink()) continue;
+      if (entry.isDirectory()) {
+        if (!ignored.has(entry.name) && file !== path.join("desktop", "web")) walk(file);
+      } else if (
+        entry.isFile() &&
+        !(entry.name.startsWith(".env") && entry.name !== ".env.example")
+      )
+        files.push(file);
+    }
+  };
+  walk(".");
+  return files;
+}
+for (const file of sourceFiles()) {
   if (!existsSync(file) || !statSync(file).isFile()) continue;
   const buffer = readFileSync(file);
   if (buffer.length > 5 * 1024 * 1024 || buffer.subarray(0, 8192).includes(0)) continue;
   inspect(buffer.toString("utf8"), file);
 }
 if (process.argv.includes("--history")) {
+  if (!existsSync(".git"))
+    throw new Error("Git history is unavailable in this source-only deployment.");
   let file = "Git history";
   for (const line of git(["log", "--all", "-p", "--no-ext-diff", "--unified=0"]).split("\n")) {
     if (line.startsWith("+++ b/")) file = `history:${line.slice(6)}`;

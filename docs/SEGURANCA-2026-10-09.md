@@ -70,7 +70,7 @@ A chave publishable/anon do Supabase **é pública por definição**. O token te
 ## Verificações executadas
 
 - `npm audit --json` e `npm audit --prefix desktop --json`: **zero vulnerabilidades conhecidas apontadas**. Isso não cobre todos os possíveis defeitos das bibliotecas.
-- `npm test`: 161 testes passaram, incluindo áudio/negociação, updater, validações, CSP, URLs, redaction, nonce com Request proxy, inicialização de tema/desempenho e ativação explícita de Realtime privado.
+- `npm test`: 162 testes passaram, incluindo áudio/negociação, updater, validações, CSP, URLs, redaction, nonce com Request proxy, inicialização de tema/desempenho, ativação explícita de Realtime privado e varredura de fontes sem metadata Git na Vercel.
 - `npm run typecheck`: passou.
 - `npm run lint`: zero erros; 44 avisos de Fast Refresh já existentes.
 - Builds de produção WEB e Desktop: verificados; a política não exige remover o processamento RNNoise/WASM.

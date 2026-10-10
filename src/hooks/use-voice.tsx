@@ -1,3 +1,4 @@
+import { voiceDiagnostic, voiceStage } from "@/services/voice-diagnostics";
 import {
   shouldApplyVoiceMove,
   type VoiceMoveRequest,
@@ -372,6 +373,7 @@ export function VoiceProviderRoot({
         const result = await channel
           .track({ ...payload, updated_at: Date.now() }, { timeout: 10000 })
           .catch(() => "error" as const);
+        if (snapshot.activeChannelId) voiceDiagnostic("room-presence", result);
         if (channelRef.current !== channel) return;
         if (result === "ok") {
           lastPublishedRef.current = { channel, key };
@@ -753,6 +755,7 @@ export function VoiceProviderRoot({
         screenOn: false,
       };
       setConnectionState("connecting");
+      voiceDiagnostic("join-click");
       setActiveChannelId(channelId);
       schedulePublish(true);
 
@@ -769,12 +772,14 @@ export function VoiceProviderRoot({
 
           try {
             // Read the server restriction before publishing the microphone, including on rejoin.
+            const finishRestriction = voiceStage("restriction-query");
             const { data: restriction, error: restrictionError } = await supabase
               .from("voice_restrictions")
               .select("*")
               .eq("server_id", callServerId)
               .eq("user_id", userId)
               .maybeSingle();
+            finishRestriction(restrictionError ? "error" : "complete");
             if (restrictionError) throw restrictionError;
             if (generation !== lifecycleGenerationRef.current) return;
             const nextRestrictions = { ...restrictionRef.current };
@@ -793,6 +798,7 @@ export function VoiceProviderRoot({
                 if (isCurrent()) reportNoiseProcessing("voice", status);
               },
               onStateChange: (state) => {
+                voiceDiagnostic("context-state", state);
                 if (isCurrent()) setConnectionState(state);
               },
               onSpeakingChange: (value) => {
@@ -814,10 +820,14 @@ export function VoiceProviderRoot({
               onScreenShareEnded: () => {
                 if (isCurrent()) setScreenOn(false);
               },
-              onError: () => {
+              onError: (error) => {
                 if (!isCurrent()) return;
-                setMicPermission("denied");
-                toast.error("Não foi possível acessar o microfone.");
+                setMicPermission(error.name === "NotAllowedError" ? "denied" : "unknown");
+                toast.error(
+                  error.name === "TimeoutError"
+                    ? "O microfone não respondeu. Confira a permissão no navegador e tente novamente."
+                    : "Não foi possível acessar o microfone.",
+                );
               },
             });
             if (!isCurrent()) {

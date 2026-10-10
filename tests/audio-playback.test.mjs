@@ -88,6 +88,8 @@ function fixture(componentName) {
       exports,
       DOMException,
       require: (name) => {
+        if (name === "@/services/voice-diagnostics")
+          return { voiceDiagnostic: () => {}, voiceErrorName: (e) => e?.name ?? "Error" };
         assert.ok(name in imports, name);
         return imports[name];
       },

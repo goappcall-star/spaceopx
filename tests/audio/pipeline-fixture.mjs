@@ -177,6 +177,37 @@ export function loadVoiceProvider(audioExports, additions = {}) {
     DOMException,
     ...additions,
   };
+  // Preserve custom transport fixtures while loading the real cancellation helper.
+  const fallbackRequire = environment.require;
+  environment.require = (id) => {
+    if (id === "./voice-diagnostics")
+      return {
+        voiceDiagnostic: () => {},
+        voiceStage: () => () => {},
+        voiceErrorName: (e) => e?.name ?? "Error",
+      };
+    if (id === "./microphone-request") {
+      const moduleEnvironment = {
+        exports: {},
+        Promise,
+        DOMException,
+        setTimeout: environment.setTimeout,
+        clearTimeout: environment.clearTimeout,
+      };
+      vm.runInNewContext(
+        ts.transpileModule(
+          fs.readFileSync(
+            new URL("../../src/services/microphone-request.ts", import.meta.url),
+            "utf8",
+          ),
+          { compilerOptions: { module: ts.ModuleKind.CommonJS } },
+        ).outputText,
+        moduleEnvironment,
+      );
+      return moduleEnvironment.exports;
+    }
+    return fallbackRequire(id);
+  };
   const source = fs
     .readFileSync(
       process.env.LOBBYX_VOICE_SERVICE_FIXTURE ??

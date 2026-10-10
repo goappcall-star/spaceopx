@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAudioSettings } from "@/hooks/use-audio-settings";
 import { useVoice } from "@/hooks/use-voice";
 import { receivedAudioVolume } from "@/lib/audio-volume";
+import { voiceDiagnostic, voiceErrorName } from "@/services/voice-diagnostics";
 
 function AudioSink({
   sinkId,
@@ -29,8 +30,10 @@ function AudioSink({
     if (!el || !el.srcObject) return;
     try {
       await el.play();
+      voiceDiagnostic("audio-playback", "player-started");
       onBlocked(sinkId, false);
     } catch (error) {
+      voiceDiagnostic("audio-playback", voiceErrorName(error));
       if ((error as DOMException)?.name === "NotAllowedError") onBlocked(sinkId, true);
     }
   }, [onBlocked, sinkId]);

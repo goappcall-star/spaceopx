@@ -26,6 +26,8 @@
  * stopped when the corresponding feature is turned off or the user disconnects.
  */
 
+import { voiceDiagnostic, voiceStage, voiceErrorName } from "./voice-diagnostics";
+import { requestMicrophone } from "./microphone-request";
 import {
   registerProbe,
   recordMetric,
@@ -227,6 +229,7 @@ class MeshVoiceProvider implements VoiceProvider {
   private remoteScreens = new Map<string, { active: boolean; hasAudio: boolean }>();
 
   private micStream: MediaStream | null = null;
+  private cancelMicrophoneRequest: (() => void) | null = null;
   private cameraStream: MediaStream | null = null;
   private screenStream: MediaStream | null = null;
 
@@ -269,22 +272,34 @@ class MeshVoiceProvider implements VoiceProvider {
     this.userId = userId;
     this.disposed = false;
     events.onStateChange?.("connecting");
-
+    const finishMic = voiceStage("microphone");
     try {
-      this.micStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: this.noiseSuppression !== "off",
-          autoGainControl: true,
-          ...(this.devices.microphoneId ? { deviceId: { exact: this.devices.microphoneId } } : {}),
-        },
-      });
+      const request = requestMicrophone(() =>
+        navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: this.noiseSuppression !== "off",
+            autoGainControl: true,
+            ...(this.devices.microphoneId
+              ? { deviceId: { exact: this.devices.microphoneId } }
+              : {}),
+          },
+        }),
+      );
+      this.cancelMicrophoneRequest = request.cancel;
+      try {
+        this.micStream = await request.promise;
+      } finally {
+        if (this.cancelMicrophoneRequest === request.cancel) this.cancelMicrophoneRequest = null;
+      }
+      finishMic("granted");
       if (this.disposed) {
         stopStream(this.micStream);
         this.micStream = null;
         throw new DOMException("Voice session ended", "AbortError");
       }
     } catch (error) {
+      finishMic(voiceErrorName(error));
       if (!this.disposed) {
         events.onStateChange?.("error");
         events.onError?.(error as Error);
@@ -293,10 +308,13 @@ class MeshVoiceProvider implements VoiceProvider {
     }
 
     this.applyMuteToTracks();
+    const finishPipeline = voiceStage("audio-pipeline");
     await this.startSpeakingDetection();
+    finishPipeline();
 
     if (this.disposed) throw new DOMException("Voice session ended", "AbortError");
 
+    const finishSignaling = voiceStage("signaling-subscription");
     await new Promise<void>((resolve, reject) => {
       const channel = supabase.channel(`rtc:${channelId}`, {
         config: { broadcast: { self: false, ack: false } },
@@ -307,7 +325,9 @@ class MeshVoiceProvider implements VoiceProvider {
         void this.onSignal(payload as SignalPayload);
       });
       channel.subscribe((status) => {
+        voiceDiagnostic("signaling-status", status);
         if (status === "SUBSCRIBED") {
+          finishSignaling();
           if (this.disposed) {
             if (!settled) {
               settled = true;
@@ -356,6 +376,7 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   private async performDisconnect() {
+    voiceDiagnostic("disconnect");
     this.stopPerformanceProbe?.();
     this.stopPerformanceProbe = null;
     this.performanceCounters = new WeakMap();
@@ -371,6 +392,8 @@ class MeshVoiceProvider implements VoiceProvider {
       )
       .catch(() => undefined);
     this.disposed = true;
+    this.cancelMicrophoneRequest?.();
+    this.cancelMicrophoneRequest = null;
     this.cameraGeneration += 1;
     this.screenGeneration += 1;
     this.microphoneGeneration += 1;
@@ -418,6 +441,7 @@ class MeshVoiceProvider implements VoiceProvider {
       await supabase.removeChannel(channel);
     }
     this.speaking = false;
+    voiceDiagnostic("disconnect", "resources-released");
   }
 
   /* ------------------------------------------------------------------ mesh */
@@ -486,6 +510,7 @@ class MeshVoiceProvider implements VoiceProvider {
     if (existing) return existing;
 
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    voiceDiagnostic("peer", "created");
     if (metrics.enabled) this.performanceConnectFinish.set(pc, measureOperation("rtc.connect"));
     // Exactly ONE side creates the m-lines. If both did, the session would end
     // up with six m-lines and each side would receive tracks on transceivers it
@@ -534,6 +559,7 @@ class MeshVoiceProvider implements VoiceProvider {
     }
 
     pc.onicecandidate = ({ candidate }) => {
+      voiceDiagnostic("ice-local", candidate ? "candidate" : "gathering-complete");
       if (candidate) this.send(remoteId, { candidate: candidate.toJSON() });
     };
 
@@ -543,8 +569,10 @@ class MeshVoiceProvider implements VoiceProvider {
       try {
         peer.makingOffer = true;
         await pc.setLocalDescription();
+        voiceDiagnostic("sdp-local", pc.localDescription?.type ?? "none");
         if (pc.localDescription) this.send(remoteId, { description: pc.localDescription.toJSON() });
-      } catch {
+      } catch (error) {
+        voiceDiagnostic("sdp-local-error", voiceErrorName(error));
         /* negotiation retried on next change */
       } finally {
         peer.makingOffer = false;
@@ -554,6 +582,11 @@ class MeshVoiceProvider implements VoiceProvider {
     pc.ontrack = ({ transceiver, track }) => {
       const kind = this.kindForTransceiver(peer, transceiver);
       if (!kind) return;
+      voiceDiagnostic("remote-track", kind);
+      if (kind === "mic")
+        track.addEventListener("unmute", () => voiceDiagnostic("remote-audio", "track-unmuted"), {
+          once: true,
+        });
       const stream = peer.streams[kind];
       for (const other of stream.getTracks()) if (other !== track) stream.removeTrack(other);
       if (!stream.getTracks().includes(track)) stream.addTrack(track);
@@ -574,6 +607,7 @@ class MeshVoiceProvider implements VoiceProvider {
     };
 
     pc.onconnectionstatechange = () => {
+      voiceDiagnostic("peer-state", pc.connectionState);
       if (pc.connectionState === "connected" || pc.connectionState === "failed") {
         this.performanceConnectFinish.get(pc)?.(pc.connectionState === "failed");
         this.performanceConnectFinish.delete(pc);
@@ -586,6 +620,7 @@ class MeshVoiceProvider implements VoiceProvider {
     };
 
     pc.oniceconnectionstatechange = () => {
+      voiceDiagnostic("ice-state", pc.iceConnectionState);
       if (pc.iceConnectionState === "failed") recordMetric("rtc.ice_failure", 1, true);
       if (pc.iceConnectionState === "disconnected") this.scheduleIceRestart(peer, 2500);
       else if (pc.iceConnectionState === "connected" && peer.restartTimer) {
@@ -617,6 +652,14 @@ class MeshVoiceProvider implements VoiceProvider {
   private emitAggregateState() {
     if (this.disposed) return;
     const states = [...this.peers.values()].map((p) => p.state);
+    voiceDiagnostic(
+      "ui-state",
+      states.length === 0 || states.some((s) => s === "connected")
+        ? "connected"
+        : states.some((s) => s === "new" || s === "connecting")
+          ? "connecting"
+          : "reconnecting",
+    );
     if (states.length === 0 || states.some((s) => s === "connected"))
       this.events.onStateChange?.("connected");
     else if (states.some((s) => s === "new" || s === "connecting"))
@@ -769,6 +812,7 @@ class MeshVoiceProvider implements VoiceProvider {
 
   private send(to: string, data: Omit<SignalPayload, "from" | "to">) {
     if (this.disposed) return;
+    if (data.description) voiceDiagnostic("sdp-send", data.description.type);
     void this.signaling?.send({
       type: "broadcast",
       event: "signal",
@@ -930,6 +974,7 @@ class MeshVoiceProvider implements VoiceProvider {
         }
 
         await pc.setRemoteDescription(description);
+        voiceDiagnostic("sdp-remote", description.type);
         if (this.disposed || this.peers.get(payload.from) !== peer) return;
         // Answering side: adopt the offerer's m-lines (mic/camera/screen by mid)
         // and start sending our own media on them.
@@ -942,11 +987,13 @@ class MeshVoiceProvider implements VoiceProvider {
             this.send(payload.from, { description: pc.localDescription.toJSON() });
         }
       } else if (payload.candidate) {
+        voiceDiagnostic("ice-remote", "candidate");
         // Candidates can outrun the description — buffer instead of dropping.
         if (!pc.remoteDescription) peer.pendingCandidates.push(payload.candidate);
         else await pc.addIceCandidate(payload.candidate).catch(() => undefined);
       }
-    } catch {
+    } catch (error) {
+      voiceDiagnostic("sdp-remote-error", voiceErrorName(error));
       /* transient signaling error; negotiation will retry */
     }
   }

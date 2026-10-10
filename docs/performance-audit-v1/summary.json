@@ -1,0 +1,634 @@
+{
+  "startup": {
+    "n": 7,
+    "mean": 992.2857142857143,
+    "p50": 970,
+    "p95": 1106,
+    "p99": null,
+    "max": 1106
+  },
+  "web": [
+    {
+      "mode": "normal",
+      "users": 10,
+      "render": {
+        "n": 20,
+        "mean": 2.8700000001117587,
+        "p50": 2.200000001117587,
+        "p95": 6.600000001490116,
+        "p99": null,
+        "max": 8.199999999254942
+      },
+      "frames": {
+        "n": 141,
+        "mean": 21.158865248226935,
+        "p50": 22,
+        "p95": 28.299999999999272,
+        "p99": 33.60000000000218,
+        "max": 33.70000000000073
+      },
+      "pathWrites": 3312,
+      "nodes": 339,
+      "heapMiB": 12.024271011352539
+    },
+    {
+      "mode": "normal",
+      "users": 50,
+      "render": {
+        "n": 20,
+        "mean": 7.860000000149012,
+        "p50": 6.649999998509884,
+        "p95": 14.700000002980232,
+        "p99": null,
+        "max": 18.100000001490116
+      },
+      "frames": {
+        "n": 81,
+        "mean": 37.03703703703704,
+        "p50": 36.20000000000073,
+        "p95": 50.20000000000073,
+        "p99": null,
+        "max": 66.70000000000073
+      },
+      "pathWrites": 4608,
+      "nodes": 1568,
+      "heapMiB": 12.980997085571289
+    },
+    {
+      "mode": "normal",
+      "users": 100,
+      "render": {
+        "n": 20,
+        "mean": 11.81999999973923,
+        "p50": 10.699999999254942,
+        "p95": 20,
+        "p99": null,
+        "max": 20.699999999254942
+      },
+      "frames": {
+        "n": 78,
+        "mean": 38.6641025641026,
+        "p50": 38.89999999999782,
+        "p95": 55.60000000000218,
+        "p99": null,
+        "max": 72.40000000000146
+      },
+      "pathWrites": 4392,
+      "nodes": 3125,
+      "heapMiB": 18.40946388244629
+    },
+    {
+      "mode": "optimized",
+      "users": 10,
+      "render": {
+        "n": 20,
+        "mean": 1.4650000002235175,
+        "p50": 1.4000000022351742,
+        "p95": 2.199999999254942,
+        "p99": null,
+        "max": 2.399999998509884
+      },
+      "frames": {
+        "n": 555,
+        "mean": 5.405109909909915,
+        "p50": 5.5,
+        "p95": 6.700000000004366,
+        "p99": 8,
+        "max": 16.69999999999709
+      },
+      "pathWrites": 0,
+      "nodes": 339,
+      "heapMiB": 7.472687721252441
+    },
+    {
+      "mode": "optimized",
+      "users": 50,
+      "render": {
+        "n": 20,
+        "mean": 5.155000000074506,
+        "p50": 4.650000000372529,
+        "p95": 7.300000000745058,
+        "p99": null,
+        "max": 11.800000000745058
+      },
+      "frames": {
+        "n": 565,
+        "mean": 5.319469026548672,
+        "p50": 5.5,
+        "p95": 7.099999999998545,
+        "p99": 8,
+        "max": 16.69999999999709
+      },
+      "pathWrites": 0,
+      "nodes": 1568,
+      "heapMiB": 7.932920455932617
+    },
+    {
+      "mode": "optimized",
+      "users": 100,
+      "render": {
+        "n": 20,
+        "mean": 10.390000000223518,
+        "p50": 9.200000001117587,
+        "p95": 15,
+        "p99": null,
+        "max": 22
+      },
+      "frames": {
+        "n": 567,
+        "mean": 5.300705467372134,
+        "p50": 5.5,
+        "p95": 7.19999999999709,
+        "p99": 7.69999999999709,
+        "max": 11.099999999998545
+      },
+      "pathWrites": 0,
+      "nodes": 3125,
+      "heapMiB": 10.535327911376953
+    }
+  ],
+  "database": [
+    {
+      "label": "history30",
+      "n": 30,
+      "mean": 1.8676333333333337,
+      "p50": 1.887,
+      "p95": 2.362,
+      "p99": null,
+      "max": 2.459,
+      "errors": 0
+    },
+    {
+      "label": "unread",
+      "n": 30,
+      "mean": 897.6271666666668,
+      "p50": 909.2955,
+      "p95": 1109.837,
+      "p99": null,
+      "max": 1122.794,
+      "errors": 0
+    },
+    {
+      "label": "members",
+      "n": 30,
+      "mean": 1.5252000000000003,
+      "p50": 1.439,
+      "p95": 2.226,
+      "p99": null,
+      "max": 2.439,
+      "errors": 0
+    },
+    {
+      "label": "unread-concurrent (10 clientes SQL)",
+      "n": 30,
+      "mean": 1665.8832833333327,
+      "p50": 1642.7805999999982,
+      "p95": 2286.047099999996,
+      "p99": null,
+      "max": 2296.302100000001,
+      "errors": 0
+    },
+    {
+      "label": "unread-concurrent (50 clientes SQL)",
+      "n": 150,
+      "mean": 7465.178349999998,
+      "p50": 8163.160949999998,
+      "p95": 10556.718,
+      "p99": 11011.094499999992,
+      "max": 11086.620499999997,
+      "errors": 0
+    },
+    {
+      "label": "unread-concurrent (100 clientes SQL)",
+      "n": 268,
+      "mean": 9987.509279477614,
+      "p50": 9654.721300000005,
+      "p95": 16818.574200000003,
+      "p99": 17832.925200000012,
+      "max": 18264.4167,
+      "errors": 32
+    }
+  ],
+  "electron": [
+    {
+      "phase": "visual",
+      "mode": "normal",
+      "cpu": {
+        "n": 14,
+        "mean": 1.7039161274341217,
+        "p50": 1.110695231971261,
+        "p95": 5.41454392525945,
+        "p99": null,
+        "max": 5.41454392525945
+      },
+      "workingMiB": {
+        "n": 14,
+        "mean": 392.7603236607143,
+        "p50": 391.392578125,
+        "p95": 430.5234375,
+        "p99": null,
+        "max": 430.5234375
+      },
+      "processes": 4
+    },
+    {
+      "phase": "visual",
+      "mode": "optimized",
+      "cpu": {
+        "n": 14,
+        "mean": 1.1505476542208897,
+        "p50": 0.8320047826918535,
+        "p95": 2.744209586614396,
+        "p99": null,
+        "max": 2.744209586614396
+      },
+      "workingMiB": {
+        "n": 14,
+        "mean": 451.28487723214283,
+        "p50": 454.765625,
+        "p95": 465.73828125,
+        "p99": null,
+        "max": 465.73828125
+      },
+      "processes": 4
+    },
+    {
+      "phase": "voice",
+      "mode": "normal",
+      "cpu": {
+        "n": 13,
+        "mean": 6.347602536967428,
+        "p50": 3.798759389543925,
+        "p95": 36.843629336946,
+        "p99": null,
+        "max": 36.843629336946
+      },
+      "workingMiB": {
+        "n": 13,
+        "mean": 633.0171274038462,
+        "p50": 635.82421875,
+        "p95": 644.44140625,
+        "p99": null,
+        "max": 644.44140625
+      },
+      "processes": 5
+    },
+    {
+      "phase": "voice",
+      "mode": "optimized",
+      "cpu": {
+        "n": 12,
+        "mean": 3.246647968326118,
+        "p50": 3.4693008372395546,
+        "p95": 4.699208349296907,
+        "p99": null,
+        "max": 4.699208349296907
+      },
+      "workingMiB": {
+        "n": 12,
+        "mean": 652.5289713541666,
+        "p50": 655.6953125,
+        "p95": 683.16015625,
+        "p99": null,
+        "max": 683.16015625
+      },
+      "processes": 5
+    },
+    {
+      "phase": "screen-audio",
+      "mode": "normal",
+      "cpu": {
+        "n": 11,
+        "mean": 4.910194259265039,
+        "p50": 4.510170678753794,
+        "p95": 6.065110881339386,
+        "p99": null,
+        "max": 6.065110881339386
+      },
+      "workingMiB": {
+        "n": 11,
+        "mean": 666.6065340909091,
+        "p50": 667.8203125,
+        "p95": 685.38671875,
+        "p99": null,
+        "max": 685.38671875
+      },
+      "processes": 5
+    },
+    {
+      "phase": "screen-audio",
+      "mode": "optimized",
+      "cpu": {
+        "n": 11,
+        "mean": 4.352815751287025,
+        "p50": 4.55466028835023,
+        "p95": 5.625935361198596,
+        "p99": null,
+        "max": 5.625935361198596
+      },
+      "workingMiB": {
+        "n": 11,
+        "mean": 617.7272727272727,
+        "p50": 623.52734375,
+        "p95": 632.19140625,
+        "p99": null,
+        "max": 632.19140625
+      },
+      "processes": 5
+    }
+  ],
+  "bundle": [
+    {
+      "file": "index-C3qTpFoz.js",
+      "bytes": 412147,
+      "gzipBytes": 127092
+    },
+    {
+      "file": "app-DLa-eunI.js",
+      "bytes": 241905,
+      "gzipBytes": 60788
+    },
+    {
+      "file": "client-CEDR7SOw.js",
+      "bytes": 219746,
+      "gzipBytes": 56383
+    },
+    {
+      "file": "SessionCommunications-DkohCfde.js",
+      "bytes": 78409,
+      "gzipBytes": 23383
+    },
+    {
+      "file": "types-BAbbhTHb.js",
+      "bytes": 60150,
+      "gzipBytes": 14022
+    },
+    {
+      "file": "select-CPCed4K7.js",
+      "bytes": 46184,
+      "gzipBytes": 15498
+    },
+    {
+      "file": "utils-Dq0ltMZO.js",
+      "bytes": 42015,
+      "gzipBytes": 13952
+    },
+    {
+      "file": "dist-QznMSzQ6.js",
+      "bytes": 40921,
+      "gzipBytes": 14710
+    },
+    {
+      "file": "settings_.profile-BBfnfGSm.js",
+      "bytes": 32328,
+      "gzipBytes": 9181
+    },
+    {
+      "file": "avatar-DBIIJaAA.js",
+      "bytes": 24828,
+      "gzipBytes": 8174
+    },
+    {
+      "file": "use-auth-NPYeV-GY.js",
+      "bytes": 23699,
+      "gzipBytes": 7938
+    },
+    {
+      "file": "use-global-presence-DQpjaPTu.js",
+      "bytes": 11677,
+      "gzipBytes": 4387
+    },
+    {
+      "file": "NoiseModeSelect-CnOYTWjM.js",
+      "bytes": 11621,
+      "gzipBytes": 4657
+    },
+    {
+      "file": "textarea-DdhgrfkF.js",
+      "bytes": 9385,
+      "gzipBytes": 4131
+    },
+    {
+      "file": "AudioSettingsPanel-C-nV-Gcj.js",
+      "bytes": 7938,
+      "gzipBytes": 2767
+    },
+    {
+      "file": "SettingsShell-B_8pKQDu.js",
+      "bytes": 7110,
+      "gzipBytes": 2825
+    },
+    {
+      "file": "link-BBIKHsP8.js",
+      "bytes": 5985,
+      "gzipBytes": 2904
+    },
+    {
+      "file": "button-Bm5oKsI9.js",
+      "bytes": 5075,
+      "gzipBytes": 2166
+    },
+    {
+      "file": "profiles-CaIOH06Q.js",
+      "bytes": 4911,
+      "gzipBytes": 2039
+    },
+    {
+      "file": "switch-BBnf2iL8.js",
+      "bytes": 4890,
+      "gzipBytes": 2160
+    },
+    {
+      "file": "dist-dT6WXybl.js",
+      "bytes": 4460,
+      "gzipBytes": 1728
+    },
+    {
+      "file": "invite._code-D5ZygLzx.js",
+      "bytes": 4334,
+      "gzipBytes": 1775
+    },
+    {
+      "file": "routes-COw-4jVz.js",
+      "bytes": 3626,
+      "gzipBytes": 1514
+    },
+    {
+      "file": "register-B-ejCYOi.js",
+      "bytes": 3624,
+      "gzipBytes": 1565
+    },
+    {
+      "file": "dist-LyG5DeV5.js",
+      "bytes": 3463,
+      "gzipBytes": 1396
+    },
+    {
+      "file": "useMutation-QZLCe5QW.js",
+      "bytes": 2373,
+      "gzipBytes": 973
+    },
+    {
+      "file": "auth-LLhkIu0F.js",
+      "bytes": 2326,
+      "gzipBytes": 1097
+    },
+    {
+      "file": "login-CvEq36GP.js",
+      "bytes": 2290,
+      "gzipBytes": 1133
+    },
+    {
+      "file": "complete-registration-rJysSY41.js",
+      "bytes": 2221,
+      "gzipBytes": 1167
+    },
+    {
+      "file": "reset-password-5e35ZWcZ.js",
+      "bytes": 2035,
+      "gzipBytes": 1022
+    },
+    {
+      "file": "input-validation-YIQoRos9.js",
+      "bytes": 1861,
+      "gzipBytes": 933
+    },
+    {
+      "file": "GoogleSignInButton-Cmsg_FaA.js",
+      "bytes": 1623,
+      "gzipBytes": 968
+    },
+    {
+      "file": "forgot-password-JncHz9Ra.js",
+      "bytes": 1451,
+      "gzipBytes": 795
+    },
+    {
+      "file": "invites-DN4HaneO.js",
+      "bytes": 1382,
+      "gzipBytes": 728
+    },
+    {
+      "file": "preload-helper-BZ1Pz5am.js",
+      "bytes": 1218,
+      "gzipBytes": 688
+    },
+    {
+      "file": "createLucideIcon-BdodBWmj.js",
+      "bytes": 1189,
+      "gzipBytes": 686
+    },
+    {
+      "file": "DownloadWindows-Bv3weoqI.js",
+      "bytes": 1168,
+      "gzipBytes": 614
+    },
+    {
+      "file": "auth-callback-ropYSQEE.js",
+      "bytes": 1104,
+      "gzipBytes": 684
+    },
+    {
+      "file": "AuthShell-DVTntOtc.js",
+      "bytes": 755,
+      "gzipBytes": 371
+    },
+    {
+      "file": "label-C3dKnA6i.js",
+      "bytes": 680,
+      "gzipBytes": 449
+    },
+    {
+      "file": "gamepad-2-DOls4hom.js",
+      "bytes": 621,
+      "gzipBytes": 382
+    },
+    {
+      "file": "useMatch-B-xeNYEM.js",
+      "bytes": 549,
+      "gzipBytes": 357
+    },
+    {
+      "file": "Logo-Bq2FIZ6m.js",
+      "bytes": 474,
+      "gzipBytes": 321
+    },
+    {
+      "file": "route-CcIdBHWn.js",
+      "bytes": 408,
+      "gzipBytes": 275
+    },
+    {
+      "file": "users-DG7uqNLa.js",
+      "bytes": 306,
+      "gzipBytes": 224
+    },
+    {
+      "file": "settings_.voice-DnMO1kW6.js",
+      "bytes": 298,
+      "gzipBytes": 224
+    },
+    {
+      "file": "useParams-DNZOyPv3.js",
+      "bytes": 258,
+      "gzipBytes": 194
+    },
+    {
+      "file": "redirect-Bg28mca1.js",
+      "bytes": 257,
+      "gzipBytes": 208
+    },
+    {
+      "file": "video-CnVWd3TZ.js",
+      "bytes": 248,
+      "gzipBytes": 218
+    },
+    {
+      "file": "useSearch-D6Kag6EU.js",
+      "bytes": 218,
+      "gzipBytes": 168
+    },
+    {
+      "file": "useNavigate-DWoGd7Hi.js",
+      "bytes": 185,
+      "gzipBytes": 164
+    },
+    {
+      "file": "settings-DJ7LAi8J.js",
+      "bytes": 38,
+      "gzipBytes": 58
+    },
+    {
+      "file": "root-DLTE-HSj.js",
+      "bytes": 32,
+      "gzipBytes": 52
+    }
+  ],
+  "idle": {
+    "cpu": {
+      "n": 35,
+      "mean": 0.10071750362642191,
+      "p50": 0.10476085708367361,
+      "p95": 0.1656408004604907,
+      "p99": null,
+      "max": 0.18647117892026627
+    },
+    "workingMiB": {
+      "n": 35,
+      "mean": 555.7751116071429,
+      "p50": 555.4375,
+      "p95": 557.9453125,
+      "p99": null,
+      "max": 558.18359375
+    },
+    "privateMiB": {
+      "n": 35,
+      "mean": 279.22075892857146,
+      "p50": 278.5078125,
+      "p95": 282.60546875,
+      "p99": null,
+      "max": 283.63671875
+    },
+    "processes": 6
+  }
+}

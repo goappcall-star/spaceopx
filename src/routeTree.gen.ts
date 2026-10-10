@@ -18,6 +18,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedPerformanceMonitorRouteImport } from './routes/_authenticated/performance-monitor'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as InviteCodeRouteImport } from './routes/invite.$code'
 import { Route as AuthenticatedSettingsProfileRouteImport } from './routes/_authenticated/settings_.profile'
@@ -67,6 +68,12 @@ const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   path: '/app',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPerformanceMonitorRoute =
+  AuthenticatedPerformanceMonitorRouteImport.update({
+    id: '/performance-monitor',
+    path: '/performance-monitor',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/app': typeof AuthenticatedAppRoute
+  '/performance-monitor': typeof AuthenticatedPerformanceMonitorRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/invite/$code': typeof InviteCodeRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
@@ -113,6 +121,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/app': typeof AuthenticatedAppRoute
+  '/performance-monitor': typeof AuthenticatedPerformanceMonitorRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/invite/$code': typeof InviteCodeRoute
   '/settings/profile': typeof AuthenticatedSettingsProfileRoute
@@ -129,6 +138,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
+  '/_authenticated/performance-monitor': typeof AuthenticatedPerformanceMonitorRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/invite/$code': typeof InviteCodeRoute
   '/_authenticated/settings_/profile': typeof AuthenticatedSettingsProfileRoute
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/app'
+    | '/performance-monitor'
     | '/settings'
     | '/invite/$code'
     | '/settings/profile'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/app'
+    | '/performance-monitor'
     | '/settings'
     | '/invite/$code'
     | '/settings/profile'
@@ -174,6 +186,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/_authenticated/app'
+    | '/_authenticated/performance-monitor'
     | '/_authenticated/settings'
     | '/invite/$code'
     | '/_authenticated/settings_/profile'
@@ -257,6 +270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/performance-monitor': {
+      id: '/_authenticated/performance-monitor'
+      path: '/performance-monitor'
+      fullPath: '/performance-monitor'
+      preLoaderRoute: typeof AuthenticatedPerformanceMonitorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -290,6 +310,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
+  AuthenticatedPerformanceMonitorRoute: typeof AuthenticatedPerformanceMonitorRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSettingsProfileRoute: typeof AuthenticatedSettingsProfileRoute
   AuthenticatedSettingsVoiceRoute: typeof AuthenticatedSettingsVoiceRoute
@@ -297,6 +318,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRoute,
+  AuthenticatedPerformanceMonitorRoute: AuthenticatedPerformanceMonitorRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSettingsProfileRoute: AuthenticatedSettingsProfileRoute,
   AuthenticatedSettingsVoiceRoute: AuthenticatedSettingsVoiceRoute,

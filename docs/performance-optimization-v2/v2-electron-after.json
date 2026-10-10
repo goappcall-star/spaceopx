@@ -1,0 +1,5054 @@
+{
+  "scope": "Electron 44 production fixture, hidden window, synthetic media, no real accounts",
+  "metrics": [
+    {
+      "elapsedMs": 1389,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "10",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…10 perfis · atualização 0",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0,
+          "workingSetKiB": 92128
+        },
+        {
+          "type": "GPU",
+          "cpu": 0,
+          "workingSetKiB": 122352
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49348
+        },
+        {
+          "type": "Tab",
+          "cpu": 0,
+          "workingSetKiB": 101356
+        }
+      ]
+    },
+    {
+      "elapsedMs": 2395,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "10",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…10 perfis · atualização 18",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.0795944401987451,
+          "workingSetKiB": 92284
+        },
+        {
+          "type": "GPU",
+          "cpu": 2.23355104279919,
+          "workingSetKiB": 128864
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49348
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.30472715925217747,
+          "workingSetKiB": 103496
+        }
+      ]
+    },
+    {
+      "elapsedMs": 3404,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "10",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…10 perfis · atualização 20",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.01642675995215417,
+          "workingSetKiB": 92284
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.6190917200706919,
+          "workingSetKiB": 130136
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49348
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.2069228338628284,
+          "workingSetKiB": 101684
+        }
+      ]
+    },
+    {
+      "elapsedMs": 4404,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "10",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…10 perfis · atualização 20",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.01627247776594628,
+          "workingSetKiB": 92320
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5102948837032586,
+          "workingSetKiB": 130484
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49348
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.11335640954883398,
+          "workingSetKiB": 102448
+        }
+      ]
+    },
+    {
+      "elapsedMs": 5418,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "10",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…10 perfis · atualização 20",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.015720433012876456,
+          "workingSetKiB": 92388
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.4769417874634323,
+          "workingSetKiB": 130624
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.0005998709537882426,
+          "workingSetKiB": 49352
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.11561839323467231,
+          "workingSetKiB": 103120
+        }
+      ]
+    },
+    {
+      "elapsedMs": 6458,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "50",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…50 perfis · atualização 24",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.016092265742932144,
+          "workingSetKiB": 92400
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.9528604245164773,
+          "workingSetKiB": 131640
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49352
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.8242629229705938,
+          "workingSetKiB": 116320
+        }
+      ]
+    },
+    {
+      "elapsedMs": 7437,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "50",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…50 perfis · atualização 40",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.009504389887941797,
+          "workingSetKiB": 92404
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.4486233017613079,
+          "workingSetKiB": 123932
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49352
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.38185775721960985,
+          "workingSetKiB": 122072
+        }
+      ]
+    },
+    {
+      "elapsedMs": 8450,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "50",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…50 perfis · atualização 40",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.006572392726047535,
+          "workingSetKiB": 92476
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.2884182901762902,
+          "workingSetKiB": 124504
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.026922689682810738,
+          "workingSetKiB": 49464
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.09949777314507723,
+          "workingSetKiB": 122384
+        }
+      ]
+    },
+    {
+      "elapsedMs": 9453,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "50",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…50 perfis · atualização 40",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.009045610810476761,
+          "workingSetKiB": 92492
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.4177763956004232,
+          "workingSetKiB": 124892
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49464
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.12064209103211619,
+          "workingSetKiB": 123392
+        }
+      ]
+    },
+    {
+      "elapsedMs": 10469,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 40",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08681170834153705,
+          "workingSetKiB": 92544
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.6866002487390767,
+          "workingSetKiB": 125048
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.036777651001668,
+          "workingSetKiB": 49500
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.9490497360997899,
+          "workingSetKiB": 136680
+        }
+      ]
+    },
+    {
+      "elapsedMs": 11524,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 59",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.00898904379323114,
+          "workingSetKiB": 92544
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5770237577294849,
+          "workingSetKiB": 125416
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49500
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.4820354504320485,
+          "workingSetKiB": 147976
+        }
+      ]
+    },
+    {
+      "elapsedMs": 12500,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.010375112845363169,
+          "workingSetKiB": 92544
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5981572565495098,
+          "workingSetKiB": 126308
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.0005635840667611438,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.6083048552012938,
+          "workingSetKiB": 152748
+        }
+      ]
+    },
+    {
+      "elapsedMs": 13513,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.009221501283442133,
+          "workingSetKiB": 92544
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.4955919414114672,
+          "workingSetKiB": 126664
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.13026090349982708,
+          "workingSetKiB": 153724
+        }
+      ]
+    },
+    {
+      "elapsedMs": 14523,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.007331291139441158,
+          "workingSetKiB": 92548
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.42367647850434453,
+          "workingSetKiB": 126788
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.18293969677485192,
+          "workingSetKiB": 154680
+        }
+      ]
+    },
+    {
+      "elapsedMs": 15528,
+      "mode": "optimized",
+      "phase": "visual",
+      "users": "10",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…10 perfis · atualização 65",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.009166352557478667,
+          "workingSetKiB": 92548
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.24782130742771066,
+          "workingSetKiB": 126856
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.359606575985143,
+          "workingSetKiB": 156208
+        }
+      ]
+    },
+    {
+      "elapsedMs": 16535,
+      "mode": "optimized",
+      "phase": "visual",
+      "users": "10",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…10 perfis · atualização 80",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.05318157885418353,
+          "workingSetKiB": 92604
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.6322508031030039,
+          "workingSetKiB": 129112
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.17086312186084932,
+          "workingSetKiB": 154948
+        }
+      ]
+    },
+    {
+      "elapsedMs": 17549,
+      "mode": "optimized",
+      "phase": "visual",
+      "users": "10",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…10 perfis · atualização 80",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.005580171866006185,
+          "workingSetKiB": 92604
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.329815260061946,
+          "workingSetKiB": 126556
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.023372734965019792,
+          "workingSetKiB": 153064
+        }
+      ]
+    },
+    {
+      "elapsedMs": 18562,
+      "mode": "optimized",
+      "phase": "visual",
+      "users": "10",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…10 perfis · atualização 80",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.008352663783804424,
+          "workingSetKiB": 92604
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.2438138479748367,
+          "workingSetKiB": 125680
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.021526293182188475,
+          "workingSetKiB": 153072
+        }
+      ]
+    },
+    {
+      "elapsedMs": 19562,
+      "mode": "optimized",
+      "phase": "visual",
+      "users": "50",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…50 perfis · atualização 80",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.009730005671393717,
+          "workingSetKiB": 92604
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.575502924625537,
+          "workingSetKiB": 134300
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.48715672425404827,
+          "workingSetKiB": 161044
+        }
+      ]
+    },
+    {
+      "elapsedMs": 20579,
+      "mode": "optimized",
+      "phase": "visual",
+      "users": "50",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…50 perfis · atualização 100",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.048898709605093134,
+          "workingSetKiB": 92612
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.29560957541309785,
+          "workingSetKiB": 134576
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.6420903263111003,
+          "workingSetKiB": 165716
+        }
+      ]
+    },
+    {
+      "elapsedMs": 21575,
+      "mode": "optimized",
+      "phase": "visual",
+      "users": "50",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…50 perfis · atualização 100",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.010663682844327305,
+          "workingSetKiB": 92616
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.34622268737909323,
+          "workingSetKiB": 134692
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.0529073160246643,
+          "workingSetKiB": 166016
+        }
+      ]
+    },
+    {
+      "elapsedMs": 22587,
+      "mode": "optimized",
+      "phase": "visual",
+      "users": "50",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…50 perfis · atualização 100",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.00913110722044156,
+          "workingSetKiB": 92620
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.33149197654550794,
+          "workingSetKiB": 134684
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.02342452182687887,
+          "workingSetKiB": 165896
+        }
+      ]
+    },
+    {
+      "elapsedMs": 23601,
+      "mode": "optimized",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 100",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.00863930104355523,
+          "workingSetKiB": 92684
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.2256780039983165,
+          "workingSetKiB": 134688
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.47227228293625073,
+          "workingSetKiB": 174268
+        }
+      ]
+    },
+    {
+      "elapsedMs": 24635,
+      "mode": "optimized",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 108",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.008208728222300416,
+          "workingSetKiB": 92684
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.2182139005348045,
+          "workingSetKiB": 134688
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.508205728058982,
+          "workingSetKiB": 181040
+        }
+      ]
+    },
+    {
+      "elapsedMs": 25625,
+      "mode": "optimized",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.012083152296556765,
+          "workingSetKiB": 92684
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.41743122047037234,
+          "workingSetKiB": 134808
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.3528228196671839,
+          "workingSetKiB": 176364
+        }
+      ]
+    },
+    {
+      "elapsedMs": 26640,
+      "mode": "optimized",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.007913764268993116,
+          "workingSetKiB": 92688
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.31683727198306394,
+          "workingSetKiB": 134908
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.024872681422815884,
+          "workingSetKiB": 176368
+        }
+      ]
+    },
+    {
+      "elapsedMs": 27642,
+      "mode": "optimized",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.007936111804342401,
+          "workingSetKiB": 92688
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.23097264565127548,
+          "workingSetKiB": 134888
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49516
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.018843286748402438,
+          "workingSetKiB": 176304
+        }
+      ]
+    },
+    {
+      "elapsedMs": 29597,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10213648512440106,
+          "workingSetKiB": 93636
+        },
+        {
+          "type": "GPU",
+          "cpu": 3.993549809933627,
+          "workingSetKiB": 185528
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.007026088817943429,
+          "workingSetKiB": 49680
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.5370675823675763,
+          "workingSetKiB": 184816
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 86528
+        }
+      ]
+    },
+    {
+      "elapsedMs": 29666,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.9158240842969764,
+          "workingSetKiB": 93736
+        },
+        {
+          "type": "GPU",
+          "cpu": 5.788549987896393,
+          "workingSetKiB": 192780
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.033411755593637,
+          "workingSetKiB": 50400
+        },
+        {
+          "type": "Tab",
+          "cpu": 16.663036322800497,
+          "workingSetKiB": 192692
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.24842210218582408,
+          "workingSetKiB": 86528
+        }
+      ]
+    },
+    {
+      "elapsedMs": 30672,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.013767053502646556,
+          "workingSetKiB": 93736
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.31719461196592075,
+          "workingSetKiB": 193396
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2018561354225377,
+          "workingSetKiB": 50352
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.1089656292143395,
+          "workingSetKiB": 195064
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.23553177347067122,
+          "workingSetKiB": 86528
+        }
+      ]
+    },
+    {
+      "elapsedMs": 31686,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1566582339429627,
+          "workingSetKiB": 93868
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.7140827407516307,
+          "workingSetKiB": 193896
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2602365463872261,
+          "workingSetKiB": 50676
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.8029389303185601,
+          "workingSetKiB": 198016
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.5801870425277545,
+          "workingSetKiB": 86712
+        }
+      ]
+    },
+    {
+      "elapsedMs": 32700,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.008595224736366544,
+          "workingSetKiB": 93868
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.556231010032882,
+          "workingSetKiB": 193696
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.21372135645721332,
+          "workingSetKiB": 50680
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.037653583872958,
+          "workingSetKiB": 200316
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.22422294796601103,
+          "workingSetKiB": 86712
+        }
+      ]
+    },
+    {
+      "elapsedMs": 33716,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1368483620371911,
+          "workingSetKiB": 93920
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5230815938033346,
+          "workingSetKiB": 193308
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3043430027940708,
+          "workingSetKiB": 50756
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.7352188464671408,
+          "workingSetKiB": 204904
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.5708518965220174,
+          "workingSetKiB": 86748
+        }
+      ]
+    },
+    {
+      "elapsedMs": 34730,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.011027808154924434,
+          "workingSetKiB": 93984
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.442293457238611,
+          "workingSetKiB": 193492
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2680177337414408,
+          "workingSetKiB": 50756
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.0885611585284678,
+          "workingSetKiB": 205956
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2373499900727516,
+          "workingSetKiB": 86748
+        }
+      ]
+    },
+    {
+      "elapsedMs": 35743,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.15733429876204155,
+          "workingSetKiB": 94060
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5714822169544382,
+          "workingSetKiB": 182568
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.36161972490956423,
+          "workingSetKiB": 50816
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.9771280354529261,
+          "workingSetKiB": 210496
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.6654733508138158,
+          "workingSetKiB": 86752
+        }
+      ]
+    },
+    {
+      "elapsedMs": 36757,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.07133398246681906,
+          "workingSetKiB": 94080
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.41522716645193364,
+          "workingSetKiB": 182596
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.27864125271661655,
+          "workingSetKiB": 50876
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.6875494488366083,
+          "workingSetKiB": 212808
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.32359945386888905,
+          "workingSetKiB": 86584
+        }
+      ]
+    },
+    {
+      "elapsedMs": 37768,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08935383227009198,
+          "workingSetKiB": 94080
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.45373954202581945,
+          "workingSetKiB": 182576
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.28405521218063573,
+          "workingSetKiB": 50828
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.6343299825866708,
+          "workingSetKiB": 205484
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.46996978724428734,
+          "workingSetKiB": 86752
+        }
+      ]
+    },
+    {
+      "elapsedMs": 38770,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.15004772205716474,
+          "workingSetKiB": 94084
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.44890126167138295,
+          "workingSetKiB": 182560
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.25333757585248534,
+          "workingSetKiB": 50844
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.7968704282970789,
+          "workingSetKiB": 209240
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.5816713913232563,
+          "workingSetKiB": 86892
+        }
+      ]
+    },
+    {
+      "elapsedMs": 39782,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.010592909702611062,
+          "workingSetKiB": 94084
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5195853992203007,
+          "workingSetKiB": 182712
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2903299675946748,
+          "workingSetKiB": 50848
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.261200216409565,
+          "workingSetKiB": 210400
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2483379610455038,
+          "workingSetKiB": 86892
+        }
+      ]
+    },
+    {
+      "elapsedMs": 40795,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.21435378138596087,
+          "workingSetKiB": 94844
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.7619604192559204,
+          "workingSetKiB": 189528
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3264883320401473,
+          "workingSetKiB": 50876
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.3586741849144093,
+          "workingSetKiB": 223272
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.7383088417726059,
+          "workingSetKiB": 87012
+        }
+      ]
+    },
+    {
+      "elapsedMs": 41806,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.00866216596677025,
+          "workingSetKiB": 94844
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.739705393665588,
+          "workingSetKiB": 189524
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.40715415056247634,
+          "workingSetKiB": 50880
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.8810371752028174,
+          "workingSetKiB": 225764
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3020285784456741,
+          "workingSetKiB": 87012
+        }
+      ]
+    },
+    {
+      "elapsedMs": 42817,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.18290331193939813,
+          "workingSetKiB": 94896
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.7480639933754488,
+          "workingSetKiB": 192656
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.44083940464099425,
+          "workingSetKiB": 50960
+        },
+        {
+          "type": "Tab",
+          "cpu": 3.2494206381386577,
+          "workingSetKiB": 215796
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.7225404467054206,
+          "workingSetKiB": 87052
+        }
+      ]
+    },
+    {
+      "elapsedMs": 43829,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.008616440233866334,
+          "workingSetKiB": 94896
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.7409561975105573,
+          "workingSetKiB": 192732
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.36795366426427556,
+          "workingSetKiB": 50964
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.796224776293596,
+          "workingSetKiB": 217920
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2925965173106426,
+          "workingSetKiB": 87052
+        }
+      ]
+    },
+    {
+      "elapsedMs": 44836,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.18764343873608066,
+          "workingSetKiB": 94900
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.769136171504481,
+          "workingSetKiB": 195440
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.45262941159335085,
+          "workingSetKiB": 50984
+        },
+        {
+          "type": "Tab",
+          "cpu": 3.060281233417646,
+          "workingSetKiB": 224312
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.7874944966913944,
+          "workingSetKiB": 87060
+        }
+      ]
+    },
+    {
+      "elapsedMs": 45836,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.12401619207649155,
+          "workingSetKiB": 94964
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.8380656118208835,
+          "workingSetKiB": 195504
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.42557441592120965,
+          "workingSetKiB": 50916
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.609446373134771,
+          "workingSetKiB": 257584
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.6180102120377294,
+          "workingSetKiB": 86812
+        }
+      ]
+    },
+    {
+      "elapsedMs": 46837,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.04186245208584724,
+          "workingSetKiB": 94980
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.752606219098544,
+          "workingSetKiB": 198296
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3452202577165118,
+          "workingSetKiB": 50928
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.0072483528967937,
+          "workingSetKiB": 232104
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3889051487645436,
+          "workingSetKiB": 87072
+        }
+      ]
+    },
+    {
+      "elapsedMs": 47853,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1971135953244104,
+          "workingSetKiB": 95024
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.8042641383112792,
+          "workingSetKiB": 199864
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3246558254429743,
+          "workingSetKiB": 50932
+        },
+        {
+          "type": "Tab",
+          "cpu": 3.050470631053543,
+          "workingSetKiB": 224112
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.7419648506520272,
+          "workingSetKiB": 87080
+        }
+      ]
+    },
+    {
+      "elapsedMs": 48864,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.012739504329453801,
+          "workingSetKiB": 94228
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.8631890902510583,
+          "workingSetKiB": 199896
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.28973383052845275,
+          "workingSetKiB": 50932
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.823475470874692,
+          "workingSetKiB": 226704
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.29753075676609303,
+          "workingSetKiB": 87080
+        }
+      ]
+    },
+    {
+      "elapsedMs": 49879,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.2009379623133338,
+          "workingSetKiB": 94236
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.8841628647162579,
+          "workingSetKiB": 202728
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.41520008566278294,
+          "workingSetKiB": 50940
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.9445948795566568,
+          "workingSetKiB": 231800
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.772104168001038,
+          "workingSetKiB": 87088
+        }
+      ]
+    },
+    {
+      "elapsedMs": 50892,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.010016807165350571,
+          "workingSetKiB": 94236
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.907942324439023,
+          "workingSetKiB": 202800
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3515280456956828,
+          "workingSetKiB": 50940
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.877154877232907,
+          "workingSetKiB": 233944
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.28960935784341324,
+          "workingSetKiB": 87088
+        }
+      ]
+    },
+    {
+      "elapsedMs": 51906,
+      "mode": "optimized",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.16890448470698352,
+          "workingSetKiB": 94252
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.520398893882238,
+          "workingSetKiB": 193764
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3654276026292976,
+          "workingSetKiB": 51008
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.8611561057221646,
+          "workingSetKiB": 214952
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.6210229963361368,
+          "workingSetKiB": 87032
+        }
+      ]
+    },
+    {
+      "elapsedMs": 52921,
+      "mode": "optimized",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.011158897448419637,
+          "workingSetKiB": 94252
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.2816589852071598,
+          "workingSetKiB": 192328
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2689590796213403,
+          "workingSetKiB": 51008
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.9626171659862686,
+          "workingSetKiB": 215396
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.23154165485080505,
+          "workingSetKiB": 87032
+        }
+      ]
+    },
+    {
+      "elapsedMs": 53924,
+      "mode": "optimized",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.16503082171284936,
+          "workingSetKiB": 94252
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.2501388967854746,
+          "workingSetKiB": 191952
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2855568766391633,
+          "workingSetKiB": 50948
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.7785082491396098,
+          "workingSetKiB": 218148
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.6405077314437536,
+          "workingSetKiB": 87008
+        }
+      ]
+    },
+    {
+      "elapsedMs": 54925,
+      "mode": "optimized",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.15732116334386917,
+          "workingSetKiB": 94256
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.22975468961049128,
+          "workingSetKiB": 191832
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2725489745416657,
+          "workingSetKiB": 50952
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.6221295538494183,
+          "workingSetKiB": 220832
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.5833006062095928,
+          "workingSetKiB": 87028
+        }
+      ]
+    },
+    {
+      "elapsedMs": 55939,
+      "mode": "optimized",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.009135490163410259,
+          "workingSetKiB": 94256
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.24828634607478858,
+          "workingSetKiB": 191828
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2976618852795715,
+          "workingSetKiB": 50952
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.108886934724558,
+          "workingSetKiB": 221440
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.24382393215814124,
+          "workingSetKiB": 87028
+        }
+      ]
+    },
+    {
+      "elapsedMs": 56953,
+      "mode": "optimized",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.16115154557861508,
+          "workingSetKiB": 94256
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.26795442604819497,
+          "workingSetKiB": 191836
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3220059186752583,
+          "workingSetKiB": 51036
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.6936086282663574,
+          "workingSetKiB": 224968
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.6434655756396929,
+          "workingSetKiB": 87008
+        }
+      ]
+    },
+    {
+      "elapsedMs": 57965,
+      "mode": "optimized",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.009585927463188062,
+          "workingSetKiB": 94256
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.24867632317446575,
+          "workingSetKiB": 182376
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.27780660187010714,
+          "workingSetKiB": 51036
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.0160470438329747,
+          "workingSetKiB": 225892
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2542724357644002,
+          "workingSetKiB": 87008
+        }
+      ]
+    },
+    {
+      "elapsedMs": 58979,
+      "mode": "optimized",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.15182776576759524,
+          "workingSetKiB": 94256
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.23390282300079748,
+          "workingSetKiB": 182376
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3094293854983943,
+          "workingSetKiB": 51048
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.7807789305928647,
+          "workingSetKiB": 229868
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.5895100368351357,
+          "workingSetKiB": 87024
+        }
+      ]
+    },
+    {
+      "elapsedMs": 59991,
+      "mode": "optimized",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.037729363914530155,
+          "workingSetKiB": 92756
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.23059119447160573,
+          "workingSetKiB": 182380
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.19990834242007616,
+          "workingSetKiB": 51048
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.9841896946914221,
+          "workingSetKiB": 175572
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.23527724936079653,
+          "workingSetKiB": 87024
+        }
+      ]
+    },
+    {
+      "elapsedMs": 61004,
+      "mode": "optimized",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1673332681706092,
+          "workingSetKiB": 92840
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.2604696318967929,
+          "workingSetKiB": 180248
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.339906856980938,
+          "workingSetKiB": 50820
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.7955045618843481,
+          "workingSetKiB": 172276
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.5889410300383703,
+          "workingSetKiB": 87000
+        }
+      ]
+    },
+    {
+      "elapsedMs": 62020,
+      "mode": "optimized",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.073974959443409,
+          "workingSetKiB": 92840
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.23773282227545467,
+          "workingSetKiB": 180256
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.25588073612786244,
+          "workingSetKiB": 50880
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.1703243147448015,
+          "workingSetKiB": 173992
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3981971391308172,
+          "workingSetKiB": 86836
+        }
+      ]
+    },
+    {
+      "elapsedMs": 63034,
+      "mode": "optimized",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10040002235128996,
+          "workingSetKiB": 92848
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.6034601769038862,
+          "workingSetKiB": 185668
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.44446022176336525,
+          "workingSetKiB": 50880
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.4239652769560474,
+          "workingSetKiB": 184636
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.5956871109323031,
+          "workingSetKiB": 87092
+        }
+      ]
+    },
+    {
+      "elapsedMs": 64050,
+      "mode": "optimized",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.15658212495009155,
+          "workingSetKiB": 92756
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5104245302982134,
+          "workingSetKiB": 188376
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3647837183185649,
+          "workingSetKiB": 50860
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.414777573929864,
+          "workingSetKiB": 188576
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.6328292680686268,
+          "workingSetKiB": 86872
+        }
+      ]
+    },
+    {
+      "elapsedMs": 65062,
+      "mode": "optimized",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.058827673433001305,
+          "workingSetKiB": 92760
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5876048856491709,
+          "workingSetKiB": 188332
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3458101169231418,
+          "workingSetKiB": 50852
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.8472477073280569,
+          "workingSetKiB": 189328
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.4201330731388722,
+          "workingSetKiB": 87096
+        }
+      ]
+    },
+    {
+      "elapsedMs": 66066,
+      "mode": "optimized",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.18618124386272697,
+          "workingSetKiB": 92848
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5217361849996612,
+          "workingSetKiB": 189888
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.4040818644353165,
+          "workingSetKiB": 50872
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.659826006331571,
+          "workingSetKiB": 195608
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.7615547875444045,
+          "workingSetKiB": 87100
+        }
+      ]
+    },
+    {
+      "elapsedMs": 67074,
+      "mode": "optimized",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.010694353877410448,
+          "workingSetKiB": 92848
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.590696737297514,
+          "workingSetKiB": 189892
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.37812469604124116,
+          "workingSetKiB": 50876
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.7484883102721456,
+          "workingSetKiB": 196580
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3039590605605551,
+          "workingSetKiB": 87100
+        }
+      ]
+    },
+    {
+      "elapsedMs": 68075,
+      "mode": "optimized",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.19617460355515068,
+          "workingSetKiB": 92796
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5534944461592608,
+          "workingSetKiB": 192600
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.40344519185497885,
+          "workingSetKiB": 50876
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.6952009546946254,
+          "workingSetKiB": 202416
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.8443030211009578,
+          "workingSetKiB": 87100
+        }
+      ]
+    },
+    {
+      "elapsedMs": 69084,
+      "mode": "optimized",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.008837044892188053,
+          "workingSetKiB": 92796
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5931415009755475,
+          "workingSetKiB": 192608
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.42078498959868466,
+          "workingSetKiB": 50860
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.8481417575726944,
+          "workingSetKiB": 201056
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.29397627377330254,
+          "workingSetKiB": 87100
+        }
+      ]
+    },
+    {
+      "elapsedMs": 70097,
+      "mode": "optimized",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.21111368760699997,
+          "workingSetKiB": 92876
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5518782856554569,
+          "workingSetKiB": 195316
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.4368056425806439,
+          "workingSetKiB": 50876
+        },
+        {
+          "type": "Tab",
+          "cpu": 3.2732030903356457,
+          "workingSetKiB": 194172
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.7649299693353738,
+          "workingSetKiB": 87108
+        }
+      ]
+    },
+    {
+      "elapsedMs": 71112,
+      "mode": "optimized",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.29300594417258324,
+          "workingSetKiB": 93176
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5194153431544442,
+          "workingSetKiB": 195320
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.3568838242107071,
+          "workingSetKiB": 50936
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.8363653496791994,
+          "workingSetKiB": 192164
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.37779242159483645,
+          "workingSetKiB": 86844
+        }
+      ]
+    },
+    {
+      "elapsedMs": 72106,
+      "mode": "optimized",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.12567157582263322,
+          "workingSetKiB": 92812
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.5423595810823046,
+          "workingSetKiB": 198028
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.467233070755239,
+          "workingSetKiB": 50880
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.585871837203087,
+          "workingSetKiB": 200984
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.6240809393742759,
+          "workingSetKiB": 87136
+        }
+      ]
+    },
+    {
+      "elapsedMs": 73184,
+      "mode": "optimized",
+      "phase": "done",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nExecutar medições100 perfis · atualização 120",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.04247397367448577,
+          "workingSetKiB": 92980
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.4642024855184596,
+          "workingSetKiB": 198032
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2700012771427626,
+          "workingSetKiB": 50880
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.7644869621901504,
+          "workingSetKiB": 196888
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2491349159964005,
+          "workingSetKiB": 86876
+        }
+      ]
+    }
+  ],
+  "loadMs": 388,
+  "fixture": {
+    "scope": "Isolated production-built fixture: real frame components and MeshVoiceProvider; synthetic audio/video; in-memory signaling, no Supabase/STUN/microphone",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.7977.130 Electron/44.4.5 Safari/537.36",
+    "samples": [
+      {
+        "mode": "normal",
+        "users": 10,
+        "renderMs": [
+          0.8000000007450581,
+          0.6999999992549419,
+          0.5,
+          0.6000000014901161,
+          0.6999999992549419,
+          0.5999999977648258,
+          0.30000000074505806,
+          0.30000000074505806,
+          0.5999999977648258,
+          0.3999999985098839,
+          0.8999999985098839,
+          0.3999999985098839,
+          0.3999999985098839,
+          0.6000000014901161,
+          0.3999999985098839,
+          0.3999999985098839,
+          0.29999999701976776,
+          0.30000000074505806,
+          0.5,
+          0.3999999985098839
+        ],
+        "frameIntervalsMs": [
+          1000.0999999999999,
+          1005.6000000000004
+        ],
+        "pathWrites": 144,
+        "commits": 0,
+        "nodes": 326,
+        "runningAnimations": 42,
+        "visible": true,
+        "heapBefore": 4504724,
+        "heapAfter": 3851562
+      },
+      {
+        "mode": "normal",
+        "users": 50,
+        "renderMs": [
+          1.2000000029802322,
+          0.8000000007450581,
+          0.8000000007450581,
+          1.1000000014901161,
+          1.699999999254942,
+          0.6999999992549419,
+          0.6000000014901161,
+          0.5,
+          0.8999999985098839,
+          0.5,
+          0.5,
+          0.9000000022351742,
+          1.0999999977648258,
+          0.6999999992549419,
+          0.6999999992549419,
+          0.6999999992549419,
+          0.6000000014901161,
+          0.8000000007450581,
+          0.5,
+          1
+        ],
+        "frameIntervalsMs": [
+          1005.6000000000004,
+          1005.5
+        ],
+        "pathWrites": 216,
+        "commits": 0,
+        "nodes": 1501,
+        "runningAnimations": 84,
+        "visible": true,
+        "heapBefore": 4589562,
+        "heapAfter": 4475968
+      },
+      {
+        "mode": "normal",
+        "users": 100,
+        "renderMs": [
+          3.099999997764826,
+          1.3999999985098839,
+          1.6000000014901161,
+          0.8999999985098839,
+          1.3999999985098839,
+          1.199999999254942,
+          1.1000000014901161,
+          1,
+          2,
+          2,
+          1.699999999254942,
+          0.8999999985098839,
+          1.300000000745058,
+          1.300000000745058,
+          1.1000000014901161,
+          1.5,
+          1.6000000014901161,
+          2.2999999970197678,
+          1.5,
+          1.4000000022351742
+        ],
+        "frameIntervalsMs": [
+          1005.5999999999985,
+          1005.5
+        ],
+        "pathWrites": 216,
+        "commits": 0,
+        "nodes": 2992,
+        "runningAnimations": 84,
+        "visible": true,
+        "heapBefore": 5787975,
+        "heapAfter": 5172566
+      },
+      {
+        "mode": "optimized",
+        "users": 10,
+        "renderMs": [
+          0.20000000298023224,
+          0.20000000298023224,
+          0.30000000074505806,
+          0.20000000298023224,
+          0.3999999985098839,
+          0.19999999925494194,
+          0.4000000022351742,
+          0.3999999985098839,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.19999999925494194,
+          0.29999999701976776,
+          0.30000000074505806,
+          0.30000000074505806,
+          0.5,
+          0.5,
+          0.30000000074505806,
+          0.30000000074505806,
+          0.19999999925494194,
+          0.30000000074505806
+        ],
+        "frameIntervalsMs": [
+          1005.5000000000018,
+          1005.5
+        ],
+        "pathWrites": 0,
+        "commits": 0,
+        "nodes": 326,
+        "runningAnimations": 0,
+        "visible": true,
+        "heapBefore": 5797360,
+        "heapAfter": 5803650
+      },
+      {
+        "mode": "optimized",
+        "users": 50,
+        "renderMs": [
+          0.6999999992549419,
+          0.6999999992549419,
+          0.8999999985098839,
+          1,
+          0.6999999992549419,
+          1.3999999985098839,
+          1.4000000022351742,
+          0.6999999992549419,
+          0.5999999977648258,
+          0.5,
+          0.6000000014901161,
+          1,
+          1,
+          0.9000000022351742,
+          1.2999999970197678,
+          0.6999999992549419,
+          0.6000000014901161,
+          0.5999999977648258,
+          0.9000000022351742,
+          0.5999999977648258
+        ],
+        "frameIntervalsMs": [
+          1000.0999999999985,
+          1005.4000000000015
+        ],
+        "pathWrites": 0,
+        "commits": 0,
+        "nodes": 1501,
+        "runningAnimations": 0,
+        "visible": true,
+        "heapBefore": 6185075,
+        "heapAfter": 6195782
+      },
+      {
+        "mode": "optimized",
+        "users": 100,
+        "renderMs": [
+          1.5999999977648258,
+          1.300000000745058,
+          1.8999999985098839,
+          1.8999999985098839,
+          0.9000000022351742,
+          0.8999999985098839,
+          0.6999999992549419,
+          0.6999999992549419,
+          1,
+          2.5,
+          2.199999999254942,
+          1.800000000745058,
+          1,
+          0.8999999985098839,
+          1.5,
+          1.699999999254942,
+          0.9000000022351742,
+          2.400000002235174,
+          2,
+          2.099999997764826
+        ],
+        "frameIntervalsMs": [
+          1004.8999999999978,
+          1005.6000000000022
+        ],
+        "pathWrites": 0,
+        "commits": 0,
+        "nodes": 2992,
+        "runningAnimations": 0,
+        "visible": true,
+        "heapBefore": 5601398,
+        "heapAfter": 5618402
+      }
+    ],
+    "rtc": [
+      {
+        "quality": "normal",
+        "mode": "voice",
+        "iteration": 0,
+        "connectedMs": 1625.7000000029802,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 116,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 85,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.6200000000000012,
+              "audioLevel": 1
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 114,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 85,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.6500000000000012,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "normal",
+        "mode": "voice",
+        "iteration": 1,
+        "connectedMs": 64.80000000074506,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 9,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 100,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 79,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.500000000000001,
+              "audioLevel": 1
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 100,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 10,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 80,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.480000000000001,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "normal",
+        "mode": "voice",
+        "iteration": 2,
+        "connectedMs": 57.69999999925494,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 101,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 5,
+              "roundTripTime": 0.003
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 76,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.490000000000001,
+              "audioLevel": 1
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 9,
+              "roundTripTime": 0.002
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 98,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 79,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.420000000000001,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "normal",
+        "mode": "voice",
+        "iteration": 3,
+        "connectedMs": 85.80000000074506,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 8,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 103,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 80,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5400000000000011,
+              "audioLevel": 1
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 104,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 10,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 82,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5200000000000011,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "normal",
+        "mode": "voice",
+        "iteration": 4,
+        "connectedMs": 63.400000002235174,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 100,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 11,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 81,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5400000000000011,
+              "audioLevel": 1
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 12,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 100,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 82,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5300000000000011,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "normal",
+        "mode": "voice",
+        "iteration": 5,
+        "connectedMs": 65.60000000149012,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 9,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 103,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 81,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5500000000000012,
+              "audioLevel": 1
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 101,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 11,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 82,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5200000000000011,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "normal",
+        "mode": "screen-audio",
+        "iteration": 0,
+        "connectedMs": 113.30000000074506,
+        "screenMs": 1.800000000745058,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 102,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 9,
+              "roundTripTime": 0.002
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 79,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5200000000000011,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.470000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "video"
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 212,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 15,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 81,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 78,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 37,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "framesDecoded": 37,
+              "jitterBufferDelay": 0.244103,
+              "jitterBufferEmittedCount": 37
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.490000000000001,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "normal",
+        "mode": "screen-audio",
+        "iteration": 1,
+        "connectedMs": 74.69999999925494,
+        "screenMs": 3.100000001490116,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 102,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 8,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 79,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5100000000000011,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.460000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "video"
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 17,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 254,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 78,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 80,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 82,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "framesDecoded": 36,
+              "jitterBufferDelay": 0.268852,
+              "jitterBufferEmittedCount": 36
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.480000000000001,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "normal",
+        "mode": "screen-audio",
+        "iteration": 2,
+        "connectedMs": 83.89999999850988,
+        "screenMs": 2.600000001490116,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 6,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 101,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 78,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.500000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.450000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "video"
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 259,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 12,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 77,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 80,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 82,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "framesDecoded": 36,
+              "jitterBufferDelay": 0.264499,
+              "jitterBufferEmittedCount": 36
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.470000000000001,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "normal",
+        "mode": "screen-audio",
+        "iteration": 3,
+        "connectedMs": 77.90000000223517,
+        "screenMs": 2.099999997764826,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 10,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 99,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 80,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5300000000000011,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.490000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "video"
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 246,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 21,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 81,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 79,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 76,
+              "packetsLost": 0,
+              "jitter": 0.002,
+              "framesDecoded": 36,
+              "jitterBufferDelay": 0.236177,
+              "jitterBufferEmittedCount": 36
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5100000000000011,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "normal",
+        "mode": "screen-audio",
+        "iteration": 4,
+        "connectedMs": 65.39999999850988,
+        "screenMs": 2.5,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 104,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 76,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.460000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.400000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "video"
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 218,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 75,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 78,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 37,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "framesDecoded": 37,
+              "jitterBufferDelay": 0.318212,
+              "jitterBufferEmittedCount": 37
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.420000000000001,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "normal",
+        "mode": "screen-audio",
+        "iteration": 5,
+        "connectedMs": 91.39999999850988,
+        "screenMs": 2.300000000745058,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 100,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 7,
+              "roundTripTime": 0.002
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 77,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5200000000000011,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.440000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "video"
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 245,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 14,
+              "roundTripTime": 0.002
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 81,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 77,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 72,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "framesDecoded": 37,
+              "jitterBufferDelay": 0.289063,
+              "jitterBufferEmittedCount": 37
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.460000000000001,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "optimized",
+        "mode": "voice",
+        "iteration": 0,
+        "connectedMs": 80.60000000149012,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 105,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 10,
+              "roundTripTime": 0.002
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 81,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5600000000000012,
+              "audioLevel": 1
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 103,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 11,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 83,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5400000000000011,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "optimized",
+        "mode": "voice",
+        "iteration": 1,
+        "connectedMs": 68.19999999925494,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 7,
+              "roundTripTime": 0.002
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 103,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 80,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5400000000000011,
+              "audioLevel": 1
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 10,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 102,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 82,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.500000000000001,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "optimized",
+        "mode": "voice",
+        "iteration": 2,
+        "connectedMs": 67.39999999850988,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 101,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 8,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 80,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5500000000000012,
+              "audioLevel": 1
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 102,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 10,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 82,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5200000000000011,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "optimized",
+        "mode": "voice",
+        "iteration": 3,
+        "connectedMs": 103.40000000223517,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 103,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 10,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 81,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5600000000000012,
+              "audioLevel": 1
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 11,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 102,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 83,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5300000000000011,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "optimized",
+        "mode": "voice",
+        "iteration": 4,
+        "connectedMs": 91,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 113,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 82,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5600000000000012,
+              "audioLevel": 1
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 113,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 83,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5400000000000011,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "optimized",
+        "mode": "voice",
+        "iteration": 5,
+        "connectedMs": 102.09999999776483,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 11,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 102,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 82,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5700000000000012,
+              "audioLevel": 1
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 101,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 13,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 83,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5400000000000011,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "optimized",
+        "mode": "screen-audio",
+        "iteration": 0,
+        "connectedMs": 95.80000000074506,
+        "screenMs": 1.3999999985098839,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 7,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 103,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 80,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5400000000000011,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.500000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "video"
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 12,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 266,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 82,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 80,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 83,
+              "packetsLost": 0,
+              "jitter": 0.002,
+              "framesDecoded": 35,
+              "jitterBufferDelay": 0.316058,
+              "jitterBufferEmittedCount": 35
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5100000000000011,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "optimized",
+        "mode": "screen-audio",
+        "iteration": 1,
+        "connectedMs": 90.69999999925494,
+        "screenMs": 2.899999998509884,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 3,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 91,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 66,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.330000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.1700000000000008,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "video"
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 26,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 219,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 71,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 63,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 85,
+              "packetsLost": 0,
+              "jitter": 0.004,
+              "framesDecoded": 35,
+              "jitterBufferDelay": 0.32930499999999996,
+              "jitterBufferEmittedCount": 35
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.2300000000000009,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "optimized",
+        "mode": "screen-audio",
+        "iteration": 2,
+        "connectedMs": 84.59999999776483,
+        "screenMs": 1.4000000022351742,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 6,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 100,
+              "roundTripTime": 0.002
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 78,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5100000000000011,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.460000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "video"
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 9,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 250,
+              "roundTripTime": 0.002
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 78,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 80,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 71,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "framesDecoded": 36,
+              "jitterBufferDelay": 0.235484,
+              "jitterBufferEmittedCount": 36
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.480000000000001,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "optimized",
+        "mode": "screen-audio",
+        "iteration": 3,
+        "connectedMs": 142.69999999925494,
+        "screenMs": 2,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 103,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 6,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 78,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5200000000000011,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.450000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "video"
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 236,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 10,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 77,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 81,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 58,
+              "packetsLost": 0,
+              "jitter": 0.01,
+              "framesDecoded": 35,
+              "jitterBufferDelay": 0.263054,
+              "jitterBufferEmittedCount": 35
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.470000000000001,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "optimized",
+        "mode": "screen-audio",
+        "iteration": 4,
+        "connectedMs": 97.89999999850988,
+        "screenMs": 1.800000000745058,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 5,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 102,
+              "roundTripTime": 0.002
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 77,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.500000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.410000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "video"
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 9,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 214,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 80,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 75,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 37,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "framesDecoded": 37,
+              "jitterBufferDelay": 0.29262299999999997,
+              "jitterBufferEmittedCount": 37
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.450000000000001,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "optimized",
+        "mode": "screen-audio",
+        "iteration": 5,
+        "connectedMs": 92.90000000223517,
+        "screenMs": 2,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 8,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 102,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 79,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.5200000000000011,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.480000000000001,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "video"
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 256,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 12,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 81,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 79,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 77,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "framesDecoded": 37,
+              "jitterBufferDelay": 0.24917899999999998,
+              "jitterBufferEmittedCount": 37
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 1.490000000000001,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running",
+          "running"
+        ]
+      }
+    ],
+    "openPeersAfterCleanup-normal": 0,
+    "openPeersAfterCleanup-optimized": 0,
+    "finishedAt": "2026-10-10T00:25:50.608Z"
+  }
+}

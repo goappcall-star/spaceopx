@@ -1,9 +1,18 @@
+import { measureOperation } from "@/services/performance/monitor";
 import { VisualBanner } from "@/components/ui/static-image";
 import { LiveGameActivity } from "./LiveGameActivity";
 import { WatchStreamButton } from "./WatchStreamButton";
 import { ProfileFrameDecoration } from "./ProfileCosmetics";
 import { useGlobalPresence } from "@/hooks/use-global-presence";
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from "react";
 import { Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Ban, Check, Gamepad2, MessageSquare, UserCheck, UserPlus, X } from "lucide-react";
@@ -72,6 +81,19 @@ function ProfileDialogBody({
 }) {
   const { statusOf, games } = useGlobalPresence();
   const { data, isLoading } = usePublicProfile(userId);
+  const finishLoad = useRef<((failed?: boolean) => void) | null>(null);
+  useEffect(() => {
+    if (userId) finishLoad.current = measureOperation("ui.profile");
+    return () => {
+      finishLoad.current = null;
+    };
+  }, [userId]);
+  useEffect(() => {
+    if (!isLoading && data) {
+      finishLoad.current?.();
+      finishLoad.current = null;
+    }
+  }, [isLoading, data]);
 
   if (isLoading || !data) {
     return (

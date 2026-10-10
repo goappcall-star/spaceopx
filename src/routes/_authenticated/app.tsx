@@ -1,8 +1,9 @@
+import { measureOperation } from "@/services/performance/monitor";
 import { useSessionServer } from "@/components/call/SessionCommunications";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { z } from "zod";
 import { Sparkles, Menu, Users } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 
 import { ChannelSidebar } from "@/components/app/ChannelSidebar";
 import { AppSidebarDrawer } from "@/components/app/AppSidebarDrawer";
@@ -32,14 +33,13 @@ import { SocialHome } from "@/components/social/SocialHome";
 import { SocialSidebar, type SocialTab } from "@/components/social/SocialSidebar";
 import { useConversations, useFriends } from "@/hooks/use-social";
 import type { ConversationOverview, FriendEntry, FriendRequestEntry } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerUnread } from "@/hooks/use-unread";
+import { unreadService } from "@/services/unread";
 import { toast } from "sonner";
 import { channelsService } from "@/services/channels";
-import { readStatesService } from "@/services/messages";
 import { membersService } from "@/services/members";
 import { memberHasPermission } from "@/services/permissions";
 import { useServerPreferences } from "@/hooks/use-server-preferences";
-import { shouldNotifyChannel } from "@/lib/channel-preferences";
 import { ServerPersonalDialog } from "@/components/app/ServerPersonalDialog";
 import type { ServerMenuAction } from "@/components/app/ServerContextMenu";
 import type { Server } from "@/types";
@@ -90,7 +90,14 @@ function AppPage() {
     action: "profile" | "privacy" | "leave";
   } | null>(null);
   const [menuInviteServer, setMenuInviteServer] = useState<Server | null>(null);
-  const [unread, setUnread] = useState<Set<string>>(new Set());
+  const {
+    unread,
+    serverCounts,
+    serverMentions,
+    channelCounts,
+    mentions,
+    refresh: refreshUnread,
+  } = useServerUnread(user?.id);
   const [view, setView] = useState<"servers" | "social">("servers");
   const [socialTab, setSocialTab] = useState<SocialTab>("friends");
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
@@ -105,13 +112,22 @@ function AppPage() {
     setActiveConversationId(conversationId);
   }
 
+  const finishServerLoad = useRef<((failed?: boolean) => void) | null>(null);
   const activeServer = servers.find((s) => s.id === activeServerId) ?? null;
-  const { data: channels = [] } = useServerChannels(activeServer?.id ?? null);
+  const { data: channels = [], isLoading: loadingChannels } = useServerChannels(
+    activeServer?.id ?? null,
+  );
   const { data: members = [], isLoading: loadingMembers } = useServerMembers(
     activeServer?.id ?? null,
   );
   const { me, canManage } = useServerPermissions(members, user?.id);
   const abilities = useServerAbilities(activeServer, members, user?.id);
+  useEffect(() => {
+    if (!loadingChannels && !loadingMembers && activeServer) {
+      finishServerLoad.current?.();
+      finishServerLoad.current = null;
+    }
+  }, [loadingChannels, loadingMembers, activeServer]);
   const activePreferences = activeServer ? preferences.get(activeServer.id) : null;
 
   async function handleServerAction(action: ServerMenuAction, server: Server) {
@@ -131,13 +147,13 @@ function AppPage() {
         setMenuInviteServer(server);
       } else {
         const serverChannels = await channelsService.listByServer(server.id);
-        const ids = new Set(serverChannels.map((c) => c.id));
+
         await Promise.all(
           serverChannels
             .filter((c) => c.type !== "voice")
-            .map((c) => readStatesService.markRead(c.id, user.id, null)),
+            .map((c) => unreadService.markChannel(c.id, null)),
         );
-        setUnread((previous) => new Set([...previous].filter((id) => !ids.has(id))));
+        refreshUnread();
         toast.success("Servidor marcado como lido.");
       }
     } catch {
@@ -196,43 +212,7 @@ function AppPage() {
     }
   }, [channelParam, serverParam, activeServerId, channels, navigate]);
 
-  // Server-wide unread badges: any insert outside the open channel marks it.
-  useEffect(() => {
-    if (!activeServer || channels.length === 0 || !user?.id) return;
-    const ids = new Set(channels.map((c) => c.id));
-    const realtime = supabase
-      .channel(`unread:${activeServer.id}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        (payload) => {
-          const row = payload.new as { channel_id: string; author_id: string; mentions?: string[] };
-          if (!ids.has(row.channel_id)) return;
-          if (row.author_id === user.id || row.channel_id === activeChannelId) return;
-          const channel = channels.find((channel) => channel.id === row.channel_id);
-          if (
-            activePreferences &&
-            channel &&
-            !shouldNotifyChannel(activePreferences, channel, user.id, row.mentions)
-          )
-            return;
-          setUnread((prev) => new Set(prev).add(row.channel_id));
-        },
-      )
-      .subscribe();
-    return () => {
-      void supabase.removeChannel(realtime);
-    };
-  }, [activeServer, channels, activeChannelId, user?.id, activePreferences]);
-
-  const handleRead = useCallback((channelId: string) => {
-    setUnread((prev) => {
-      if (!prev.has(channelId)) return prev;
-      const next = new Set(prev);
-      next.delete(channelId);
-      return next;
-    });
-  }, []);
+  const handleRead = useCallback(() => refreshUnread(), [refreshUnread]);
 
   const activeChannel = channels.find((c) => c.id === activeChannelId) ?? null;
 
@@ -280,6 +260,8 @@ function AppPage() {
           )}
           <AppSidebarDrawer open={mobileNav} side="left">
             <ServerRail
+              serverBadges={serverCounts}
+              serverMentions={serverMentions}
               getPreferences={preferences.get}
               onUpdatePreferences={preferences.update}
               onServerAction={(action, server) => {
@@ -297,6 +279,7 @@ function AppPage() {
               }}
               activeServerId={activeServerId}
               onSelect={(id) => {
+                if (id !== activeServerId) finishServerLoad.current = measureOperation("ui.server");
                 setView("servers");
                 setActiveServerId(id);
               }}
@@ -331,11 +314,9 @@ function AppPage() {
                 onUpdatePreferences={(patch) => preferences.update(activeServer.id, patch)}
                 onMarkRead={(ids) => {
                   if (!user) return;
-                  void Promise.all(ids.map((id) => readStatesService.markRead(id, user.id, null)))
+                  void Promise.all(ids.map((id) => unreadService.markChannel(id, null)))
                     .then(() => {
-                      setUnread(
-                        (previous) => new Set([...previous].filter((id) => !ids.includes(id))),
-                      );
+                      refreshUnread();
                     })
                     .catch(() => toast.error("Não foi possível marcar como lido."));
                 }}
@@ -358,6 +339,8 @@ function AppPage() {
                 }}
                 members={members}
                 unreadChannelIds={unread}
+                unreadCounts={channelCounts}
+                mentionCounts={mentions}
                 canInvite={canManage || abilities.can("create_invite")}
                 canManage={abilities.can("manage_channels")}
                 canOpenSettings={abilities.canOpenSettings}

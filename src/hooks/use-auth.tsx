@@ -25,17 +25,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let disposed = false;
     let receivedEvent = false;
+    let previousUser: string | null = null;
     // Listener first, then the initial read — avoids missing an early event.
     const { data: subscription } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (disposed) return;
       receivedEvent = true;
       setSession(nextSession);
       setLoading(false);
-      if (event === "SIGNED_OUT") {
+      const nextUser = nextSession?.user.id ?? null;
+      if (event === "SIGNED_OUT" || (previousUser !== null && previousUser !== nextUser)) {
         queryClient.clear();
-      } else if (event === "SIGNED_IN" || event === "USER_UPDATED") {
-        void queryClient.invalidateQueries();
+      } else if (event === "USER_UPDATED") {
+        void queryClient.invalidateQueries({ queryKey: ["profile", nextUser] });
       }
+      previousUser = nextUser;
     });
 
     void supabase.auth
@@ -43,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then(({ data }) => {
         if (disposed || receivedEvent) return;
         setSession(data.session);
+        previousUser = data.session?.user.id ?? null;
         setLoading(false);
       })
       .catch(() => {
@@ -61,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ["profile", userId],
     queryFn: () => (userId ? profilesService.getById(userId) : Promise.resolve(null)),
     enabled: Boolean(userId),
+    staleTime: 30_000,
   });
 
   const value = useMemo<AuthContextValue>(

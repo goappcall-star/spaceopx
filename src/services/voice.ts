@@ -26,6 +26,13 @@
  * stopped when the corresponding feature is turned off or the user disconnects.
  */
 
+import {
+  registerProbe,
+  recordMetric,
+  metrics,
+  measureOperation,
+  collectionGeneration,
+} from "@/services/performance/monitor";
 import { supabase } from "@/integrations/supabase/client";
 import { shouldExposeRemoteTrack } from "./remote-track";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -143,6 +150,79 @@ class MeshVoiceProvider implements VoiceProvider {
   private signaling: RealtimeChannel | null = null;
   private pendingSignaling: RealtimeChannel | null = null;
   private peers = new Map<string, Peer>();
+  private stopPerformanceProbe: (() => void) | null = null;
+  private performanceCounters = new WeakMap<
+    RTCPeerConnection,
+    { received: number; lost: number }
+  >();
+  private performanceConnectFinish = new WeakMap<RTCPeerConnection, (failed?: boolean) => void>();
+  private performanceEpoch = -1;
+
+  // Read-only sampled diagnostics. No signaling, media, candidate addresses or peer IDs leave here.
+  private async samplePerformance() {
+    if (!metrics.enabled || this.disposed) return;
+    const epoch = collectionGeneration();
+    if (this.performanceEpoch !== epoch) {
+      this.performanceCounters = new WeakMap();
+      this.performanceEpoch = epoch;
+    }
+    for (const peer of this.peers.values()) {
+      if (peer.pc.connectionState !== "connected") continue;
+      try {
+        const report = await peer.pc.getStats();
+        if (!metrics.enabled || this.disposed || epoch !== collectionGeneration()) return;
+        const selectedPairs = new Set<string>();
+        report.forEach((stat) => {
+          if (stat.type === "transport" && typeof stat.selectedCandidatePairId === "string")
+            selectedPairs.add(stat.selectedCandidatePairId);
+        });
+        let received = 0,
+          lost = 0;
+        report.forEach((stat) => {
+          if (
+            stat.type === "candidate-pair" &&
+            stat.state === "succeeded" &&
+            (selectedPairs.size ? selectedPairs.has(stat.id) : stat.nominated)
+          ) {
+            if (typeof stat.currentRoundTripTime === "number")
+              recordMetric("rtc.rtt", stat.currentRoundTripTime * 1000);
+            const local = report.get(stat.localCandidateId);
+            const remote = report.get(stat.remoteCandidateId);
+            if (local?.candidateType === "relay" || remote?.candidateType === "relay")
+              recordMetric("rtc.relay", 1);
+            else if (
+              ["host", "srflx", "prflx"].includes(local?.candidateType) &&
+              ["host", "srflx", "prflx"].includes(remote?.candidateType)
+            )
+              recordMetric("rtc.direct", 1);
+          }
+          if (stat.type === "inbound-rtp" && stat.kind === "audio") {
+            if (typeof stat.jitter === "number") recordMetric("rtc.jitter", stat.jitter * 1000);
+            received += Math.max(0, stat.packetsReceived || 0);
+            lost += Math.max(0, stat.packetsLost || 0);
+          }
+          if (
+            this.screenStream &&
+            stat.type === "outbound-rtp" &&
+            stat.kind === "video" &&
+            stat.mid === peer.transceivers.screen?.mid &&
+            typeof stat.framesPerSecond === "number"
+          )
+            recordMetric("rtc.screen_fps", stat.framesPerSecond);
+        });
+        const previous = this.performanceCounters.get(peer.pc);
+        if (previous && received >= previous.received && lost >= previous.lost) {
+          const deltaReceived = received - previous.received,
+            deltaLost = lost - previous.lost;
+          if (deltaReceived + deltaLost > 0)
+            recordMetric("rtc.loss", (deltaLost * 100) / (deltaReceived + deltaLost));
+        }
+        this.performanceCounters.set(peer.pc, { received, lost });
+      } catch {
+        /* Closed connections/unsupported stats never affect calls. */
+      }
+    }
+  }
   private remote: Record<string, RemoteMedia> = {};
   private remoteScreens = new Map<string, { active: boolean; hasAudio: boolean }>();
 
@@ -183,6 +263,8 @@ class MeshVoiceProvider implements VoiceProvider {
   /* ------------------------------------------------------------- lifecycle */
 
   async connect(channelId: string, userId: string, events: VoiceProviderEvents) {
+    this.stopPerformanceProbe?.();
+    this.stopPerformanceProbe = registerProbe(() => this.samplePerformance());
     this.events = events;
     this.userId = userId;
     this.disposed = false;
@@ -274,6 +356,10 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   private async performDisconnect() {
+    this.stopPerformanceProbe?.();
+    this.stopPerformanceProbe = null;
+    this.performanceCounters = new WeakMap();
+    this.performanceConnectFinish = new WeakMap();
     const departure = this.signaling
       ?.send(
         {
@@ -400,6 +486,7 @@ class MeshVoiceProvider implements VoiceProvider {
     if (existing) return existing;
 
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    if (metrics.enabled) this.performanceConnectFinish.set(pc, measureOperation("rtc.connect"));
     // Exactly ONE side creates the m-lines. If both did, the session would end
     // up with six m-lines and each side would receive tracks on transceivers it
     // cannot map back to mic/camera/screen — that is what silently dropped the
@@ -487,12 +574,19 @@ class MeshVoiceProvider implements VoiceProvider {
     };
 
     pc.onconnectionstatechange = () => {
+      if (pc.connectionState === "connected" || pc.connectionState === "failed") {
+        this.performanceConnectFinish.get(pc)?.(pc.connectionState === "failed");
+        this.performanceConnectFinish.delete(pc);
+      }
+      if (metrics.enabled && pc.connectionState === "disconnected" && peer.state !== "disconnected")
+        recordMetric("rtc.reconnect", 1, true);
       peer.state = pc.connectionState;
       if (pc.connectionState === "failed") this.scheduleIceRestart(peer, 0);
       this.emitAggregateState();
     };
 
     pc.oniceconnectionstatechange = () => {
+      if (pc.iceConnectionState === "failed") recordMetric("rtc.ice_failure", 1, true);
       if (pc.iceConnectionState === "disconnected") this.scheduleIceRestart(peer, 2500);
       else if (pc.iceConnectionState === "connected" && peer.restartTimer) {
         clearTimeout(peer.restartTimer);

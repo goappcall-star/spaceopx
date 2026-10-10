@@ -1,0 +1,44 @@
+{
+  "stage": "baseline",
+  "order": [
+    "off",
+    "on",
+    "on",
+    "off"
+  ],
+  "runs": [
+    {
+      "index": 1,
+      "state": "off",
+      "start": "2026-10-10T05:12:02.462Z",
+      "end": "2026-10-10T05:13:39.095Z",
+      "file": "baseline-1-off.json",
+      "samples": 94
+    },
+    {
+      "index": 2,
+      "state": "on",
+      "start": "2026-10-10T05:13:39.096Z",
+      "end": "2026-10-10T05:15:15.446Z",
+      "file": "baseline-2-on.json",
+      "samples": 94
+    },
+    {
+      "index": 3,
+      "state": "on",
+      "start": "2026-10-10T05:15:15.448Z",
+      "end": "2026-10-10T05:16:51.942Z",
+      "file": "baseline-3-on.json",
+      "samples": 94
+    },
+    {
+      "index": 4,
+      "state": "off",
+      "start": "2026-10-10T05:16:51.943Z",
+      "end": "2026-10-10T05:18:28.357Z",
+      "file": "baseline-4-off.json",
+      "samples": 94
+    }
+  ],
+  "startedAt": "2026-10-10T05:12:02.460Z"
+}

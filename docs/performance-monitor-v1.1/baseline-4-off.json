@@ -1,0 +1,3570 @@
+{
+  "scope": "Electron 44 production fixture, hidden window, synthetic media, no real accounts",
+  "metrics": [
+    {
+      "elapsedMs": 1146,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "10",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…10 perfis · atualização 0",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": null,
+          "workingSetKiB": 92772
+        },
+        {
+          "type": "GPU",
+          "cpu": null,
+          "workingSetKiB": 129160
+        },
+        {
+          "type": "Utility",
+          "cpu": null,
+          "workingSetKiB": 49652
+        },
+        {
+          "type": "Tab",
+          "cpu": null,
+          "workingSetKiB": 100620
+        }
+      ]
+    },
+    {
+      "elapsedMs": 2158,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "10",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…10 perfis · atualização 20",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.20867866211794242,
+          "workingSetKiB": 92852
+        },
+        {
+          "type": "GPU",
+          "cpu": 2.778991421361429,
+          "workingSetKiB": 129700
+        },
+        {
+          "type": "Utility",
+          "cpu": null,
+          "workingSetKiB": 49652
+        },
+        {
+          "type": "Tab",
+          "cpu": 7.223461762721403,
+          "workingSetKiB": 103208
+        }
+      ]
+    },
+    {
+      "elapsedMs": 3157,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "10",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…10 perfis · atualização 20",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.20028749266697432,
+          "workingSetKiB": 92860
+        },
+        {
+          "type": "GPU",
+          "cpu": 5.932014814064099,
+          "workingSetKiB": 130812
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49652
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.2201514053272038,
+          "workingSetKiB": 101172
+        }
+      ]
+    },
+    {
+      "elapsedMs": 4168,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "10",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…10 perfis · atualização 20",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.17480021561329692,
+          "workingSetKiB": 92868
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.744323046617488,
+          "workingSetKiB": 131168
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49652
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.8236768078474996,
+          "workingSetKiB": 101824
+        }
+      ]
+    },
+    {
+      "elapsedMs": 5180,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "50",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…50 perfis · atualização 20",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1668215465049179,
+          "workingSetKiB": 93028
+        },
+        {
+          "type": "GPU",
+          "cpu": 3.5042407559071664,
+          "workingSetKiB": 131336
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.00810389029230028,
+          "workingSetKiB": 49660
+        },
+        {
+          "type": "Tab",
+          "cpu": 4.182694498061342,
+          "workingSetKiB": 108828
+        }
+      ]
+    },
+    {
+      "elapsedMs": 6206,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "50",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…50 perfis · atualização 28",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.15035976645675764,
+          "workingSetKiB": 93044
+        },
+        {
+          "type": "GPU",
+          "cpu": 8.988140202778956,
+          "workingSetKiB": 132208
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49660
+        },
+        {
+          "type": "Tab",
+          "cpu": 5.514654080390599,
+          "workingSetKiB": 115552
+        }
+      ]
+    },
+    {
+      "elapsedMs": 7207,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "50",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…50 perfis · atualização 40",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09697825350056091,
+          "workingSetKiB": 93048
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.490063174690496,
+          "workingSetKiB": 124508
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49660
+        },
+        {
+          "type": "Tab",
+          "cpu": 3.3684712212288646,
+          "workingSetKiB": 121312
+        }
+      ]
+    },
+    {
+      "elapsedMs": 8220,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "50",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…50 perfis · atualização 40",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08311622263815521,
+          "workingSetKiB": 93052
+        },
+        {
+          "type": "GPU",
+          "cpu": 3.1245579515029593,
+          "workingSetKiB": 125108
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.35822894531337723,
+          "workingSetKiB": 49912
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.341803817482694,
+          "workingSetKiB": 121616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 9235,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "50",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…50 perfis · atualização 40",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10082340096352842,
+          "workingSetKiB": 93068
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.39936947430107,
+          "workingSetKiB": 125568
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49912
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.374766001994391,
+          "workingSetKiB": 122536
+        }
+      ]
+    },
+    {
+      "elapsedMs": 10246,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 40",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.9759387439967908,
+          "workingSetKiB": 93092
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.609268006386293,
+          "workingSetKiB": 125560
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.4984021957385613,
+          "workingSetKiB": 49948
+        },
+        {
+          "type": "Tab",
+          "cpu": 8.373453556381508,
+          "workingSetKiB": 135776
+        }
+      ]
+    },
+    {
+      "elapsedMs": 11281,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08973767138181318,
+          "workingSetKiB": 93156
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.507072130251574,
+          "workingSetKiB": 125648
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49948
+        },
+        {
+          "type": "Tab",
+          "cpu": 10.837007120186763,
+          "workingSetKiB": 147444
+        }
+      ]
+    },
+    {
+      "elapsedMs": 12273,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09611207979581698,
+          "workingSetKiB": 93156
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.810848300545794,
+          "workingSetKiB": 126164
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.005446015014663245,
+          "workingSetKiB": 49960
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.0450794901360085,
+          "workingSetKiB": 148152
+        }
+      ]
+    },
+    {
+      "elapsedMs": 13283,
+      "mode": "normal",
+      "phase": "visual",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.11384991096936803,
+          "workingSetKiB": 93188
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.7984272476299,
+          "workingSetKiB": 125904
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 49960
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.77180161445112,
+          "workingSetKiB": 149192
+        }
+      ]
+    },
+    {
+      "elapsedMs": 15524,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 1.145690488172813,
+          "workingSetKiB": 94120
+        },
+        {
+          "type": "GPU",
+          "cpu": 41.98654094701552,
+          "workingSetKiB": 186672
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.055134458938701586,
+          "workingSetKiB": 50052
+        },
+        {
+          "type": "Tab",
+          "cpu": 4.599801890648029,
+          "workingSetKiB": 158680
+        },
+        {
+          "type": "Utility",
+          "cpu": null,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 16312,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.8829762558734356,
+          "workingSetKiB": 94228
+        },
+        {
+          "type": "GPU",
+          "cpu": 9.669066085345408,
+          "workingSetKiB": 186880
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.902488444183147,
+          "workingSetKiB": 50808
+        },
+        {
+          "type": "Tab",
+          "cpu": 20.134524701689276,
+          "workingSetKiB": 169832
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.236449996184989,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 17324,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08196235070790929,
+          "workingSetKiB": 94228
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.55548524875422,
+          "workingSetKiB": 187096
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.9771810488017025,
+          "workingSetKiB": 50808
+        },
+        {
+          "type": "Tab",
+          "cpu": 10.251127105908395,
+          "workingSetKiB": 171404
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.3579253341770103,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 18337,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09736950414752281,
+          "workingSetKiB": 94228
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.201390519386927,
+          "workingSetKiB": 187140
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.8906651945160575,
+          "workingSetKiB": 50808
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.683382389674533,
+          "workingSetKiB": 172520
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2063515301514034,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 19351,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10811238440186724,
+          "workingSetKiB": 94228
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.768387465316,
+          "workingSetKiB": 187284
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.9512509816180372,
+          "workingSetKiB": 50808
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.967054329136515,
+          "workingSetKiB": 173688
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.30744972256251,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 20356,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.5576499758626876,
+          "workingSetKiB": 94232
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.274388059725234,
+          "workingSetKiB": 187364
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.7914231921710917,
+          "workingSetKiB": 50808
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.607077598794595,
+          "workingSetKiB": 174828
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.1849414412814707,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 21370,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09473147918172842,
+          "workingSetKiB": 94236
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.072762854444973,
+          "workingSetKiB": 187468
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.9182137748057078,
+          "workingSetKiB": 50808
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.777374116419269,
+          "workingSetKiB": 175672
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2450373779826496,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 22370,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09139739517423488,
+          "workingSetKiB": 94240
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.029585156823025,
+          "workingSetKiB": 182356
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.8042485789155045,
+          "workingSetKiB": 50808
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.592626610141636,
+          "workingSetKiB": 176708
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.254835737181496,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 23383,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10385497422875746,
+          "workingSetKiB": 94244
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.138206092891,
+          "workingSetKiB": 182516
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.7156802254008356,
+          "workingSetKiB": 50816
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.246646678862048,
+          "workingSetKiB": 177600
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2135325400735057,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 24383,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08338529083469688,
+          "workingSetKiB": 94308
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.394624788187346,
+          "workingSetKiB": 182336
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.834876327815771,
+          "workingSetKiB": 50816
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.774575764835086,
+          "workingSetKiB": 178560
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.190613575765233,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 25386,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.11610204861816475,
+          "workingSetKiB": 94308
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.228705688382484,
+          "workingSetKiB": 182484
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.9773225292985777,
+          "workingSetKiB": 50816
+        },
+        {
+          "type": "Tab",
+          "cpu": 10.716567891893765,
+          "workingSetKiB": 179796
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2929407164004707,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 26400,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09239600592872368,
+          "workingSetKiB": 94308
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.448419017563222,
+          "workingSetKiB": 182568
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.8566962600128074,
+          "workingSetKiB": 50816
+        },
+        {
+          "type": "Tab",
+          "cpu": 10.069882737931255,
+          "workingSetKiB": 178752
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2455089082272934,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 27401,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08411088451785433,
+          "workingSetKiB": 94308
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.093762658463354,
+          "workingSetKiB": 182708
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.755540005364321,
+          "workingSetKiB": 50816
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.548483381856968,
+          "workingSetKiB": 179804
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.192776753030166,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 28415,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.07780976842964091,
+          "workingSetKiB": 94308
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.6692764332554635,
+          "workingSetKiB": 182760
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.9768020382411806,
+          "workingSetKiB": 50816
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.688943369971613,
+          "workingSetKiB": 180804
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.355200113608174,
+          "workingSetKiB": 85588
+        }
+      ]
+    },
+    {
+      "elapsedMs": 29431,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10940106706906612,
+          "workingSetKiB": 94312
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.210513255450782,
+          "workingSetKiB": 182892
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.7658769898734632,
+          "workingSetKiB": 50816
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.393721146822543,
+          "workingSetKiB": 181708
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2694566991364358,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 30444,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 1.5213650052879006,
+          "workingSetKiB": 94892
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.158753071037828,
+          "workingSetKiB": 182956
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.7793188537608968,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 16.510230935330004,
+          "workingSetKiB": 164612
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.147838454353962,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 31456,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10271104772485287,
+          "workingSetKiB": 94896
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.218863699473994,
+          "workingSetKiB": 183108
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.768528049853319,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.649994557995003,
+          "workingSetKiB": 165184
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2102152117730824,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 32457,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08610243732826604,
+          "workingSetKiB": 94896
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.548845702933984,
+          "workingSetKiB": 183192
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.756809359314949,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.410137373342247,
+          "workingSetKiB": 165712
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.1346811927405027,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 33459,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08898050289545771,
+          "workingSetKiB": 94896
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.161833588902921,
+          "workingSetKiB": 183272
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.7093832932921078,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.341556249044851,
+          "workingSetKiB": 166552
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.1763314256392268,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 34473,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08811132535416943,
+          "workingSetKiB": 94896
+        },
+        {
+          "type": "GPU",
+          "cpu": 5.138182830704103,
+          "workingSetKiB": 183432
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.758575757880742,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.666394537847719,
+          "workingSetKiB": 167216
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2324824719637353,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 35486,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.11291794073604897,
+          "workingSetKiB": 94896
+        },
+        {
+          "type": "GPU",
+          "cpu": 3.8593457017302217,
+          "workingSetKiB": 183508
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.7333496129944843,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.56594600212751,
+          "workingSetKiB": 167632
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2187783127671086,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 36497,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08774597313251631,
+          "workingSetKiB": 94896
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.992518345041684,
+          "workingSetKiB": 183656
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.9421834165848364,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 10.388747306040335,
+          "workingSetKiB": 168100
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.285154429944976,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 37511,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.07651554517818923,
+          "workingSetKiB": 94896
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.271066179044385,
+          "workingSetKiB": 183812
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.8211882982489125,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.447007561826217,
+          "workingSetKiB": 168608
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.1724104270178644,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 38522,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09590615197427563,
+          "workingSetKiB": 94896
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.466260512352433,
+          "workingSetKiB": 183964
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.713951695334043,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.581617816159625,
+          "workingSetKiB": 169100
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.253300209787299,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 39523,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 1.3499966170132138,
+          "workingSetKiB": 94296
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.2622635269751274,
+          "workingSetKiB": 184044
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.7547557448562459,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 13.726731222249652,
+          "workingSetKiB": 166468
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.258755814414843,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 40524,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.11145682256573275,
+          "workingSetKiB": 94296
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.401645646003152,
+          "workingSetKiB": 184160
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.7469558605015965,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.553527538524001,
+          "workingSetKiB": 167032
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2505089961435614,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 41534,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1001222263618053,
+          "workingSetKiB": 94296
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.001819035661525,
+          "workingSetKiB": 184240
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.8392383659656542,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.449319832380942,
+          "workingSetKiB": 167692
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.1508947916437675,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 42535,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09674955444284113,
+          "workingSetKiB": 94296
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.417231205475482,
+          "workingSetKiB": 184388
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.7329053322084083,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.358946837667393,
+          "workingSetKiB": 168460
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.149757127666475,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 43549,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08103843699458518,
+          "workingSetKiB": 94296
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.635872389631983,
+          "workingSetKiB": 184464
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.6950951017150873,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.287439190326344,
+          "workingSetKiB": 168840
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.1263459314706865,
+          "workingSetKiB": 85616
+        }
+      ]
+    },
+    {
+      "elapsedMs": 44550,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09703500168313513,
+          "workingSetKiB": 94296
+        },
+        {
+          "type": "GPU",
+          "cpu": 3.9832269209436477,
+          "workingSetKiB": 184608
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.7326537954861454,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.359584961731038,
+          "workingSetKiB": 169176
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2049507018266183,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 45564,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08525345190141162,
+          "workingSetKiB": 94296
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.107558675638939,
+          "workingSetKiB": 187064
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.771870643279735,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.496188608264074,
+          "workingSetKiB": 169684
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.1398221735347946,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 46571,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08356509745903594,
+          "workingSetKiB": 94296
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.3064806519506815,
+          "workingSetKiB": 184844
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.7955578898205,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.530887178484003,
+          "workingSetKiB": 170220
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.132597166508005,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 47584,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10241686012622932,
+          "workingSetKiB": 94296
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.344272349442781,
+          "workingSetKiB": 184996
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.835009895029146,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.624221972594176,
+          "workingSetKiB": 170620
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.1556921947686307,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 48584,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08137500159950654,
+          "workingSetKiB": 94296
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.014066878654832,
+          "workingSetKiB": 185008
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.6825831104684523,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 10.107295038963944,
+          "workingSetKiB": 171464
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.163735300515675,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 49599,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09010064064118269,
+          "workingSetKiB": 94296
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.937101077934932,
+          "workingSetKiB": 185156
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.752329308575182,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.93620795779908,
+          "workingSetKiB": 171928
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.339363570083119,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 50600,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09020674426777492,
+          "workingSetKiB": 94360
+        },
+        {
+          "type": "GPU",
+          "cpu": 3.994370619653384,
+          "workingSetKiB": 185236
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.744996023111316,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.505573138489451,
+          "workingSetKiB": 172416
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.210914356738014,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 51609,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1049674457330742,
+          "workingSetKiB": 94360
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.547268969870292,
+          "workingSetKiB": 185388
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.9146656257064831,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 10.143123112257006,
+          "workingSetKiB": 172868
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2853195402148603,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 52623,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.07753801607048885,
+          "workingSetKiB": 94360
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.068772866192749,
+          "workingSetKiB": 185468
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.6982403901444572,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.25523749075534,
+          "workingSetKiB": 173368
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.083661546362545,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 53627,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08341549477197885,
+          "workingSetKiB": 94360
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.7092382012669365,
+          "workingSetKiB": 185612
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.7095691724236144,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.326988440525852,
+          "workingSetKiB": 173840
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.1455820632568514,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 54638,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.0812290930198609,
+          "workingSetKiB": 94360
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.290813197099095,
+          "workingSetKiB": 185676
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.7320967669734055,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.75510021367611,
+          "workingSetKiB": 174428
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.300502780416525,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 55652,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09284955786442457,
+          "workingSetKiB": 94360
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.552588470038523,
+          "workingSetKiB": 185800
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.007563341455291,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 10.257162687226012,
+          "workingSetKiB": 174948
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.3176867849918072,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 56652,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.12084869972696735,
+          "workingSetKiB": 94360
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.658922287488969,
+          "workingSetKiB": 185852
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.99705225131931,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 15.18915220488903,
+          "workingSetKiB": 173560
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.254842819223223,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 57667,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09581920690087288,
+          "workingSetKiB": 94360
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.782876831704454,
+          "workingSetKiB": 185980
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.8301271359205238,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.98718073079691,
+          "workingSetKiB": 173960
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.336726831664968,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 58680,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.06729338316595435,
+          "workingSetKiB": 94360
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.337068412110942,
+          "workingSetKiB": 186004
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.8320179549008018,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.632426175113105,
+          "workingSetKiB": 174296
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2061770589555154,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 59682,
+      "mode": "normal",
+      "phase": "voice",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.15206949306242104,
+          "workingSetKiB": 94368
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.711058976802985,
+          "workingSetKiB": 186036
+        },
+        {
+          "type": "Utility",
+          "cpu": 1.738664532301936,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 9.903887687044055,
+          "workingSetKiB": 174540
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.2115477359418545,
+          "workingSetKiB": 85604
+        }
+      ]
+    },
+    {
+      "elapsedMs": 60691,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 1.1611955709998734,
+          "workingSetKiB": 92852
+        },
+        {
+          "type": "GPU",
+          "cpu": 4.611808963871339,
+          "workingSetKiB": 183736
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.466265719015437,
+          "workingSetKiB": 50772
+        },
+        {
+          "type": "Tab",
+          "cpu": 16.23445872364139,
+          "workingSetKiB": 168432
+        },
+        {
+          "type": "Utility",
+          "cpu": 4.625473583023569,
+          "workingSetKiB": 85484
+        }
+      ]
+    },
+    {
+      "elapsedMs": 61690,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.8771935971875409,
+          "workingSetKiB": 93064
+        },
+        {
+          "type": "GPU",
+          "cpu": 8.860035762508192,
+          "workingSetKiB": 190944
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.880495437181708,
+          "workingSetKiB": 50788
+        },
+        {
+          "type": "Tab",
+          "cpu": 22.707020241827955,
+          "workingSetKiB": 177508
+        },
+        {
+          "type": "Utility",
+          "cpu": 4.768801621596809,
+          "workingSetKiB": 85808
+        }
+      ]
+    },
+    {
+      "elapsedMs": 62700,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.07870350479081463,
+          "workingSetKiB": 93064
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.215477920350465,
+          "workingSetKiB": 191100
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.32970274230728,
+          "workingSetKiB": 50804
+        },
+        {
+          "type": "Tab",
+          "cpu": 17.237057530381,
+          "workingSetKiB": 177668
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.8028347517453622,
+          "workingSetKiB": 85808
+        }
+      ]
+    },
+    {
+      "elapsedMs": 63701,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09553159937484326,
+          "workingSetKiB": 93064
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.674205269027373,
+          "workingSetKiB": 191192
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.6720707973091335,
+          "workingSetKiB": 50804
+        },
+        {
+          "type": "Tab",
+          "cpu": 19.54440620515712,
+          "workingSetKiB": 178972
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.9666758600841723,
+          "workingSetKiB": 85808
+        }
+      ]
+    },
+    {
+      "elapsedMs": 64717,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1409024016031636,
+          "workingSetKiB": 92928
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.844843710583545,
+          "workingSetKiB": 188856
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.365312566032629,
+          "workingSetKiB": 50784
+        },
+        {
+          "type": "Tab",
+          "cpu": 18.625603906117842,
+          "workingSetKiB": 179764
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.868855606645407,
+          "workingSetKiB": 85808
+        }
+      ]
+    },
+    {
+      "elapsedMs": 65719,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.13829846785054428,
+          "workingSetKiB": 92944
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.494858959011596,
+          "workingSetKiB": 188988
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.775468346364384,
+          "workingSetKiB": 50792
+        },
+        {
+          "type": "Tab",
+          "cpu": 19.711722531364735,
+          "workingSetKiB": 180340
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.0435641171553467,
+          "workingSetKiB": 85808
+        }
+      ]
+    },
+    {
+      "elapsedMs": 66732,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.11499157501640583,
+          "workingSetKiB": 92944
+        },
+        {
+          "type": "GPU",
+          "cpu": 8.959176214175379,
+          "workingSetKiB": 188664
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.705492461537341,
+          "workingSetKiB": 50792
+        },
+        {
+          "type": "Tab",
+          "cpu": 20.30060278287535,
+          "workingSetKiB": 180952
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.9334202728863983,
+          "workingSetKiB": 85808
+        }
+      ]
+    },
+    {
+      "elapsedMs": 67748,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09706908463853485,
+          "workingSetKiB": 92944
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.408064452296985,
+          "workingSetKiB": 188756
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.4033248031987875,
+          "workingSetKiB": 50796
+        },
+        {
+          "type": "Tab",
+          "cpu": 18.402664221496867,
+          "workingSetKiB": 181288
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.922114168601284,
+          "workingSetKiB": 85808
+        }
+      ]
+    },
+    {
+      "elapsedMs": 68760,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.11006636982339338,
+          "workingSetKiB": 92944
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.664251925124083,
+          "workingSetKiB": 187900
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.4539498709931498,
+          "workingSetKiB": 50788
+        },
+        {
+          "type": "Tab",
+          "cpu": 17.928270319842674,
+          "workingSetKiB": 182044
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.751659245584955,
+          "workingSetKiB": 85808
+        }
+      ]
+    },
+    {
+      "elapsedMs": 69774,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10693760683895356,
+          "workingSetKiB": 92948
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.25636772015337,
+          "workingSetKiB": 188108
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.4165776177615856,
+          "workingSetKiB": 50788
+        },
+        {
+          "type": "Tab",
+          "cpu": 23.233773500624263,
+          "workingSetKiB": 177752
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.8403575425343557,
+          "workingSetKiB": 85808
+        }
+      ]
+    },
+    {
+      "elapsedMs": 70779,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.11274254186710986,
+          "workingSetKiB": 92948
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.85671506609206,
+          "workingSetKiB": 187820
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.332764981013226,
+          "workingSetKiB": 50792
+        },
+        {
+          "type": "Tab",
+          "cpu": 17.78319728503239,
+          "workingSetKiB": 177812
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.8451087483340785,
+          "workingSetKiB": 85808
+        }
+      ]
+    },
+    {
+      "elapsedMs": 71780,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.07127740506259185,
+          "workingSetKiB": 92948
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.271494936105307,
+          "workingSetKiB": 187912
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.27286250258668,
+          "workingSetKiB": 50792
+        },
+        {
+          "type": "Tab",
+          "cpu": 17.80905452971408,
+          "workingSetKiB": 178848
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.781118385471814,
+          "workingSetKiB": 85808
+        }
+      ]
+    },
+    {
+      "elapsedMs": 72794,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10095995764414514,
+          "workingSetKiB": 92948
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.533607883947311,
+          "workingSetKiB": 187048
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.275381594625079,
+          "workingSetKiB": 50788
+        },
+        {
+          "type": "Tab",
+          "cpu": 17.686133830114215,
+          "workingSetKiB": 179540
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.7553983752742677,
+          "workingSetKiB": 85808
+        }
+      ]
+    },
+    {
+      "elapsedMs": 73805,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1160319793235532,
+          "workingSetKiB": 93012
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.745385082738806,
+          "workingSetKiB": 187752
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.5899681104948553,
+          "workingSetKiB": 50792
+        },
+        {
+          "type": "Tab",
+          "cpu": 18.541672890319834,
+          "workingSetKiB": 185124
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.6709117422978013,
+          "workingSetKiB": 85808
+        }
+      ]
+    },
+    {
+      "elapsedMs": 74820,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.07665774592528576,
+          "workingSetKiB": 93012
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.1500591141576075,
+          "workingSetKiB": 187904
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.288597593833555,
+          "workingSetKiB": 50792
+        },
+        {
+          "type": "Tab",
+          "cpu": 18.257943855985133,
+          "workingSetKiB": 185348
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.9556586176361983,
+          "workingSetKiB": 85780
+        }
+      ]
+    },
+    {
+      "elapsedMs": 75835,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1553291949643453,
+          "workingSetKiB": 93012
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.563359684795083,
+          "workingSetKiB": 188000
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.3367705376074706,
+          "workingSetKiB": 50792
+        },
+        {
+          "type": "Tab",
+          "cpu": 17.80031205704231,
+          "workingSetKiB": 185276
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.895111621805235,
+          "workingSetKiB": 85792
+        }
+      ]
+    },
+    {
+      "elapsedMs": 76835,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1355744577721582,
+          "workingSetKiB": 93012
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.33291847815867,
+          "workingSetKiB": 187148
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.444351084255716,
+          "workingSetKiB": 50784
+        },
+        {
+          "type": "Tab",
+          "cpu": 18.163378019580964,
+          "workingSetKiB": 185656
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.8285670979587536,
+          "workingSetKiB": 85792
+        }
+      ]
+    },
+    {
+      "elapsedMs": 77845,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.0804925550326956,
+          "workingSetKiB": 93012
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.36683239420404,
+          "workingSetKiB": 187872
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.1995048074252685,
+          "workingSetKiB": 50824
+        },
+        {
+          "type": "Tab",
+          "cpu": 19.82166295242533,
+          "workingSetKiB": 190168
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.6360569221963557,
+          "workingSetKiB": 85792
+        }
+      ]
+    },
+    {
+      "elapsedMs": 78859,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09974677539689829,
+          "workingSetKiB": 93012
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.510277667002769,
+          "workingSetKiB": 188028
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.717367955889617,
+          "workingSetKiB": 50844
+        },
+        {
+          "type": "Tab",
+          "cpu": 22.949651261199786,
+          "workingSetKiB": 192296
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.725918553354064,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 79874,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10878076566879034,
+          "workingSetKiB": 93012
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.609121247494703,
+          "workingSetKiB": 187672
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.7633809456103338,
+          "workingSetKiB": 50852
+        },
+        {
+          "type": "Tab",
+          "cpu": 22.934315828596663,
+          "workingSetKiB": 193312
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.8078049805234158,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 80876,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.12815753875244024,
+          "workingSetKiB": 93012
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.079805715566702,
+          "workingSetKiB": 186812
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.8766657360938734,
+          "workingSetKiB": 50848
+        },
+        {
+          "type": "Tab",
+          "cpu": 23.486266332725123,
+          "workingSetKiB": 194324
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.8772565183928616,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 81887,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.11162571433288392,
+          "workingSetKiB": 93012
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.367312668767171,
+          "workingSetKiB": 187524
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.3736870012992743,
+          "workingSetKiB": 50832
+        },
+        {
+          "type": "Tab",
+          "cpu": 28.078959027430535,
+          "workingSetKiB": 212440
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.8150640730611456,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 82898,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10612102722385017,
+          "workingSetKiB": 93012
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.50216292060104,
+          "workingSetKiB": 187680
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.3135870420390536,
+          "workingSetKiB": 50840
+        },
+        {
+          "type": "Tab",
+          "cpu": 26.434322606142466,
+          "workingSetKiB": 212152
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.7543005472106525,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 83911,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10035903048040187,
+          "workingSetKiB": 93008
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.581715118050745,
+          "workingSetKiB": 187772
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.3173796059584313,
+          "workingSetKiB": 50840
+        },
+        {
+          "type": "Tab",
+          "cpu": 26.309870557594174,
+          "workingSetKiB": 211828
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.725399616126709,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 84925,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08422113155528435,
+          "workingSetKiB": 93012
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.5778281658147035,
+          "workingSetKiB": 186916
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.2079967076835594,
+          "workingSetKiB": 50784
+        },
+        {
+          "type": "Tab",
+          "cpu": 26.537151528904747,
+          "workingSetKiB": 212428
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.730973741251594,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 85929,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 1.9184045630580067,
+          "workingSetKiB": 93304
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.092878089881725,
+          "workingSetKiB": 187632
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.4886239764716005,
+          "workingSetKiB": 50820
+        },
+        {
+          "type": "Tab",
+          "cpu": 27.812384376087653,
+          "workingSetKiB": 213008
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.9072862423542016,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 86940,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.07913665862275776,
+          "workingSetKiB": 93312
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.452101300858307,
+          "workingSetKiB": 187804
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.385664097528046,
+          "workingSetKiB": 50820
+        },
+        {
+          "type": "Tab",
+          "cpu": 32.69817921386646,
+          "workingSetKiB": 209076
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.8387308656215153,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 87950,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1085862525251017,
+          "workingSetKiB": 93280
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.089880513548634,
+          "workingSetKiB": 187900
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.2526383390836666,
+          "workingSetKiB": 50828
+        },
+        {
+          "type": "Tab",
+          "cpu": 26.970568275313738,
+          "workingSetKiB": 209636
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.8025547563747883,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 88965,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.09839304169136416,
+          "workingSetKiB": 93288
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.021461403581157,
+          "workingSetKiB": 187032
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.3737289790751577,
+          "workingSetKiB": 50784
+        },
+        {
+          "type": "Tab",
+          "cpu": 28.247470220346116,
+          "workingSetKiB": 210112
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.7535277943599055,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 89980,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.12145908114481724,
+          "workingSetKiB": 93292
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.791069792476381,
+          "workingSetKiB": 187740
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.2786071352334276,
+          "workingSetKiB": 50792
+        },
+        {
+          "type": "Tab",
+          "cpu": 38.118154566679415,
+          "workingSetKiB": 236880
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.9005374244193423,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 90996,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1576002861021009,
+          "workingSetKiB": 93296
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.977134964612762,
+          "workingSetKiB": 187900
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.3875694226307065,
+          "workingSetKiB": 50832
+        },
+        {
+          "type": "Tab",
+          "cpu": 35.54816696888939,
+          "workingSetKiB": 237496
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.8625960773574,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 92011,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.12773466513805265,
+          "workingSetKiB": 93304
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.029644692624637,
+          "workingSetKiB": 188000
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.4242943448236534,
+          "workingSetKiB": 50832
+        },
+        {
+          "type": "Tab",
+          "cpu": 35.374124583876835,
+          "workingSetKiB": 238072
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.890686723637357,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 93024,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.0953180485020877,
+          "workingSetKiB": 93308
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.979037528472058,
+          "workingSetKiB": 187140
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.2147639960641525,
+          "workingSetKiB": 50792
+        },
+        {
+          "type": "Tab",
+          "cpu": 35.00145838587663,
+          "workingSetKiB": 238656
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.894767690378591,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 94025,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.11258775001323702,
+          "workingSetKiB": 93316
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.874945679157986,
+          "workingSetKiB": 187848
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.4058044130002574,
+          "workingSetKiB": 50828
+        },
+        {
+          "type": "Tab",
+          "cpu": 35.762544742891734,
+          "workingSetKiB": 237368
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.8246837902611253,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 95026,
+      "mode": "normal",
+      "phase": "screen-audio",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nMedindo…100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10664243441390599,
+          "workingSetKiB": 93320
+        },
+        {
+          "type": "GPU",
+          "cpu": 7.19481623819453,
+          "workingSetKiB": 188004
+        },
+        {
+          "type": "Utility",
+          "cpu": 3.325404946409903,
+          "workingSetKiB": 50828
+        },
+        {
+          "type": "Tab",
+          "cpu": 35.25267060840513,
+          "workingSetKiB": 237896
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.8669524190841256,
+          "workingSetKiB": 85788
+        }
+      ]
+    },
+    {
+      "elapsedMs": 96053,
+      "mode": "normal",
+      "phase": "done",
+      "users": "100",
+      "heading": "Auditoria local — componentes reais, dados fictícios\nExecutar medições100 perfis · atualização 60",
+      "hidden": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.5903978564974925,
+          "workingSetKiB": 93344
+        },
+        {
+          "type": "GPU",
+          "cpu": 6.1417344300090475,
+          "workingSetKiB": 188096
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.7059577219054907,
+          "workingSetKiB": 50856
+        },
+        {
+          "type": "Tab",
+          "cpu": 33.13724802941107,
+          "workingSetKiB": 170832
+        },
+        {
+          "type": "Utility",
+          "cpu": 2.7384763373524232,
+          "workingSetKiB": 85596
+        }
+      ]
+    }
+  ],
+  "phase": "done",
+  "loadMs": 136,
+  "fixture": {
+    "scope": "Isolated production-built fixture: real frame components and MeshVoiceProvider; synthetic audio/video; in-memory signaling, no Supabase/STUN/microphone",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.7977.130 Electron/44.4.5 Safari/537.36",
+    "samples": [
+      {
+        "mode": "normal",
+        "users": 10,
+        "renderMs": [
+          0.6999999955296516,
+          0.5,
+          0.8000000044703484,
+          0.6999999955296516,
+          0.4000000059604645,
+          0.3999999985098839,
+          0.3999999985098839,
+          0.5,
+          0.6000000014901161,
+          0.30000000447034836,
+          1.0999999940395355,
+          0.5,
+          0.3999999985098839,
+          0.5999999940395355,
+          0.5,
+          0.6000000014901161,
+          0.6000000014901161,
+          0.5,
+          0.8000000044703484,
+          0.4000000059604645
+        ],
+        "frameIntervalsMs": [
+          1000,
+          1005.6000000000004
+        ],
+        "pathWrites": 144,
+        "commits": 0,
+        "nodes": 328,
+        "runningAnimations": 42,
+        "visible": true,
+        "heapBefore": 4479744,
+        "heapAfter": 3946190
+      },
+      {
+        "mode": "normal",
+        "users": 50,
+        "renderMs": [
+          0.6000000014901161,
+          1,
+          0.8999999985098839,
+          0.7000000029802322,
+          1,
+          0.5,
+          0.6000000014901161,
+          1,
+          0.5,
+          0.5,
+          0.8000000044703484,
+          0.7000000029802322,
+          0.6000000014901161,
+          0.7000000029802322,
+          0.5999999940395355,
+          0.6999999955296516,
+          0.7000000029802322,
+          0.5,
+          0.6000000014901161,
+          0.6000000014901161
+        ],
+        "frameIntervalsMs": [
+          1000.0999999999995,
+          1005.5000000000009
+        ],
+        "pathWrites": 216,
+        "commits": 0,
+        "nodes": 1503,
+        "runningAnimations": 84,
+        "visible": true,
+        "heapBefore": 4658294,
+        "heapAfter": 4541092
+      },
+      {
+        "mode": "normal",
+        "users": 100,
+        "renderMs": [
+          1.5,
+          1,
+          1.1000000014901161,
+          0.8000000044703484,
+          0.7999999970197678,
+          1.2000000029802322,
+          0.8999999985098839,
+          1,
+          0.8999999985098839,
+          0.8999999985098839,
+          0.8000000044703484,
+          1,
+          0.9000000059604645,
+          0.8000000044703484,
+          0.8999999985098839,
+          1.8000000044703484,
+          0.8999999985098839,
+          1.3999999985098839,
+          0.7999999970197678,
+          0.8999999985098839
+        ],
+        "frameIntervalsMs": [
+          1000,
+          1005.5
+        ],
+        "pathWrites": 216,
+        "commits": 0,
+        "nodes": 2994,
+        "runningAnimations": 84,
+        "visible": true,
+        "heapBefore": 5777346,
+        "heapAfter": 5231769
+      }
+    ],
+    "rtc": [
+      {
+        "quality": "normal",
+        "mode": "voice",
+        "iteration": 0,
+        "connectedMs": 1464.3999999985099,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 3034,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 24,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 44.96999999999962,
+              "audioLevel": 1
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 3016,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 44.98999999999962,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running"
+        ]
+      },
+      {
+        "quality": "normal",
+        "mode": "screen-audio",
+        "iteration": 0,
+        "connectedMs": 66.5,
+        "screenMs": 2.4000000059604645,
+        "transitions": [
+          "connecting",
+          "connected",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connected",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connecting",
+          "connected",
+          "connected"
+        ],
+        "stats": [
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 9,
+              "roundTripTime": 0
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 2353,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 1749,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 18,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 34.910000000001624,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 34.87000000000163,
+              "audioLevel": 1
+            },
+            {
+              "type": "media-source",
+              "kind": "video"
+            }
+          ],
+          [
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 5794,
+              "roundTripTime": 0.001
+            },
+            {
+              "type": "candidate-pair",
+              "packetsReceived": 14,
+              "roundTripTime": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 1750,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "audio",
+              "packetsReceived": 1748,
+              "packetsLost": 0,
+              "jitter": 0,
+              "totalAudioEnergy": 0,
+              "audioLevel": 0,
+              "jitterBufferDelay": 0,
+              "jitterBufferEmittedCount": 0
+            },
+            {
+              "type": "inbound-rtp",
+              "kind": "video",
+              "packetsReceived": 1663,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 837,
+              "jitterBufferDelay": 7.0174389999999995,
+              "jitterBufferEmittedCount": 837
+            },
+            {
+              "type": "media-source",
+              "kind": "audio",
+              "totalAudioEnergy": 34.88000000000163,
+              "audioLevel": 1
+            }
+          ]
+        ],
+        "captureStates": [
+          "running",
+          "running",
+          "running"
+        ]
+      }
+    ],
+    "openPeersAfterCleanup-normal": 0,
+    "finishedAt": "2026-10-10T05:18:27.931Z",
+    "monitorOn": false,
+    "monitorRows": []
+  }
+}

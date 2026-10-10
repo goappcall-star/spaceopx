@@ -1,3 +1,4 @@
+import { UnreadBadge } from "./UnreadBadge";
 import { ChevronDown, Hash, Plus, Settings, UserPlus, Volume2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { memberHasPermission } from "@/services/permissions";
@@ -45,6 +46,8 @@ interface Props {
   onStartDirect?: ((id: string) => void) | undefined;
   members: MemberWithProfile[];
   unreadChannelIds: Set<string>;
+  unreadCounts?: Record<string, number>;
+  mentionCounts?: Record<string, number>;
   canInvite: boolean;
   canManage: boolean;
   canOpenSettings?: boolean;
@@ -111,6 +114,8 @@ export function ChannelSidebar({
   onStartDirect,
   members,
   unreadChannelIds,
+  unreadCounts = {},
+  mentionCounts = {},
   canInvite,
   canManage,
   canOpenSettings = false,
@@ -344,8 +349,16 @@ export function ChannelSidebar({
                   )}
                 />
                 <span className="truncate">{channel.name}</span>
-                {unread && (
-                  <span className="bg-primary ml-auto h-2 w-2 shrink-0 rounded-full shadow-[0_0_8px_0_color-mix(in_oklab,var(--color-primary)_80%,transparent)]" />
+                {(unreadCounts[channel.id] ?? 0) > 0 ? (
+                  <UnreadBadge
+                    count={unreadCounts[channel.id] ?? 0}
+                    className="ml-auto"
+                    title={`${unreadCounts[channel.id]} mensagens não lidas; ${mentionCounts[channel.id] ?? 0} menções`}
+                  />
+                ) : (
+                  unread && (
+                    <span className="bg-primary ml-auto h-2 w-2 shrink-0 rounded-full shadow-[0_0_8px_0_color-mix(in_oklab,var(--color-primary)_80%,transparent)]" />
+                  )
                 )}
               </button>,
             )}

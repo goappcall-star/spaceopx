@@ -18,6 +18,7 @@ export function useServerChannels(serverId: string | null) {
     queryKey: ["channels", serverId],
     queryFn: () => channelsService.listByServer(serverId as string),
     enabled: Boolean(serverId),
+    staleTime: 30_000,
   });
 }
 

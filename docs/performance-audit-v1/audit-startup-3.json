@@ -1,0 +1,282 @@
+{
+  "scope": "Packaged 0.1.43 assets/main under Electron runtime; hidden signed-out window; remote network blocked; excludes installer/auto-update and real call",
+  "version": "0.1.43",
+  "samples": [
+    {
+      "atMs": 2023,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0,
+          "workingSetKiB": 111992,
+          "privateKiB": 79100
+        },
+        {
+          "type": "GPU",
+          "cpu": 0,
+          "workingSetKiB": 123756,
+          "privateKiB": 108224
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 47284,
+          "privateKiB": 12608
+        },
+        {
+          "type": "Tab",
+          "cpu": 0,
+          "workingSetKiB": 94992,
+          "privateKiB": 40892
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 79416,
+          "privateKiB": 10304
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 111960,
+          "privateKiB": 35264
+        }
+      ]
+    },
+    {
+      "atMs": 3025,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1039940576726706,
+          "workingSetKiB": 112012,
+          "privateKiB": 79116
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.05158845138063218,
+          "workingSetKiB": 123700,
+          "privateKiB": 108228
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 47284,
+          "privateKiB": 12608
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.006677777422517799,
+          "workingSetKiB": 94964,
+          "privateKiB": 40912
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.0033805139846701184,
+          "workingSetKiB": 79424,
+          "privateKiB": 10308
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 111960,
+          "privateKiB": 35264
+        }
+      ]
+    },
+    {
+      "atMs": 4032,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10752447950539568,
+          "workingSetKiB": 112012,
+          "privateKiB": 79116
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.008006601144877794,
+          "workingSetKiB": 123716,
+          "privateKiB": 108228
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 47284,
+          "privateKiB": 12608
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.021281649940762076,
+          "workingSetKiB": 93812,
+          "privateKiB": 39596
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 79424,
+          "privateKiB": 10308
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 111960,
+          "privateKiB": 35264
+        }
+      ]
+    },
+    {
+      "atMs": 5040,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.0834774337435568,
+          "workingSetKiB": 112020,
+          "privateKiB": 79116
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.009670805771536884,
+          "workingSetKiB": 123716,
+          "privateKiB": 108228
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 47284,
+          "privateKiB": 12608
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.0012398641108934461,
+          "workingSetKiB": 93816,
+          "privateKiB": 39596
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 79424,
+          "privateKiB": 10308
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 111960,
+          "privateKiB": 35264
+        }
+      ]
+    },
+    {
+      "atMs": 6057,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.0916525662718556,
+          "workingSetKiB": 112056,
+          "privateKiB": 79116
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.003976018623179352,
+          "workingSetKiB": 123748,
+          "privateKiB": 108292
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.001213308883519724,
+          "workingSetKiB": 47296,
+          "privateKiB": 12612
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.005943573922647296,
+          "workingSetKiB": 93824,
+          "privateKiB": 39600
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 79424,
+          "privateKiB": 10308
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 111960,
+          "privateKiB": 35264
+        }
+      ]
+    },
+    {
+      "atMs": 7071,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.10263537660426343,
+          "workingSetKiB": 112056,
+          "privateKiB": 79116
+        },
+        {
+          "type": "GPU",
+          "cpu": 0.002852361130291253,
+          "workingSetKiB": 123768,
+          "privateKiB": 107780
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 47296,
+          "privateKiB": 12612
+        },
+        {
+          "type": "Tab",
+          "cpu": 0.0034103026310772413,
+          "workingSetKiB": 93840,
+          "privateKiB": 39608
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSetKiB": 79424,
+          "privateKiB": 10308
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.002950041579973244,
+          "workingSetKiB": 112008,
+          "privateKiB": 35364
+        }
+      ]
+    }
+  ],
+  "loadErrors": [],
+  "domReadyMs": 805,
+  "loadMs": 996,
+  "page": {
+    "loginRendered": false,
+    "navigation": [
+      {
+        "domContentLoaded": 349.19999999925494,
+        "load": 539
+      }
+    ],
+    "paint": [],
+    "visibility": "visible"
+  },
+  "gpuFeatures": {
+    "2d_canvas": "enabled",
+    "direct_rendering_display_compositor": "disabled_off_ok",
+    "gpu_compositing": "enabled",
+    "multiple_raster_threads": "enabled_on",
+    "opengl": "enabled_on",
+    "rasterization": "enabled",
+    "raw_draw": "disabled_off_ok",
+    "skia_graphite": "disabled_off",
+    "trees_in_viz": "disabled_off",
+    "video_decode": "enabled",
+    "video_encode": "enabled",
+    "webgl": "enabled",
+    "webgpu": "enabled",
+    "webnn": "disabled_off"
+  }
+}

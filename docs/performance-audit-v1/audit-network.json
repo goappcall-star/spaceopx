@@ -1,0 +1,85 @@
+{
+  "scope": "Small sequential HTTP diagnostics; gateway/edge latency, not PostgreSQL query or WebRTC latency",
+  "measurements": [
+    {
+      "url": "https://lobbyx-nine.vercel.app/",
+      "rows": [
+        {
+          "ms": 1213.3673000000001,
+          "headersMs": 1203.8717000000001,
+          "status": 200,
+          "bytes": 7328,
+          "edge": null
+        },
+        {
+          "ms": 166.51909999999998,
+          "headersMs": 163.7130000000002,
+          "status": 200,
+          "bytes": 7328,
+          "edge": null
+        },
+        {
+          "ms": 185.38359999999966,
+          "headersMs": 180.48239999999987,
+          "status": 200,
+          "bytes": 7328,
+          "edge": null
+        },
+        {
+          "ms": 154.22489999999925,
+          "headersMs": 152.3739999999998,
+          "status": 200,
+          "bytes": 7328,
+          "edge": null
+        },
+        {
+          "ms": 164.94650000000001,
+          "headersMs": 160.16390000000047,
+          "status": 200,
+          "bytes": 7328,
+          "edge": null
+        }
+      ]
+    },
+    {
+      "url": "https://lnupoqtaeawwggbwgbuv.supabase.co/auth/v1/health",
+      "rows": [
+        {
+          "ms": 72.33609999999953,
+          "headersMs": 71.67879999999968,
+          "status": 401,
+          "bytes": 101,
+          "edge": "GRU"
+        },
+        {
+          "ms": 40.60369999999966,
+          "headersMs": 39.9987000000001,
+          "status": 401,
+          "bytes": 101,
+          "edge": "GRU"
+        },
+        {
+          "ms": 54.016999999999825,
+          "headersMs": 53.7434000000012,
+          "status": 401,
+          "bytes": 101,
+          "edge": "GRU"
+        },
+        {
+          "ms": 38.81830000000082,
+          "headersMs": 38.41320000000087,
+          "status": 401,
+          "bytes": 101,
+          "edge": "GRU"
+        },
+        {
+          "ms": 35.408299999999144,
+          "headersMs": 34.916299999998955,
+          "status": 401,
+          "bytes": 101,
+          "edge": "GRU"
+        }
+      ]
+    }
+  ]
+}

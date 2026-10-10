@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { memo, useId } from "react";
 import { useFrameVisibility } from "@/hooks/use-frame-visibility";
 import { FRAME_PALETTES, type IllustratedFrameId } from "@/lib/illustrated-frames";
 import "./illustrated-frames.css";
@@ -41,7 +41,7 @@ function FrameArt({
   );
 }
 const contour = "M150 5H257Q295 5 295 43V357Q295 395 257 395H43Q5 395 5 357V43Q5 5 43 5H150Z";
-export function IllustratedFrame({
+export const IllustratedFrame = memo(function IllustratedFrame({
   theme,
   animated = true,
   avatar = false,
@@ -95,21 +95,23 @@ export function IllustratedFrame({
           <stop offset=".5" stopColor={secondary} />
           <stop offset="1" stopColor={color} />
         </linearGradient>
-        <mask
-          id={id + "-metal"}
-          maskUnits="userSpaceOnUse"
-          x="-60"
-          y="-60"
-          width="420"
-          height="520"
-          style={{ maskType: "alpha" }}
-        >
-          <FrameArt
-            theme={theme}
-            avatar={avatar}
-            src={"/frames/illustrated/" + theme + (compact || avatar ? "-compact.webp" : ".webp")}
-          />
-        </mask>
+        {theme === "royal" && (
+          <mask
+            id={id + "-metal"}
+            maskUnits="userSpaceOnUse"
+            x="-60"
+            y="-60"
+            width="420"
+            height="520"
+            style={{ maskType: "alpha" }}
+          >
+            <FrameArt
+              theme={theme}
+              avatar={avatar}
+              src={"/frames/illustrated/" + theme + (compact || avatar ? "-compact.webp" : ".webp")}
+            />
+          </mask>
+        )}
       </defs>
       <g mask={"url(#" + id + "-safe)"}>
         <FrameArt
@@ -317,4 +319,4 @@ export function IllustratedFrame({
       </g>
     </svg>
   );
-}
+});

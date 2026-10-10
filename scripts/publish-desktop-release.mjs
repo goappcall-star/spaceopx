@@ -3,6 +3,11 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 const release = await verifyDesktopRelease();
+// Default is draft only. Promotion requires an explicit operator action after
+// WEB + installer validation; never add this flag to unattended CI.
+const publishApproved = process.argv.slice(2).includes("--publish-approved");
+if (process.argv.slice(2).some((arg) => arg !== "--publish-approved"))
+  throw Error("Unknown release argument");
 const repo = "goappcall-star/spaceopx",
   tag = `v${release.version}`;
 const run = (args) => execFileSync("gh", args, { stdio: "inherit", windowsHide: true });
@@ -37,4 +42,8 @@ run([
   "--generate-notes",
 ]);
 // All assets are uploaded while private to the draft; never expose half a release.
-run(["release", "edit", tag, "--repo", repo, "--draft=false", "--latest"]);
+if (publishApproved) run(["release", "edit", tag, "--repo", repo, "--draft=false", "--latest"]);
+else
+  console.log(
+    "Draft prepared. Auto-update feed unchanged; publication requires explicit approval.",
+  );

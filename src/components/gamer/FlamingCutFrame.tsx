@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from "react";
+import { memo, useEffect, useId, useRef } from "react";
 import { useFrameVisibility } from "@/hooks/use-frame-visibility";
 
 // The supplied illustration is retained verbatim. Masks expose only its flame perimeter.
@@ -21,10 +21,14 @@ let sharedPoints: { x: number; y: number; nx: number; ny: number }[] | undefined
 const draws = new Set<(time: number) => void>();
 let clock = 0;
 let previous = 0;
+let elapsed = 1000;
+let geometryTime = -1;
+let geometry: string[] = [];
 function tick(now: number) {
-  if (now - previous >= 1000 / 30) {
+  if (!previous || now - previous >= 1000 / 30) {
+    elapsed += previous ? Math.min(now - previous, 65) : 0;
     previous = now;
-    for (const draw of draws) draw(now);
+    for (const draw of draws) draw(elapsed);
   }
   clock = draws.size ? requestAnimationFrame(tick) : 0;
 }
@@ -36,11 +40,16 @@ function subscribe(draw: (time: number) => void) {
     if (!draws.size) {
       cancelAnimationFrame(clock);
       clock = 0;
+      previous = 0;
     }
   };
 }
 
-export function FlamingCutFrame({ animated = true }: { animated?: boolean }) {
+export const FlamingCutFrame = memo(function FlamingCutFrame({
+  animated = true,
+}: {
+  animated?: boolean;
+}) {
   const { ref, visible } = useFrameVisibility(animated);
   const routeRef = useRef<SVGPathElement>(null);
   const ribbons = useRef<(SVGPathElement | null)[]>([]);
@@ -91,21 +100,27 @@ export function FlamingCutFrame({ animated = true }: { animated?: boolean }) {
       }
       return "M" + a.join("L") + "L" + b.reverse().join("L") + "Z";
     }
-    let time = 1000,
-      last = 0;
-    function draw(now: number) {
-      time += last ? Math.min(now - last, 65) : 0;
-      last = now;
+    function draw(time: number) {
+      // Same artwork, geometry and phase for all overlays: build twelve ribbons
+      // once per shared tick, then reuse the immutable strings for visible cards.
+      if (geometryTime !== time) {
+        geometry = trails.flatMap((trail) =>
+          layers.map((layer) =>
+            ribbon(time / 3200 - trail.lag, trail.span, layer.width, time / 600 + trail.lag * 7),
+          ),
+        );
+        geometryTime = time;
+      }
       trails.forEach((trail, t) =>
         layers.forEach((layer, l) => {
           ribbons.current[t * layers.length + l]?.setAttribute(
             "d",
-            ribbon(time / 3200 - trail.lag, trail.span, layer.width, time / 600 + trail.lag * 7),
+            geometry[t * layers.length + l]!,
           );
         }),
       );
     }
-    draw(0);
+    draw(elapsed);
     let stop: (() => void) | undefined;
     const motion = matchMedia("(prefers-reduced-motion: reduce)");
     function update() {
@@ -121,7 +136,6 @@ export function FlamingCutFrame({ animated = true }: { animated?: boolean }) {
         root.dataset["animations"] !== "false";
       stop?.();
       stop = undefined;
-      last = 0;
       if (run) {
         scene!.unpauseAnimations();
         stop = subscribe(draw);
@@ -245,4 +259,4 @@ export function FlamingCutFrame({ animated = true }: { animated?: boolean }) {
       </g>
     </svg>
   );
-}
+});

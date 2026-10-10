@@ -1,3 +1,4 @@
+import { UnreadBadge } from "@/components/app/UnreadBadge";
 import { useQueryClient } from "@tanstack/react-query";
 import { Ban, MessageSquare, MoreHorizontal, Search, UserMinus, UserPlus } from "lucide-react";
 import { useState } from "react";
@@ -366,11 +367,7 @@ export function SocialHome({
                       <span className="text-muted-foreground shrink-0 text-[11px]">
                         {shortTime(conversation.last_message_at)}
                       </span>
-                      {conversation.unread_count > 0 && (
-                        <span className="bg-primary text-primary-foreground glow-soft shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold">
-                          {conversation.unread_count}
-                        </span>
-                      )}
+                      <UnreadBadge count={conversation.unread_count} />
                     </button>
                   </li>
                 ))}

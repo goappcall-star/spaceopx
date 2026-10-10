@@ -4,6 +4,7 @@ const path = require("node:path");
 const { chooseScreen } = require("./screen-picker.cjs");
 const fs = require("node:fs/promises");
 const { createPermissionStore } = require("./permissions.cjs");
+const { installPerformance } = require("./performance.cjs");
 const { installActivity } = require("./activity.cjs");
 const { classifyMediaRequest } = require("./media-permission.cjs");
 const { pathToFileURL } = require("node:url");
@@ -149,6 +150,8 @@ else {
       });
       const stopActivity = installActivity({ window, store, trusted });
       window.once("closed", stopActivity);
+      const stopPerformance = installPerformance({ app, window, ipcMain, trusted });
+      window.once("closed", stopPerformance);
       let picking = false;
       ses.setDisplayMediaRequestHandler(async (request, callback) => {
         if (

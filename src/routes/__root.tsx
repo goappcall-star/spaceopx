@@ -19,6 +19,7 @@ import { THEME_BOOTSTRAP } from "@/lib/theme";
 import { AudioSettingsProvider } from "@/hooks/use-audio-settings";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { PerformanceInstrumentation } from "@/components/performance/PerformanceInstrumentation";
 import { DesktopUpdates } from "@/components/app/DesktopUpdates";
 import { redactSecrets } from "@/lib/redact-secrets.mjs";
 
@@ -150,6 +151,7 @@ function RootComponent() {
         <AppearanceSync />
         <VisualQualitySync />
         <DesktopUpdates />
+        <PerformanceInstrumentation />
         <AudioSettingsProvider>
           <TooltipProvider delayDuration={200}>
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}

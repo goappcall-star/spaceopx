@@ -1,3 +1,4 @@
+import { UnreadBadge } from "@/components/app/UnreadBadge";
 import { LiveGameActivity } from "@/components/gamer/LiveGameActivity";
 import { useGlobalPresence } from "@/hooks/use-global-presence";
 import { MessageSquare, UserPlus, Users, UsersRound } from "lucide-react";
@@ -122,6 +123,10 @@ export function SocialSidebar({
                         status={statusOf(profile?.id)}
                         className="border-surface absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 border-2"
                       />
+                      <UnreadBadge
+                        count={conversation.unread_count}
+                        className="absolute -right-1 -bottom-1"
+                      />
                     </div>
                     <span className="min-w-0 flex-1">
                       <span className="font-friend block truncate text-sm font-bold">
@@ -132,11 +137,6 @@ export function SocialSidebar({
                         {conversation.last_message_content ?? "Sem mensagens"}
                       </span>
                     </span>
-                    {conversation.unread_count > 0 && (
-                      <span className="bg-primary text-primary-foreground glow-soft shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold">
-                        {conversation.unread_count}
-                      </span>
-                    )}
                   </button>
                 </li>
               );

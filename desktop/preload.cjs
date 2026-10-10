@@ -1,5 +1,6 @@
 const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld("lobbyxDesktop", {
+  performance: () => ipcRenderer.invoke("desktop:performance"),
   activity: () => ipcRenderer.invoke("desktop:activity"),
   preference: (key, value) => ipcRenderer.invoke("desktop:preferences", { key, value }),
   updates: {

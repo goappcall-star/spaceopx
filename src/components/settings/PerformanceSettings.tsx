@@ -1,3 +1,4 @@
+import { AdminMonitorLink } from "@/components/performance/AdminMonitorLink";
 import { useVisualQuality, setVisualQuality } from "@/hooks/use-visual-quality";
 import type { VisualQuality } from "@/lib/visual-quality";
 export function PerformanceSettings() {
@@ -5,6 +6,7 @@ export function PerformanceSettings() {
   return (
     <div className="space-y-3 border-t border-border pt-5">
       <h3 className="font-semibold">Desempenho</h3>
+      <AdminMonitorLink />
       <label className="flex items-center justify-between gap-4 text-sm">
         Modo Desempenho
         <input

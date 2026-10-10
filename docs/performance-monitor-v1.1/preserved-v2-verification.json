@@ -1,0 +1,22 @@
+[
+  {
+    "file": "src/hooks/use-auth.tsx",
+    "unchanged": true
+  },
+  {
+    "file": "src/components/gamer/IllustratedFrame.tsx",
+    "unchanged": true
+  },
+  {
+    "file": "src/components/gamer/FlamingCutFrame.tsx",
+    "unchanged": true
+  },
+  {
+    "file": "src/services/voice.ts",
+    "unchanged": true
+  },
+  {
+    "file": "src/services/messages.ts",
+    "unchanged": true
+  }
+]

@@ -1,0 +1,557 @@
+{
+  "scope": "Sequential local fixtures. One pair per platform; no causal or WAN conclusion. Exact nearest-rank benchmark percentiles differ from the panel's histogram bounds.",
+  "web": {
+    "off": {
+      "finishedAt": "2026-10-10T04:30:46.486Z",
+      "monitorOn": false,
+      "visual": [
+        {
+          "users": 10,
+          "mode": "normal",
+          "renderMs": {
+            "n": 20,
+            "mean": 1.2950000002980233,
+            "p50": 1,
+            "p95": 3.399999998509884,
+            "max": 4
+          },
+          "frameIntervalsMs": {
+            "n": 130,
+            "mean": 23.248461538461537,
+            "p50": 22.199999999999818,
+            "p95": 39.30000000000018,
+            "max": 72.20000000000073
+          },
+          "heapDeltaMiB": -0.10595321655273438,
+          "runningAnimations": 42,
+          "visible": true
+        },
+        {
+          "users": 50,
+          "mode": "normal",
+          "renderMs": {
+            "n": 20,
+            "mean": 3.55499999858439,
+            "p50": 2.399999998509884,
+            "p95": 9.799999997019768,
+            "max": 12.5
+          },
+          "frameIntervalsMs": {
+            "n": 62,
+            "mean": 46.68387096774193,
+            "p50": 44.29999999999927,
+            "p95": 66.5,
+            "max": 233.20000000000073
+          },
+          "heapDeltaMiB": 2.6647043228149414,
+          "runningAnimations": 84,
+          "visible": true
+        },
+        {
+          "users": 100,
+          "mode": "normal",
+          "renderMs": {
+            "n": 20,
+            "mean": 5.664999999850989,
+            "p50": 4.100000001490116,
+            "p95": 12.300000004470348,
+            "max": 19.299999997019768
+          },
+          "frameIntervalsMs": {
+            "n": 55,
+            "mean": 53.538181818181855,
+            "p50": 49.89999999999782,
+            "p95": 83.39999999999782,
+            "max": 116.79999999999927
+          },
+          "heapDeltaMiB": 0.3025054931640625,
+          "runningAnimations": 84,
+          "visible": true
+        }
+      ],
+      "rtc": [
+        {
+          "mode": "voice",
+          "connectedMs": 974.5,
+          "captureStates": [
+            "running",
+            "running"
+          ]
+        },
+        {
+          "mode": "screen-audio",
+          "connectedMs": 974.3000000044703,
+          "screenMs": 57.399999998509884,
+          "captureStates": [
+            "running",
+            "running",
+            "running"
+          ]
+        }
+      ],
+      "rtcError": null,
+      "openPeersAfterCleanup": 0,
+      "collectorCounts": {}
+    },
+    "on": {
+      "finishedAt": "2026-10-10T04:29:04.763Z",
+      "monitorOn": true,
+      "visual": [
+        {
+          "users": 10,
+          "mode": "normal",
+          "renderMs": {
+            "n": 20,
+            "mean": 2.620000000670552,
+            "p50": 1.3999999985098839,
+            "p95": 8.399999998509884,
+            "max": 9.5
+          },
+          "frameIntervalsMs": {
+            "n": 151,
+            "mean": 19.792052980132453,
+            "p50": 16.899999999999636,
+            "p95": 33.399999999999636,
+            "max": 50
+          },
+          "heapDeltaMiB": -1.0272016525268555,
+          "runningAnimations": 42,
+          "visible": true
+        },
+        {
+          "users": 50,
+          "mode": "normal",
+          "renderMs": {
+            "n": 20,
+            "mean": 4.364999998733401,
+            "p50": 3.2999999970197678,
+            "p95": 10.199999995529652,
+            "max": 12.899999998509884
+          },
+          "frameIntervalsMs": {
+            "n": 96,
+            "mean": 30.78541666666668,
+            "p50": 27.900000000001455,
+            "p95": 44.69999999999709,
+            "max": 66.70000000000073
+          },
+          "heapDeltaMiB": -0.872044563293457,
+          "runningAnimations": 84,
+          "visible": true
+        },
+        {
+          "users": 100,
+          "mode": "normal",
+          "renderMs": {
+            "n": 20,
+            "mean": 6.244999999552965,
+            "p50": 3.7999999970197678,
+            "p95": 17,
+            "max": 24
+          },
+          "frameIntervalsMs": {
+            "n": 44,
+            "mean": 56.56363636363635,
+            "p50": 39,
+            "p95": 155.60000000000218,
+            "max": 183.5
+          },
+          "heapDeltaMiB": 3.4949569702148438,
+          "runningAnimations": 84,
+          "visible": true
+        }
+      ],
+      "rtc": [
+        {
+          "mode": "voice",
+          "connectedMs": 992.3999999985099,
+          "captureStates": [
+            "running",
+            "running"
+          ]
+        },
+        {
+          "mode": "screen-audio",
+          "connectedMs": 1092.5,
+          "screenMs": 46.69999999552965,
+          "captureStates": [
+            "running",
+            "running",
+            "running"
+          ]
+        }
+      ],
+      "rtcError": null,
+      "openPeersAfterCleanup": 0,
+      "collectorCounts": {
+        "runtime.heap": 6,
+        "ui.longtask": 85,
+        "ui.frame": 38,
+        "rtc.connect": 4,
+        "rtc.rtt": 8,
+        "rtc.direct": 8,
+        "rtc.jitter": 9,
+        "rtc.loss": 4,
+        "rtc.screen_fps": 1
+      }
+    }
+  },
+  "electron": {
+    "off": {
+      "phase": "done",
+      "timeout": false,
+      "error": null,
+      "loadMs": 565,
+      "phases": {
+        "visual": {
+          "cpuPercent": {
+            "n": 14,
+            "mean": 1.5033548080160963,
+            "p50": 1.1098740890414578,
+            "p95": 5.366913161755264,
+            "max": 5.366913161755264
+          },
+          "workingSetMiB": {
+            "n": 14,
+            "mean": 380.7103794642857,
+            "p50": 380.3359375,
+            "p95": 413.51953125,
+            "max": 413.51953125
+          }
+        },
+        "voice": {
+          "cpuPercent": {
+            "n": 4,
+            "mean": 4.463160637091773,
+            "p50": 2.246059894613894,
+            "p95": 7.884770637524717,
+            "max": 7.884770637524717
+          },
+          "workingSetMiB": {
+            "n": 4,
+            "mean": 552.083984375,
+            "p50": 564.609375,
+            "p95": 573.51953125,
+            "max": 573.51953125
+          }
+        },
+        "screen-audio": {
+          "cpuPercent": {
+            "n": 2,
+            "mean": 4.235835722603814,
+            "p50": 4.002433986215299,
+            "p95": 4.469237458992329,
+            "max": 4.469237458992329
+          },
+          "workingSetMiB": {
+            "n": 2,
+            "mean": 595.947265625,
+            "p50": 590.6796875,
+            "p95": 601.21484375,
+            "max": 601.21484375
+          }
+        },
+        "done": {
+          "cpuPercent": {
+            "n": 1,
+            "mean": 3.014527879809172,
+            "p50": 3.014527879809172,
+            "p95": 3.014527879809172,
+            "max": 3.014527879809172
+          },
+          "workingSetMiB": {
+            "n": 1,
+            "mean": 600.8671875,
+            "p50": 600.8671875,
+            "p95": 600.8671875,
+            "max": 600.8671875
+          }
+        }
+      },
+      "fixture": {
+        "finishedAt": "2026-10-10T04:31:30.374Z",
+        "monitorOn": false,
+        "visual": [
+          {
+            "users": 10,
+            "mode": "normal",
+            "renderMs": {
+              "n": 20,
+              "mean": 1.4400000017136336,
+              "p50": 1.1000000014901161,
+              "p95": 3.2000000029802322,
+              "max": 3.5
+            },
+            "frameIntervalsMs": {
+              "n": 2,
+              "mean": 1002.7000000000003,
+              "p50": 1000.3000000000002,
+              "p95": 1005.1000000000004,
+              "max": 1005.1000000000004
+            },
+            "heapDeltaMiB": -0.40579795837402344,
+            "runningAnimations": 42,
+            "visible": true
+          },
+          {
+            "users": 50,
+            "mode": "normal",
+            "renderMs": {
+              "n": 20,
+              "mean": 2.704999998956919,
+              "p50": 1.7000000029802322,
+              "p95": 4.299999997019768,
+              "max": 8.399999998509884
+            },
+            "frameIntervalsMs": {
+              "n": 2,
+              "mean": 1005.6000000000004,
+              "p50": 1005.3999999999996,
+              "p95": 1005.8000000000011,
+              "max": 1005.8000000000011
+            },
+            "heapDeltaMiB": 0.23536968231201172,
+            "runningAnimations": 84,
+            "visible": true
+          },
+          {
+            "users": 100,
+            "mode": "normal",
+            "renderMs": {
+              "n": 20,
+              "mean": 2.699999999627471,
+              "p50": 2.2999999970197678,
+              "p95": 5.5,
+              "max": 6.0999999940395355
+            },
+            "frameIntervalsMs": {
+              "n": 2,
+              "mean": 1005.5,
+              "p50": 1005.4000000000015,
+              "p95": 1005.5999999999985,
+              "max": 1005.5999999999985
+            },
+            "heapDeltaMiB": -0.5294809341430664,
+            "runningAnimations": 84,
+            "visible": true
+          }
+        ],
+        "rtc": [
+          {
+            "mode": "voice",
+            "connectedMs": 1998.6000000014901,
+            "captureStates": [
+              "running",
+              "running"
+            ]
+          },
+          {
+            "mode": "screen-audio",
+            "connectedMs": 150.69999999552965,
+            "screenMs": 2.9000000059604645,
+            "captureStates": [
+              "running",
+              "running",
+              "running"
+            ]
+          }
+        ],
+        "rtcError": null,
+        "openPeersAfterCleanup": 0,
+        "collectorCounts": {}
+      }
+    },
+    "on": {
+      "phase": "done",
+      "timeout": false,
+      "error": null,
+      "loadMs": 439,
+      "phases": {
+        "visual": {
+          "cpuPercent": {
+            "n": 14,
+            "mean": 2.1149383055439115,
+            "p50": 1.1349689976749233,
+            "p95": 10.196508804832138,
+            "max": 10.196508804832138
+          },
+          "workingSetMiB": {
+            "n": 14,
+            "mean": 380.7486049107143,
+            "p50": 379.33203125,
+            "p95": 410.65234375,
+            "max": 410.65234375
+          }
+        },
+        "voice": {
+          "cpuPercent": {
+            "n": 4,
+            "mean": 8.427942623368946,
+            "p50": 4.129759807520504,
+            "p95": 17.199176329611113,
+            "max": 17.199176329611113
+          },
+          "workingSetMiB": {
+            "n": 4,
+            "mean": 570.6259765625,
+            "p50": 562.984375,
+            "p95": 582.5546875,
+            "max": 582.5546875
+          }
+        },
+        "screen-audio": {
+          "cpuPercent": {
+            "n": 2,
+            "mean": 4.146278707227568,
+            "p50": 4.00589824966575,
+            "p95": 4.286659164789386,
+            "max": 4.286659164789386
+          },
+          "workingSetMiB": {
+            "n": 2,
+            "mean": 604.55078125,
+            "p50": 603.81640625,
+            "p95": 605.28515625,
+            "max": 605.28515625
+          }
+        },
+        "done": {
+          "cpuPercent": {
+            "n": 1,
+            "mean": 3.5930747936544276,
+            "p50": 3.5930747936544276,
+            "p95": 3.5930747936544276,
+            "max": 3.5930747936544276
+          },
+          "workingSetMiB": {
+            "n": 1,
+            "mean": 604.02734375,
+            "p50": 604.02734375,
+            "p95": 604.02734375,
+            "max": 604.02734375
+          }
+        }
+      },
+      "fixture": {
+        "finishedAt": "2026-10-10T04:32:12.258Z",
+        "monitorOn": true,
+        "visual": [
+          {
+            "users": 10,
+            "mode": "normal",
+            "renderMs": {
+              "n": 20,
+              "mean": 0.7300000004470348,
+              "p50": 0.6999999955296516,
+              "p95": 1.2000000029802322,
+              "max": 1.4000000059604645
+            },
+            "frameIntervalsMs": {
+              "n": 2,
+              "mean": 1002.7499999999998,
+              "p50": 999.9999999999995,
+              "p95": 1005.5,
+              "max": 1005.5
+            },
+            "heapDeltaMiB": -0.6104030609130859,
+            "runningAnimations": 42,
+            "visible": true
+          },
+          {
+            "users": 50,
+            "mode": "normal",
+            "renderMs": {
+              "n": 20,
+              "mean": 1.2650000009685756,
+              "p50": 1,
+              "p95": 1.9000000059604645,
+              "max": 3
+            },
+            "frameIntervalsMs": {
+              "n": 2,
+              "mean": 1002.75,
+              "p50": 1000,
+              "p95": 1005.5,
+              "max": 1005.5
+            },
+            "heapDeltaMiB": -0.11755943298339844,
+            "runningAnimations": 84,
+            "visible": true
+          },
+          {
+            "users": 100,
+            "mode": "normal",
+            "renderMs": {
+              "n": 20,
+              "mean": 2.044999999925494,
+              "p50": 2,
+              "p95": 2.899999998509884,
+              "max": 3.100000001490116
+            },
+            "frameIntervalsMs": {
+              "n": 2,
+              "mean": 1002.7999999999993,
+              "p50": 1000,
+              "p95": 1005.5999999999985,
+              "max": 1005.5999999999985
+            },
+            "heapDeltaMiB": -0.6321535110473633,
+            "runningAnimations": 84,
+            "visible": true
+          }
+        ],
+        "rtc": [
+          {
+            "mode": "voice",
+            "connectedMs": 2391.7999999970198,
+            "captureStates": [
+              "running",
+              "running"
+            ]
+          },
+          {
+            "mode": "screen-audio",
+            "connectedMs": 111.09999999403954,
+            "screenMs": 14.399999998509884,
+            "captureStates": [
+              "running",
+              "running",
+              "running"
+            ]
+          }
+        ],
+        "rtcError": null,
+        "openPeersAfterCleanup": 0,
+        "collectorCounts": {
+          "runtime.heap": 5,
+          "runtime.cpu": 1,
+          "runtime.memory": 1,
+          "ui.longtask": 7,
+          "rtc.connect": 4,
+          "rtc.rtt": 8,
+          "rtc.direct": 8,
+          "rtc.jitter": 7,
+          "ui.frame": 4,
+          "rtc.loss": 4,
+          "rtc.screen_fps": 1
+        }
+      }
+    }
+  },
+  "collector": {
+    "off": {
+      "n": 6,
+      "mean": 2.2464666666666666,
+      "p50": 1.6453000000000202,
+      "p95": 3.5123000000000033,
+      "max": 3.5123000000000033
+    },
+    "on": {
+      "n": 6,
+      "mean": 79.42331666666668,
+      "p50": 75.33360000000005,
+      "p95": 92.00710000000001,
+      "max": 92.00710000000001
+    }
+  }
+}

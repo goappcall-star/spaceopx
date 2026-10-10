@@ -1,0 +1,2823 @@
+{
+  "method": "Two pairs per stage, ABBA order, cumulative CPU deltas on 1s intervals. Voice steady window excludes first 5s. Each run equally weighted. CPU is percentage of one logical core, sum of own processes; RAM is working set MiB. Synthetic local media with 100 animated profiles; not a WAN or real-installation test.",
+  "groups": [
+    {
+      "stage": "baseline",
+      "on": false,
+      "runs": 2,
+      "phases": {
+        "visual": {
+          "cpuRunMeans": {
+            "n": 2,
+            "mean": 9.443310979155155,
+            "p50": 9.080081006273698,
+            "p95": 9.806540952036613
+          },
+          "memoryRunMeans": {
+            "n": 2,
+            "mean": 383.25600961538464,
+            "p50": 382.84915865384613,
+            "p95": 383.6628605769231
+          }
+        },
+        "voice": {
+          "cpuRunMeans": {
+            "n": 2,
+            "mean": 19.971248710136997,
+            "p50": 18.639244714545846,
+            "p95": 21.30325270572815
+          },
+          "memoryRunMeans": {
+            "n": 2,
+            "mean": 571.6893805088141,
+            "p50": 569.8337890625,
+            "p95": 573.5449719551282
+          }
+        },
+        "screen-audio": {
+          "cpuRunMeans": {
+            "n": 2,
+            "mean": 40.46610347051292,
+            "p50": 38.527083493779664,
+            "p95": 42.40512344724617
+          },
+          "memoryRunMeans": {
+            "n": 2,
+            "mean": 607.6350215517241,
+            "p50": 605.184375,
+            "p95": 610.0856681034483
+          }
+        }
+      },
+      "visual": [
+        {
+          "users": 10,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 0.8000000007450581,
+            "p50": 0.7999999970197678,
+            "p95": 0.8000000044703484
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 1005.5500000000002,
+            "p50": 1005.5,
+            "p95": 1005.6000000000004
+          }
+        },
+        {
+          "users": 50,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 1,
+            "p50": 1,
+            "p95": 1
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 1005.4500000000007,
+            "p50": 1005.4000000000005,
+            "p95": 1005.5000000000009
+          }
+        },
+        {
+          "users": 100,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 1.4500000029802322,
+            "p50": 1.4000000059604645,
+            "p95": 1.5
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 1005.5500000000002,
+            "p50": 1005.5,
+            "p95": 1005.6000000000004
+          }
+        }
+      ]
+    },
+    {
+      "stage": "baseline",
+      "on": true,
+      "runs": 2,
+      "phases": {
+        "visual": {
+          "cpuRunMeans": {
+            "n": 2,
+            "mean": 9.198271516742823,
+            "p50": 9.196818853837973,
+            "p95": 9.199724179647673
+          },
+          "memoryRunMeans": {
+            "n": 2,
+            "mean": 382.68900240384613,
+            "p50": 382.61868990384613,
+            "p95": 382.75931490384613
+          }
+        },
+        "voice": {
+          "cpuRunMeans": {
+            "n": 2,
+            "mean": 19.136212376572523,
+            "p50": 19.108394179140994,
+            "p95": 19.16403057400405
+          },
+          "memoryRunMeans": {
+            "n": 2,
+            "mean": 571.2628705929487,
+            "p50": 569.9445112179487,
+            "p95": 572.5812299679487
+          }
+        },
+        "screen-audio": {
+          "cpuRunMeans": {
+            "n": 2,
+            "mean": 39.29752803003797,
+            "p50": 38.57647565070793,
+            "p95": 40.018580409368
+          },
+          "memoryRunMeans": {
+            "n": 2,
+            "mean": 604.4536458333333,
+            "p50": 603.4938802083333,
+            "p95": 605.4134114583334
+          }
+        }
+      },
+      "visual": [
+        {
+          "users": 10,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 0.6500000022351742,
+            "p50": 0.6000000014901161,
+            "p95": 0.7000000029802322
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 1005.5,
+            "p50": 1005.5,
+            "p95": 1005.5
+          }
+        },
+        {
+          "users": 50,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 1.0999999977648258,
+            "p50": 0.7999999970197678,
+            "p95": 1.3999999985098839
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 1002.8499999999995,
+            "p50": 1000.0999999999995,
+            "p95": 1005.5999999999995
+          }
+        },
+        {
+          "users": 100,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 1.2500000037252903,
+            "p50": 1.2000000029802322,
+            "p95": 1.3000000044703484
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 1005.4999999999991,
+            "p50": 1005.3999999999996,
+            "p95": 1005.5999999999985
+          }
+        }
+      ]
+    },
+    {
+      "stage": "refined",
+      "on": false,
+      "runs": 2,
+      "phases": {
+        "visual": {
+          "cpuRunMeans": {
+            "n": 2,
+            "mean": 9.395662254646812,
+            "p50": 9.232857856257459,
+            "p95": 9.558466653036165
+          },
+          "memoryRunMeans": {
+            "n": 2,
+            "mean": 384.1195913461538,
+            "p50": 383.2040264423077,
+            "p95": 385.03515625
+          }
+        },
+        "voice": {
+          "cpuRunMeans": {
+            "n": 2,
+            "mean": 19.231742488925036,
+            "p50": 19.065109281400616,
+            "p95": 19.39837569644946
+          },
+          "memoryRunMeans": {
+            "n": 2,
+            "mean": 573.0961037660256,
+            "p50": 570.8580729166666,
+            "p95": 575.3341346153846
+          }
+        },
+        "screen-audio": {
+          "cpuRunMeans": {
+            "n": 2,
+            "mean": 39.21890620071893,
+            "p50": 37.965095028689106,
+            "p95": 40.472717372748754
+          },
+          "memoryRunMeans": {
+            "n": 2,
+            "mean": 606.5005208333333,
+            "p50": 603.55625,
+            "p95": 609.4447916666667
+          }
+        }
+      },
+      "visual": [
+        {
+          "users": 10,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 0.8500000014901161,
+            "p50": 0.8000000044703484,
+            "p95": 0.8999999985098839
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 1005.05,
+            "p50": 1005,
+            "p95": 1005.0999999999999
+          }
+        },
+        {
+          "users": 50,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 1.1499999985098839,
+            "p50": 1,
+            "p95": 1.2999999970197678
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 1005.4999999999995,
+            "p50": 1005.3999999999996,
+            "p95": 1005.5999999999995
+          }
+        },
+        {
+          "users": 100,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 1.3499999977648258,
+            "p50": 1.1999999955296516,
+            "p95": 1.5
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 1005.4000000000005,
+            "p50": 1005.3000000000011,
+            "p95": 1005.5
+          }
+        }
+      ]
+    },
+    {
+      "stage": "refined",
+      "on": true,
+      "runs": 2,
+      "phases": {
+        "visual": {
+          "cpuRunMeans": {
+            "n": 2,
+            "mean": 8.937680851114713,
+            "p50": 8.787771360730115,
+            "p95": 9.08759034149931
+          },
+          "memoryRunMeans": {
+            "n": 2,
+            "mean": 382.46890024038464,
+            "p50": 382.4618389423077,
+            "p95": 382.47596153846155
+          }
+        },
+        "voice": {
+          "cpuRunMeans": {
+            "n": 2,
+            "mean": 19.015455397278913,
+            "p50": 18.998791923108804,
+            "p95": 19.03211887144902
+          },
+          "memoryRunMeans": {
+            "n": 2,
+            "mean": 572.3826622596154,
+            "p50": 569.2534054487179,
+            "p95": 575.5119190705128
+          }
+        },
+        "screen-audio": {
+          "cpuRunMeans": {
+            "n": 2,
+            "mean": 41.22574805970075,
+            "p50": 40.0672612893421,
+            "p95": 42.384234830059405
+          },
+          "memoryRunMeans": {
+            "n": 2,
+            "mean": 609.025390625,
+            "p50": 608.566796875,
+            "p95": 609.483984375
+          }
+        }
+      },
+      "visual": [
+        {
+          "users": 10,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 0.7999999970197678,
+            "p50": 0.7999999970197678,
+            "p95": 0.7999999970197678
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 1002.8499999999999,
+            "p50": 1000,
+            "p95": 1005.6999999999998
+          }
+        },
+        {
+          "users": 50,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 0.9500000029802322,
+            "p50": 0.9000000059604645,
+            "p95": 1
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 1006.0500000000002,
+            "p50": 1006,
+            "p95": 1006.1000000000004
+          }
+        },
+        {
+          "users": 100,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 1.2499999962747097,
+            "p50": 1.1999999955296516,
+            "p95": 1.2999999970197678
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 1005.3000000000002,
+            "p50": 1005.1000000000004,
+            "p95": 1005.5
+          }
+        }
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "file": "baseline-1-off.json",
+      "stage": "baseline",
+      "on": false,
+      "samples": 94,
+      "phases": {
+        "visual": {
+          "cpu": {
+            "n": 12,
+            "mean": 9.806540952036613,
+            "p50": 8.276563373625857,
+            "p95": 19.747292926017536
+          },
+          "memory": {
+            "n": 13,
+            "mean": 383.6628605769231,
+            "p50": 381.14453125,
+            "p95": 410.24609375
+          }
+        },
+        "voice": {
+          "cpu": {
+            "n": 40,
+            "mean": 21.30325270572815,
+            "p50": 20.35412050975459,
+            "p95": 27.047719945977217
+          },
+          "memory": {
+            "n": 40,
+            "mean": 569.8337890625,
+            "p50": 569.5,
+            "p95": 576.953125
+          }
+        },
+        "screen-audio": {
+          "cpu": {
+            "n": 29,
+            "mean": 42.40512344724617,
+            "p50": 42.01645079669218,
+            "p95": 51.216129216018764
+          },
+          "memory": {
+            "n": 29,
+            "mean": 610.0856681034483,
+            "p50": 609.86328125,
+            "p95": 637.77734375
+          }
+        }
+      },
+      "visual": [
+        {
+          "users": 10,
+          "render": {
+            "n": 20,
+            "mean": 0.5050000000745059,
+            "p50": 0.4000000059604645,
+            "p95": 0.7999999970197678
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.8000000000002,
+            "p50": 1000.1000000000004,
+            "p95": 1005.5
+          },
+          "pathWrites": 144
+        },
+        {
+          "users": 50,
+          "render": {
+            "n": 20,
+            "mean": 0.6799999989569188,
+            "p50": 0.6999999955296516,
+            "p95": 1
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.7500000000005,
+            "p50": 1000.1000000000004,
+            "p95": 1005.4000000000005
+          },
+          "pathWrites": 216
+        },
+        {
+          "users": 100,
+          "render": {
+            "n": 20,
+            "mean": 1.0699999988079072,
+            "p50": 1,
+            "p95": 1.4000000059604645
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1005.6000000000004,
+            "p50": 1005.6000000000004,
+            "p95": 1005.6000000000004
+          },
+          "pathWrites": 216
+        }
+      ],
+      "rtc": [
+        {
+          "mode": "voice",
+          "connectedMs": 1541.3999999985099,
+          "captureStates": [
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 24,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0
+            }
+          ]
+        },
+        {
+          "mode": "screen-audio",
+          "connectedMs": 69.89999999850988,
+          "screenMs": 2.399999998509884,
+          "captureStates": [
+            "running",
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 1748,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 18,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1750,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1748,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 1460,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 837
+            }
+          ]
+        }
+      ],
+      "openPeers": 0,
+      "collector": {}
+    },
+    {
+      "file": "baseline-2-on.json",
+      "stage": "baseline",
+      "on": true,
+      "samples": 94,
+      "phases": {
+        "visual": {
+          "cpu": {
+            "n": 12,
+            "mean": 9.196818853837973,
+            "p50": 7.347472044020993,
+            "p95": 19.61866960550489
+          },
+          "memory": {
+            "n": 13,
+            "mean": 382.61868990384613,
+            "p50": 380.1640625,
+            "p95": 408.6875
+          }
+        },
+        "voice": {
+          "cpu": {
+            "n": 39,
+            "mean": 19.16403057400405,
+            "p50": 18.471925753923095,
+            "p95": 24.59004676518528
+          },
+          "memory": {
+            "n": 39,
+            "mean": 572.5812299679487,
+            "p50": 572.03125,
+            "p95": 580.91015625
+          }
+        },
+        "screen-audio": {
+          "cpu": {
+            "n": 30,
+            "mean": 38.57647565070793,
+            "p50": 38.66400789131593,
+            "p95": 52.15861801135082
+          },
+          "memory": {
+            "n": 30,
+            "mean": 605.4134114583334,
+            "p50": 594.26953125,
+            "p95": 639.62109375
+          }
+        }
+      },
+      "visual": [
+        {
+          "users": 10,
+          "render": {
+            "n": 20,
+            "mean": 0.47000000104308126,
+            "p50": 0.4000000059604645,
+            "p95": 0.7000000029802322
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.75,
+            "p50": 1000,
+            "p95": 1005.5
+          },
+          "pathWrites": 144
+        },
+        {
+          "users": 50,
+          "render": {
+            "n": 20,
+            "mean": 0.5949999999254942,
+            "p50": 0.6000000014901161,
+            "p95": 0.7999999970197678
+          },
+          "raf": {
+            "n": 2,
+            "mean": 999.9999999999995,
+            "p50": 999.8999999999996,
+            "p95": 1000.0999999999995
+          },
+          "pathWrites": 216
+        },
+        {
+          "users": 100,
+          "render": {
+            "n": 20,
+            "mean": 0.9700000006705523,
+            "p50": 0.8999999985098839,
+            "p95": 1.3000000044703484
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.75,
+            "p50": 1000.1000000000004,
+            "p95": 1005.3999999999996
+          },
+          "pathWrites": 216
+        }
+      ],
+      "rtc": [
+        {
+          "mode": "voice",
+          "connectedMs": 1325.6000000014901,
+          "captureStates": [
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 24,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0
+            }
+          ]
+        },
+        {
+          "mode": "screen-audio",
+          "connectedMs": 71.5,
+          "screenMs": 2.100000001490116,
+          "captureStates": [
+            "running",
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 1749,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 18,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1750,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1748,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 1543,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "framesDecoded": 837
+            }
+          ]
+        }
+      ],
+      "openPeers": 0,
+      "collector": {
+        "runtime.heap": 4,
+        "runtime.cpu": 3,
+        "runtime.memory": 3,
+        "ui.longtask": 4,
+        "rtc.connect": 4,
+        "rtc.rtt": 6,
+        "rtc.direct": 6,
+        "rtc.jitter": 7,
+        "ui.frame": 4,
+        "rtc.loss": 2,
+        "rtc.screen_fps": 1
+      }
+    },
+    {
+      "file": "baseline-3-on.json",
+      "stage": "baseline",
+      "on": true,
+      "samples": 94,
+      "phases": {
+        "visual": {
+          "cpu": {
+            "n": 12,
+            "mean": 9.199724179647673,
+            "p50": 7.040669900666645,
+            "p95": 16.97632908113897
+          },
+          "memory": {
+            "n": 13,
+            "mean": 382.75931490384613,
+            "p50": 380.41796875,
+            "p95": 409.41015625
+          }
+        },
+        "voice": {
+          "cpu": {
+            "n": 39,
+            "mean": 19.108394179140994,
+            "p50": 18.395445834164956,
+            "p95": 22.81450660381586
+          },
+          "memory": {
+            "n": 39,
+            "mean": 569.9445112179487,
+            "p50": 569.21484375,
+            "p95": 578.55859375
+          }
+        },
+        "screen-audio": {
+          "cpu": {
+            "n": 30,
+            "mean": 40.018580409368,
+            "p50": 37.99514030444733,
+            "p95": 54.38501346636829
+          },
+          "memory": {
+            "n": 30,
+            "mean": 603.4938802083333,
+            "p50": 591.484375,
+            "p95": 637.76953125
+          }
+        }
+      },
+      "visual": [
+        {
+          "users": 10,
+          "render": {
+            "n": 20,
+            "mean": 0.4449999999254942,
+            "p50": 0.3999999985098839,
+            "p95": 0.6000000014901161
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.9499999999998,
+            "p50": 1000.3999999999996,
+            "p95": 1005.5
+          },
+          "pathWrites": 144
+        },
+        {
+          "users": 50,
+          "render": {
+            "n": 20,
+            "mean": 0.6899999998509884,
+            "p50": 0.6000000014901161,
+            "p95": 1.3999999985098839
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1005.5500000000002,
+            "p50": 1005.5000000000009,
+            "p95": 1005.5999999999995
+          },
+          "pathWrites": 216
+        },
+        {
+          "users": 100,
+          "render": {
+            "n": 20,
+            "mean": 0.9750000018626451,
+            "p50": 0.9000000059604645,
+            "p95": 1.2000000029802322
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1005.5499999999993,
+            "p50": 1005.5,
+            "p95": 1005.5999999999985
+          },
+          "pathWrites": 216
+        }
+      ],
+      "rtc": [
+        {
+          "mode": "voice",
+          "connectedMs": 1323.6000000014901,
+          "captureStates": [
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 24,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0
+            }
+          ]
+        },
+        {
+          "mode": "screen-audio",
+          "connectedMs": 67.60000000149012,
+          "screenMs": 3.100000001490116,
+          "captureStates": [
+            "running",
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 1747,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 18,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1749,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1747,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 1474,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "framesDecoded": 837
+            }
+          ]
+        }
+      ],
+      "openPeers": 0,
+      "collector": {
+        "runtime.heap": 4,
+        "runtime.cpu": 2,
+        "runtime.memory": 2,
+        "ui.longtask": 4,
+        "rtc.connect": 4,
+        "rtc.rtt": 6,
+        "rtc.direct": 6,
+        "rtc.jitter": 7,
+        "ui.frame": 4,
+        "rtc.loss": 2,
+        "rtc.screen_fps": 1
+      }
+    },
+    {
+      "file": "baseline-4-off.json",
+      "stage": "baseline",
+      "on": false,
+      "samples": 94,
+      "phases": {
+        "visual": {
+          "cpu": {
+            "n": 11,
+            "mean": 9.080081006273698,
+            "p50": 7.352453712058278,
+            "p95": 16.457062502503153
+          },
+          "memory": {
+            "n": 13,
+            "mean": 382.84915865384613,
+            "p50": 380.5546875,
+            "p95": 408.44140625
+          }
+        },
+        "voice": {
+          "cpu": {
+            "n": 39,
+            "mean": 18.639244714545846,
+            "p50": 18.06161327196096,
+            "p95": 24.2208182626475
+          },
+          "memory": {
+            "n": 39,
+            "mean": 573.5449719551282,
+            "p50": 574.03125,
+            "p95": 580.34765625
+          }
+        },
+        "screen-audio": {
+          "cpu": {
+            "n": 30,
+            "mean": 38.527083493779664,
+            "p50": 36.85401398791253,
+            "p95": 48.98056637532434
+          },
+          "memory": {
+            "n": 30,
+            "mean": 605.184375,
+            "p50": 596.32421875,
+            "p95": 640.46484375
+          }
+        }
+      },
+      "visual": [
+        {
+          "users": 10,
+          "render": {
+            "n": 20,
+            "mean": 0.5650000002235174,
+            "p50": 0.5,
+            "p95": 0.8000000044703484
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.8000000000002,
+            "p50": 1000,
+            "p95": 1005.6000000000004
+          },
+          "pathWrites": 144
+        },
+        {
+          "users": 50,
+          "render": {
+            "n": 20,
+            "mean": 0.6900000005960465,
+            "p50": 0.6000000014901161,
+            "p95": 1
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.8000000000002,
+            "p50": 1000.0999999999995,
+            "p95": 1005.5000000000009
+          },
+          "pathWrites": 216
+        },
+        {
+          "users": 100,
+          "render": {
+            "n": 20,
+            "mean": 1.0150000005960464,
+            "p50": 0.8999999985098839,
+            "p95": 1.5
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.75,
+            "p50": 1000,
+            "p95": 1005.5
+          },
+          "pathWrites": 216
+        }
+      ],
+      "rtc": [
+        {
+          "mode": "voice",
+          "connectedMs": 1464.3999999985099,
+          "captureStates": [
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 24,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0
+            }
+          ]
+        },
+        {
+          "mode": "screen-audio",
+          "connectedMs": 66.5,
+          "screenMs": 2.4000000059604645,
+          "captureStates": [
+            "running",
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 1749,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 18,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1750,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1748,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 1663,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 837
+            }
+          ]
+        }
+      ],
+      "openPeers": 0,
+      "collector": {}
+    },
+    {
+      "file": "refined-1-off.json",
+      "stage": "refined",
+      "on": false,
+      "samples": 94,
+      "phases": {
+        "visual": {
+          "cpu": {
+            "n": 12,
+            "mean": 9.232857856257459,
+            "p50": 7.632017869512124,
+            "p95": 18.214365013220576
+          },
+          "memory": {
+            "n": 13,
+            "mean": 383.2040264423077,
+            "p50": 380.546875,
+            "p95": 409.875
+          }
+        },
+        "voice": {
+          "cpu": {
+            "n": 39,
+            "mean": 19.39837569644946,
+            "p50": 19.019016427654847,
+            "p95": 23.18519556316177
+          },
+          "memory": {
+            "n": 39,
+            "mean": 570.8580729166666,
+            "p50": 571.046875,
+            "p95": 578.99609375
+          }
+        },
+        "screen-audio": {
+          "cpu": {
+            "n": 30,
+            "mean": 40.472717372748754,
+            "p50": 40.723468749457254,
+            "p95": 52.82333660020277
+          },
+          "memory": {
+            "n": 30,
+            "mean": 603.55625,
+            "p50": 593.3125,
+            "p95": 640.28515625
+          }
+        }
+      },
+      "visual": [
+        {
+          "users": 10,
+          "render": {
+            "n": 20,
+            "mean": 0.5199999991804362,
+            "p50": 0.4000000059604645,
+            "p95": 0.8999999985098839
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.6000000000001,
+            "p50": 1000.1000000000004,
+            "p95": 1005.0999999999999
+          },
+          "pathWrites": 144
+        },
+        {
+          "users": 50,
+          "render": {
+            "n": 20,
+            "mean": 0.7150000005960464,
+            "p50": 0.6000000014901161,
+            "p95": 1.2999999970197678
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.7999999999997,
+            "p50": 1000,
+            "p95": 1005.5999999999995
+          },
+          "pathWrites": 216
+        },
+        {
+          "users": 100,
+          "render": {
+            "n": 20,
+            "mean": 1.0949999999254942,
+            "p50": 1,
+            "p95": 1.5
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.75,
+            "p50": 1000,
+            "p95": 1005.5
+          },
+          "pathWrites": 216
+        }
+      ],
+      "rtc": [
+        {
+          "mode": "voice",
+          "connectedMs": 1413.6000000014901,
+          "captureStates": [
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 24,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0
+            }
+          ]
+        },
+        {
+          "mode": "screen-audio",
+          "connectedMs": 75.09999999403954,
+          "screenMs": 2.100000001490116,
+          "captureStates": [
+            "running",
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 1747,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 18,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1747,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1749,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 1663,
+              "packetsLost": 0,
+              "jitter": 0.001,
+              "framesDecoded": 836
+            }
+          ]
+        }
+      ],
+      "openPeers": 0,
+      "collector": {}
+    },
+    {
+      "file": "refined-2-on.json",
+      "stage": "refined",
+      "on": true,
+      "samples": 94,
+      "phases": {
+        "visual": {
+          "cpu": {
+            "n": 12,
+            "mean": 9.08759034149931,
+            "p50": 7.778941915337896,
+            "p95": 16.869237454701974
+          },
+          "memory": {
+            "n": 13,
+            "mean": 382.47596153846155,
+            "p50": 380.0234375,
+            "p95": 409.015625
+          }
+        },
+        "voice": {
+          "cpu": {
+            "n": 39,
+            "mean": 19.03211887144902,
+            "p50": 18.665816484262496,
+            "p95": 23.45836518675382
+          },
+          "memory": {
+            "n": 39,
+            "mean": 575.5119190705128,
+            "p50": 575.49609375,
+            "p95": 583.05859375
+          }
+        },
+        "screen-audio": {
+          "cpu": {
+            "n": 30,
+            "mean": 40.0672612893421,
+            "p50": 40.92549727763836,
+            "p95": 49.548931290273494
+          },
+          "memory": {
+            "n": 30,
+            "mean": 609.483984375,
+            "p50": 598.23828125,
+            "p95": 645.0859375
+          }
+        }
+      },
+      "visual": [
+        {
+          "users": 10,
+          "render": {
+            "n": 20,
+            "mean": 0.499999999627471,
+            "p50": 0.4000000059604645,
+            "p95": 0.7999999970197678
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1005.5999999999999,
+            "p50": 1005.5,
+            "p95": 1005.6999999999998
+          },
+          "pathWrites": 144
+        },
+        {
+          "users": 50,
+          "render": {
+            "n": 20,
+            "mean": 0.6700000014156103,
+            "p50": 0.6000000014901161,
+            "p95": 0.9000000059604645
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1005.75,
+            "p50": 1005.5,
+            "p95": 1006
+          },
+          "pathWrites": 216
+        },
+        {
+          "users": 100,
+          "render": {
+            "n": 20,
+            "mean": 0.900000000745058,
+            "p50": 0.8999999985098839,
+            "p95": 1.1999999955296516
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1005.5,
+            "p50": 1005.5,
+            "p95": 1005.5
+          },
+          "pathWrites": 216
+        }
+      ],
+      "rtc": [
+        {
+          "mode": "voice",
+          "connectedMs": 1373.2000000029802,
+          "captureStates": [
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 2252,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 24,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 2252,
+              "packetsLost": 0,
+              "jitter": 0
+            }
+          ]
+        },
+        {
+          "mode": "screen-audio",
+          "connectedMs": 68.10000000149012,
+          "screenMs": 2.399999998509884,
+          "captureStates": [
+            "running",
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 1748,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 18,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1748,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1750,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 1559,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 838
+            }
+          ]
+        }
+      ],
+      "openPeers": 0,
+      "collector": {
+        "runtime.heap": 2,
+        "runtime.memory": 2,
+        "ui.longtask": 4,
+        "rtc.connect": 4,
+        "rtc.rtt": 6,
+        "rtc.direct": 6,
+        "rtc.jitter": 7,
+        "rtc.loss": 2,
+        "rtc.screen_fps": 1
+      }
+    },
+    {
+      "file": "refined-3-on.json",
+      "stage": "refined",
+      "on": true,
+      "samples": 94,
+      "phases": {
+        "visual": {
+          "cpu": {
+            "n": 12,
+            "mean": 8.787771360730115,
+            "p50": 7.229586279368014,
+            "p95": 17.113286349045286
+          },
+          "memory": {
+            "n": 13,
+            "mean": 382.4618389423077,
+            "p50": 380.1875,
+            "p95": 408.91015625
+          }
+        },
+        "voice": {
+          "cpu": {
+            "n": 39,
+            "mean": 18.998791923108804,
+            "p50": 18.43491831143882,
+            "p95": 23.604612847462995
+          },
+          "memory": {
+            "n": 39,
+            "mean": 569.2534054487179,
+            "p50": 569.40234375,
+            "p95": 576.96875
+          }
+        },
+        "screen-audio": {
+          "cpu": {
+            "n": 30,
+            "mean": 42.384234830059405,
+            "p50": 40.940910036031354,
+            "p95": 54.20930740100093
+          },
+          "memory": {
+            "n": 30,
+            "mean": 608.566796875,
+            "p50": 607.3125,
+            "p95": 636.45703125
+          }
+        }
+      },
+      "visual": [
+        {
+          "users": 10,
+          "render": {
+            "n": 20,
+            "mean": 0.5049999993294477,
+            "p50": 0.5,
+            "p95": 0.7999999970197678
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1000,
+            "p50": 1000,
+            "p95": 1000
+          },
+          "pathWrites": 144
+        },
+        {
+          "users": 50,
+          "render": {
+            "n": 20,
+            "mean": 0.6650000002235175,
+            "p50": 0.6000000014901161,
+            "p95": 1
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1005.5999999999999,
+            "p50": 1005.0999999999995,
+            "p95": 1006.1000000000004
+          },
+          "pathWrites": 216
+        },
+        {
+          "users": 100,
+          "render": {
+            "n": 20,
+            "mean": 1.0199999995529652,
+            "p50": 1,
+            "p95": 1.2999999970197678
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.75,
+            "p50": 1000.3999999999996,
+            "p95": 1005.1000000000004
+          },
+          "pathWrites": 216
+        }
+      ],
+      "rtc": [
+        {
+          "mode": "voice",
+          "connectedMs": 1347.3999999985099,
+          "captureStates": [
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 24,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0
+            }
+          ]
+        },
+        {
+          "mode": "screen-audio",
+          "connectedMs": 69.89999999850988,
+          "screenMs": 2.2000000029802322,
+          "captureStates": [
+            "running",
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 1748,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 18,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1750,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1748,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 1470,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 837
+            }
+          ]
+        }
+      ],
+      "openPeers": 0,
+      "collector": {
+        "runtime.heap": 2,
+        "runtime.memory": 2,
+        "ui.longtask": 3,
+        "rtc.connect": 4,
+        "rtc.rtt": 6,
+        "rtc.direct": 6,
+        "rtc.jitter": 7,
+        "rtc.loss": 2,
+        "rtc.screen_fps": 1
+      }
+    },
+    {
+      "file": "refined-4-off.json",
+      "stage": "refined",
+      "on": false,
+      "samples": 94,
+      "phases": {
+        "visual": {
+          "cpu": {
+            "n": 12,
+            "mean": 9.558466653036165,
+            "p50": 7.6392592497563205,
+            "p95": 18.055622938985884
+          },
+          "memory": {
+            "n": 13,
+            "mean": 385.03515625,
+            "p50": 383.2109375,
+            "p95": 412.515625
+          }
+        },
+        "voice": {
+          "cpu": {
+            "n": 39,
+            "mean": 19.065109281400616,
+            "p50": 18.31060751071355,
+            "p95": 24.248044054335864
+          },
+          "memory": {
+            "n": 39,
+            "mean": 575.3341346153846,
+            "p50": 574.8828125,
+            "p95": 584.5390625
+          }
+        },
+        "screen-audio": {
+          "cpu": {
+            "n": 30,
+            "mean": 37.965095028689106,
+            "p50": 37.59407904265227,
+            "p95": 49.14544994208609
+          },
+          "memory": {
+            "n": 30,
+            "mean": 609.4447916666667,
+            "p50": 597.14453125,
+            "p95": 644.984375
+          }
+        }
+      },
+      "visual": [
+        {
+          "users": 10,
+          "render": {
+            "n": 20,
+            "mean": 0.4900000009685755,
+            "p50": 0.4000000059604645,
+            "p95": 0.8000000044703484
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.5,
+            "p50": 1000,
+            "p95": 1005
+          },
+          "pathWrites": 144
+        },
+        {
+          "users": 50,
+          "render": {
+            "n": 20,
+            "mean": 0.6699999991804362,
+            "p50": 0.6000000014901161,
+            "p95": 1
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1002.6999999999998,
+            "p50": 1000,
+            "p95": 1005.3999999999996
+          },
+          "pathWrites": 216
+        },
+        {
+          "users": 100,
+          "render": {
+            "n": 20,
+            "mean": 0.9499999988824129,
+            "p50": 0.8999999985098839,
+            "p95": 1.1999999955296516
+          },
+          "raf": {
+            "n": 2,
+            "mean": 1005.25,
+            "p50": 1005.1999999999989,
+            "p95": 1005.3000000000011
+          },
+          "pathWrites": 216
+        }
+      ],
+      "rtc": [
+        {
+          "mode": "voice",
+          "connectedMs": 1308.6000000014901,
+          "captureStates": [
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 2252,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 24,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 2253,
+              "packetsLost": 0,
+              "jitter": 0
+            }
+          ]
+        },
+        {
+          "mode": "screen-audio",
+          "connectedMs": 65.40000000596046,
+          "screenMs": 2,
+          "captureStates": [
+            "running",
+            "running",
+            "running"
+          ],
+          "transitions": [
+            "connecting",
+            "connected",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connected",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connecting",
+            "connected",
+            "connected"
+          ],
+          "incoming": [
+            {
+              "kind": "audio",
+              "packetsReceived": 1748,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 18,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1749,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "audio",
+              "packetsReceived": 1747,
+              "packetsLost": 0,
+              "jitter": 0
+            },
+            {
+              "kind": "video",
+              "packetsReceived": 1384,
+              "packetsLost": 0,
+              "jitter": 0,
+              "framesDecoded": 837
+            }
+          ]
+        }
+      ],
+      "openPeers": 0,
+      "collector": {}
+    }
+  ],
+  "webGroups": [
+    {
+      "stage": "baseline",
+      "on": false,
+      "runs": 2,
+      "visual": [
+        {
+          "users": 10,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 0.8500000052154064,
+            "p50": 0.8000000044703484,
+            "p95": 0.9000000059604645
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 14,
+            "p50": 11.300000000000182,
+            "p95": 16.699999999999818
+          }
+        },
+        {
+          "users": 50,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 1.6499999985098839,
+            "p50": 1.5,
+            "p95": 1.7999999970197678
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 22.249999999999545,
+            "p50": 22.19999999999891,
+            "p95": 22.300000000000182
+          }
+        },
+        {
+          "users": 100,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 2.449999999254942,
+            "p50": 2.2999999970197678,
+            "p95": 2.600000001490116
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 22.399999999999636,
+            "p50": 22.299999999999272,
+            "p95": 22.5
+          }
+        }
+      ]
+    },
+    {
+      "stage": "baseline",
+      "on": true,
+      "runs": 2,
+      "visual": [
+        {
+          "users": 10,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 0.9000000022351742,
+            "p50": 0.8000000044703484,
+            "p95": 1
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 16.65000000000009,
+            "p50": 16.600000000000364,
+            "p95": 16.699999999999818
+          }
+        },
+        {
+          "users": 50,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 1.699999999254942,
+            "p50": 1.5,
+            "p95": 1.8999999985098839
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 19.550000000000182,
+            "p50": 16.80000000000109,
+            "p95": 22.299999999999272
+          }
+        },
+        {
+          "users": 100,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 2.699999999254942,
+            "p50": 2.100000001490116,
+            "p95": 3.2999999970197678
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 22.399999999999636,
+            "p50": 22.299999999999272,
+            "p95": 22.5
+          }
+        }
+      ]
+    },
+    {
+      "stage": "refined",
+      "on": false,
+      "runs": 2,
+      "visual": [
+        {
+          "users": 10,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 1.1499999985098839,
+            "p50": 0.8999999985098839,
+            "p95": 1.3999999985098839
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 16.649999999999864,
+            "p50": 16.59999999999991,
+            "p95": 16.699999999999818
+          }
+        },
+        {
+          "users": 50,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 1.5999999977648258,
+            "p50": 1.5,
+            "p95": 1.6999999955296516
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 22.299999999999727,
+            "p50": 22.19999999999891,
+            "p95": 22.400000000000546
+          }
+        },
+        {
+          "users": 100,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 2.9500000029802322,
+            "p50": 2.7000000029802322,
+            "p95": 3.2000000029802322
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 22.30000000000109,
+            "p50": 22.30000000000109,
+            "p95": 22.30000000000109
+          }
+        }
+      ]
+    },
+    {
+      "stage": "refined",
+      "on": true,
+      "runs": 2,
+      "visual": [
+        {
+          "users": 10,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 0.8999999985098839,
+            "p50": 0.7999999970197678,
+            "p95": 1
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 16.600000000000364,
+            "p50": 16.600000000000364,
+            "p95": 16.600000000000364
+          }
+        },
+        {
+          "users": 50,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 1.75,
+            "p50": 1.6000000014901161,
+            "p95": 1.8999999985098839
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 22.200000000000728,
+            "p50": 22.200000000000728,
+            "p95": 22.200000000000728
+          }
+        },
+        {
+          "users": 100,
+          "renderRunP95": {
+            "n": 2,
+            "mean": 2.4500000029802322,
+            "p50": 2.2000000029802322,
+            "p95": 2.7000000029802322
+          },
+          "rafRunP95": {
+            "n": 2,
+            "mean": 25.099999999999454,
+            "p50": 22.299999999999272,
+            "p95": 27.899999999999636
+          }
+        }
+      ]
+    }
+  ],
+  "webRuns": [
+    {
+      "file": "web-baseline-1-off.json",
+      "stage": "baseline",
+      "on": false,
+      "openPeers": 0,
+      "captureStates": [
+        "running",
+        "running",
+        "running",
+        "running",
+        "running"
+      ],
+      "visual": [
+        {
+          "users": 10,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 0.6049999997019768,
+            "p50": 0.6000000014901161,
+            "p95": 0.9000000059604645
+          },
+          "raf": {
+            "n": 294,
+            "mean": 10.184693877551021,
+            "p50": 11.099999999999454,
+            "p95": 16.699999999999818
+          }
+        },
+        {
+          "users": 50,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 1.294999998807907,
+            "p50": 1.1999999955296516,
+            "p95": 1.7999999970197678
+          },
+          "raf": {
+            "n": 209,
+            "mean": 14.299999999999995,
+            "p50": 16.5,
+            "p95": 22.19999999999891
+          }
+        },
+        {
+          "users": 100,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 1.775,
+            "p50": 1.7000000029802322,
+            "p95": 2.2999999970197678
+          },
+          "raf": {
+            "n": 184,
+            "mean": 16.303260869565214,
+            "p50": 16.600000000000364,
+            "p95": 22.5
+          }
+        }
+      ]
+    },
+    {
+      "file": "web-baseline-2-on.json",
+      "stage": "baseline",
+      "on": true,
+      "openPeers": 0,
+      "captureStates": [
+        "running",
+        "running",
+        "running",
+        "running",
+        "running"
+      ],
+      "visual": [
+        {
+          "users": 10,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 0.5450000006705522,
+            "p50": 0.5,
+            "p95": 1
+          },
+          "raf": {
+            "n": 304,
+            "mean": 9.831907894736842,
+            "p50": 11.099999999999454,
+            "p95": 16.600000000000364
+          }
+        },
+        {
+          "users": 50,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 1.3299999985843898,
+            "p50": 1.1000000014901161,
+            "p95": 1.8999999985098839
+          },
+          "raf": {
+            "n": 192,
+            "mean": 15.508854166666671,
+            "p50": 16.600000000000364,
+            "p95": 22.299999999999272
+          }
+        },
+        {
+          "users": 100,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 2.355000000447035,
+            "p50": 2.0999999940395355,
+            "p95": 3.2999999970197678
+          },
+          "raf": {
+            "n": 179,
+            "mean": 16.69776536312849,
+            "p50": 16.69999999999891,
+            "p95": 22.5
+          }
+        }
+      ]
+    },
+    {
+      "file": "web-baseline-3-on.json",
+      "stage": "baseline",
+      "on": true,
+      "openPeers": 0,
+      "captureStates": [
+        "running",
+        "running",
+        "running",
+        "running",
+        "running"
+      ],
+      "visual": [
+        {
+          "users": 10,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 0.55,
+            "p50": 0.5,
+            "p95": 0.8000000044703484
+          },
+          "raf": {
+            "n": 275,
+            "mean": 10.868727272727272,
+            "p50": 11.099999999999909,
+            "p95": 16.699999999999818
+          }
+        },
+        {
+          "users": 50,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 0.9900000009685754,
+            "p50": 0.8999999985098839,
+            "p95": 1.5
+          },
+          "raf": {
+            "n": 213,
+            "mean": 14.057276995305163,
+            "p50": 11.300000000000182,
+            "p95": 16.80000000000109
+          }
+        },
+        {
+          "users": 100,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 1.7050000000745058,
+            "p50": 1.6000000014901161,
+            "p95": 2.100000001490116
+          },
+          "raf": {
+            "n": 199,
+            "mean": 15.019597989949746,
+            "p50": 16.599999999998545,
+            "p95": 22.299999999999272
+          }
+        }
+      ]
+    },
+    {
+      "file": "web-baseline-4-off.json",
+      "stage": "baseline",
+      "on": false,
+      "openPeers": 0,
+      "captureStates": [
+        "running",
+        "running",
+        "running",
+        "running",
+        "running"
+      ],
+      "visual": [
+        {
+          "users": 10,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 0.47499999962747097,
+            "p50": 0.3999999985098839,
+            "p95": 0.8000000044703484
+          },
+          "raf": {
+            "n": 343,
+            "mean": 8.74606413994169,
+            "p50": 11,
+            "p95": 11.300000000000182
+          }
+        },
+        {
+          "users": 50,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 1.1200000006705522,
+            "p50": 1,
+            "p95": 1.5
+          },
+          "raf": {
+            "n": 197,
+            "mean": 15.143147208121832,
+            "p50": 16.599999999999454,
+            "p95": 22.300000000000182
+          }
+        },
+        {
+          "users": 100,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 2.0100000001490117,
+            "p50": 1.6000000014901161,
+            "p95": 2.600000001490116
+          },
+          "raf": {
+            "n": 202,
+            "mean": 14.850495049504955,
+            "p50": 16.600000000000364,
+            "p95": 22.299999999999272
+          }
+        }
+      ]
+    },
+    {
+      "file": "web-refined-1-off.json",
+      "stage": "refined",
+      "on": false,
+      "openPeers": 0,
+      "captureStates": [
+        "running",
+        "running",
+        "running",
+        "running",
+        "running"
+      ],
+      "visual": [
+        {
+          "users": 10,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 0.7049999997019768,
+            "p50": 0.6000000014901161,
+            "p95": 1.3999999985098839
+          },
+          "raf": {
+            "n": 305,
+            "mean": 9.85377049180328,
+            "p50": 11,
+            "p95": 16.59999999999991
+          }
+        },
+        {
+          "users": 50,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 1.205000000447035,
+            "p50": 1.1000000014901161,
+            "p95": 1.6999999955296516
+          },
+          "raf": {
+            "n": 184,
+            "mean": 16.27445652173913,
+            "p50": 16.69999999999891,
+            "p95": 22.400000000000546
+          }
+        },
+        {
+          "users": 100,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 2.050000001117587,
+            "p50": 2,
+            "p95": 2.7000000029802322
+          },
+          "raf": {
+            "n": 192,
+            "mean": 15.652604166666672,
+            "p50": 16.600000000000364,
+            "p95": 22.30000000000109
+          }
+        }
+      ]
+    },
+    {
+      "file": "web-refined-2-on.json",
+      "stage": "refined",
+      "on": true,
+      "openPeers": 0,
+      "captureStates": [
+        "running",
+        "running",
+        "running",
+        "running",
+        "running"
+      ],
+      "visual": [
+        {
+          "users": 10,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 0.5550000004470348,
+            "p50": 0.5,
+            "p95": 1
+          },
+          "raf": {
+            "n": 312,
+            "mean": 9.597115384615385,
+            "p50": 11,
+            "p95": 16.600000000000364
+          }
+        },
+        {
+          "users": 50,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 1.225,
+            "p50": 1.1000000014901161,
+            "p95": 1.8999999985098839
+          },
+          "raf": {
+            "n": 194,
+            "mean": 15.377835051546393,
+            "p50": 16.600000000000364,
+            "p95": 22.200000000000728
+          }
+        },
+        {
+          "users": 100,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 1.9449999995529652,
+            "p50": 1.7000000029802322,
+            "p95": 2.2000000029802322
+          },
+          "raf": {
+            "n": 194,
+            "mean": 15.405670103092778,
+            "p50": 16.600000000000364,
+            "p95": 22.299999999999272
+          }
+        }
+      ]
+    },
+    {
+      "file": "web-refined-3-on.json",
+      "stage": "refined",
+      "on": true,
+      "openPeers": 0,
+      "captureStates": [
+        "running",
+        "running",
+        "running",
+        "running",
+        "running"
+      ],
+      "visual": [
+        {
+          "users": 10,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 0.5450000002980232,
+            "p50": 0.5,
+            "p95": 0.7999999970197678
+          },
+          "raf": {
+            "n": 291,
+            "mean": 10.27147766323024,
+            "p50": 11.099999999999909,
+            "p95": 16.600000000000364
+          }
+        },
+        {
+          "users": 50,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 0.9949999999254941,
+            "p50": 0.9000000059604645,
+            "p95": 1.6000000014901161
+          },
+          "raf": {
+            "n": 200,
+            "mean": 14.972000000000003,
+            "p50": 16.600000000000364,
+            "p95": 22.200000000000728
+          }
+        },
+        {
+          "users": 100,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 1.9400000005960465,
+            "p50": 1.8999999985098839,
+            "p95": 2.7000000029802322
+          },
+          "raf": {
+            "n": 166,
+            "mean": 18.070481927710837,
+            "p50": 16.700000000000728,
+            "p95": 27.899999999999636
+          }
+        }
+      ]
+    },
+    {
+      "file": "web-refined-4-off.json",
+      "stage": "refined",
+      "on": false,
+      "openPeers": 0,
+      "captureStates": [
+        "running",
+        "running",
+        "running",
+        "running",
+        "running"
+      ],
+      "visual": [
+        {
+          "users": 10,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 0.5399999994784593,
+            "p50": 0.5,
+            "p95": 0.8999999985098839
+          },
+          "raf": {
+            "n": 290,
+            "mean": 10.325172413793103,
+            "p50": 11.099999999999909,
+            "p95": 16.699999999999818
+          }
+        },
+        {
+          "users": 50,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 1.0949999999254942,
+            "p50": 1,
+            "p95": 1.5
+          },
+          "raf": {
+            "n": 208,
+            "mean": 14.39663461538462,
+            "p50": 16.5,
+            "p95": 22.19999999999891
+          }
+        },
+        {
+          "users": 100,
+          "visible": true,
+          "render": {
+            "n": 20,
+            "mean": 1.9700000006705523,
+            "p50": 1.8999999985098839,
+            "p95": 3.2000000029802322
+          },
+          "raf": {
+            "n": 194,
+            "mean": 15.405670103092778,
+            "p50": 16.600000000000364,
+            "p95": 22.30000000000109
+          }
+        }
+      ]
+    }
+  ]
+}

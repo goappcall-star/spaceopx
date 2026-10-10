@@ -147,6 +147,13 @@ test("Signaling closure and resubscription keep an established media connection 
       },
     },
     require(id) {
+      if (id === "@/services/performance/monitor")
+        return {
+          registerProbe: () => () => {},
+          collectionGeneration: () => 0,
+          recordMetric: () => {},
+          metrics: { enabled: false },
+        };
       if (id === "@/integrations/supabase/client")
         return { supabase: { channel: () => channel, removeChannel: async () => {} } };
       return {};

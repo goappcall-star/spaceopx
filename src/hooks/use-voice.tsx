@@ -73,6 +73,32 @@ const VoiceContext = createContext<VoiceContextValue | undefined>(undefined);
 const VOLUME_KEY = "securechat:voice-volumes";
 const DEVICE_KEY = "securechat:voice-devices";
 
+// Keep context identity stable when a heartbeat has no visible change.
+function retainOccupancy(
+  current: Record<string, VoiceParticipant[]>,
+  next: Record<string, VoiceParticipant[]>,
+) {
+  const fields = [
+    "user_id",
+    "voice_session_id",
+    "muted",
+    "deafened",
+    "speaking",
+    "camera",
+    "screen",
+  ] as const;
+  const keys = Object.keys(current);
+  if (keys.length !== Object.keys(next).length) return next;
+  for (const key of keys) {
+    const before = current[key]!,
+      after = next[key];
+    if (!after || before.length !== after.length) return next;
+    for (let i = 0; i < before.length; i++)
+      if (fields.some((field) => before[i]![field] !== after[i]![field])) return next;
+  }
+  return current;
+}
+
 // The SDK caches channels by topic. A replacement must wait for the previous
 // owner (including an observer) to finish removing that exact subscription.
 const presenceReleases = new Map<string, Promise<void>>();
@@ -452,7 +478,7 @@ export function VoiceProviderRoot({
             },
           ];
         }
-        setParticipants(next);
+        setParticipants((current) => retainOccupancy(current, next));
       };
 
       channelServerRef.current = presenceServerId;
@@ -581,7 +607,9 @@ export function VoiceProviderRoot({
       };
       const sync = () => {
         if (!disposed)
-          setObservedParticipants(view.read(channel.presenceState<VoicePresenceMeta>()));
+          setObservedParticipants((current) =>
+            retainOccupancy(current, view.read(channel.presenceState<VoicePresenceMeta>())),
+          );
       };
       channel
         .on("presence", { event: "sync" }, () => {

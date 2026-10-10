@@ -7,11 +7,17 @@ export function useServerCategories(serverId: string) {
   const result = useQuery({
     queryKey: ["categories", serverId],
     queryFn: () => categoriesService.list(serverId),
+    staleTime: 30_000,
   });
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const refresh = () => {
-      void client.invalidateQueries({ queryKey: ["categories", serverId] });
-      void client.invalidateQueries({ queryKey: ["channels", serverId] });
+      if (timer) return;
+      timer = setTimeout(() => {
+        timer = undefined;
+        void client.invalidateQueries({ queryKey: ["categories", serverId] });
+        void client.invalidateQueries({ queryKey: ["channels", serverId] });
+      }, 100);
     };
     const channel = supabase
       .channel(`channel-structure:${serverId}:${crypto.randomUUID()}`)
@@ -41,6 +47,7 @@ export function useServerCategories(serverId: string) {
         if (status === "SUBSCRIBED") refresh();
       });
     return () => {
+      clearTimeout(timer);
       void supabase.removeChannel(channel);
     };
   }, [serverId, client]);

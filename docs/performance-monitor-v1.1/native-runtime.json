@@ -1,0 +1,27 @@
+{
+  "scope": "Real sandboxed Electron IPC availability; not a CPU comparison",
+  "samples": [
+    {
+      "elapsedMs": 93.24549999999999,
+      "version": "44.4.5",
+      "sampleId": 1,
+      "cpu": null,
+      "memory": 118.9921875
+    },
+    {
+      "elapsedMs": 61010.7432,
+      "version": "44.4.5",
+      "sampleId": 2,
+      "cpu": null,
+      "memory": 167.0390625
+    },
+    {
+      "elapsedMs": 122010.2736,
+      "version": "44.4.5",
+      "sampleId": 3,
+      "cpu": 0.08323310221590037,
+      "memory": 168.06640625
+    }
+  ],
+  "cpuAvailable": true
+}

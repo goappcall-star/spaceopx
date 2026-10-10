@@ -3,6 +3,7 @@ import { Plus, Users } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { UnreadBadge } from "./UnreadBadge";
 import type { Server } from "@/types";
 import { ServerContextMenu, type ServerMenuAction } from "./ServerContextMenu";
 import type { ServerPreferences } from "@/hooks/use-server-preferences";
@@ -16,6 +17,8 @@ interface Props {
   socialActive: boolean;
   onSelectSocial: () => void;
   socialBadge?: number;
+  serverBadges?: Record<string, number>;
+  serverMentions?: Record<string, number>;
   getPreferences: (serverId: string) => ServerPreferences;
   onUpdatePreferences: (serverId: string, patch: Partial<ServerPreferences>) => void;
   onServerAction: (action: ServerMenuAction, server: Server) => void;
@@ -39,6 +42,8 @@ export function ServerRail({
   socialActive,
   onSelectSocial,
   socialBadge = 0,
+  serverBadges = {},
+  serverMentions = {},
   getPreferences,
   onUpdatePreferences,
   onServerAction,
@@ -64,7 +69,7 @@ export function ServerRail({
 
       <span className="bg-border/80 mb-1 h-px w-8 rounded-full" />
 
-      <div className="scrollbar-slim flex flex-1 flex-col items-center gap-2 overflow-y-auto py-0.5">
+      <div className="scrollbar-slim flex w-full flex-1 flex-col items-center gap-2 overflow-y-auto px-3 py-0.5">
         {servers.map((server) => {
           const active = server.id === activeServerId;
           return (
@@ -119,6 +124,11 @@ export function ServerRail({
                           initials(server.name)
                         )}
                       </span>
+                      <UnreadBadge
+                        count={serverBadges[server.id] ?? 0}
+                        title={`${serverBadges[server.id] ?? 0} mensagens não lidas; ${serverMentions[server.id] ?? 0} menções`}
+                        className="absolute -right-0.5 -bottom-0.5"
+                      />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="right">{server.name}</TooltipContent>
@@ -175,11 +185,11 @@ export function ServerRail({
             >
               <Users className="h-5 w-5" />
             </span>
-            {socialBadge > 0 && (
-              <span className="bg-primary text-primary-foreground glow-soft absolute -right-0.5 -bottom-0.5 min-w-[18px] rounded-full px-1 text-[10px] leading-[18px] font-semibold">
-                {socialBadge > 99 ? "99+" : socialBadge}
-              </span>
-            )}
+            <UnreadBadge
+              count={socialBadge}
+              title={`${socialBadge} mensagens ou solicitações pendentes`}
+              className="absolute -right-0.5 -bottom-0.5"
+            />
           </button>
         </TooltipTrigger>
         <TooltipContent side="right">Social</TooltipContent>

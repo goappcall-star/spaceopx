@@ -968,6 +968,7 @@ test("Idle heartbeats and refresh requests do not repeatedly track an unchanged 
   ch.events.sync();
   await f.flush();
   const before = ch.tracks.length;
+  const beforeOccupancy = f.render().participantsByChannel;
   for (let i = 0; i < 60; i++) {
     for (const fn of f.intervals.values()) fn();
     ch.events["occupancy-refresh"]();
@@ -975,6 +976,11 @@ test("Idle heartbeats and refresh requests do not repeatedly track an unchanged 
   }
   assert.equal(ch.tracks.length, before);
   assert.equal(f.channels.length, 1);
+  assert.equal(
+    f.render().participantsByChannel,
+    beforeOccupancy,
+    "Unchanged sweeps retain context identity",
+  );
 });
 
 test("Missing occupancy is retained across recovery but room moves and session departure apply immediately", async () => {

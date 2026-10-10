@@ -1,0 +1,44 @@
+{
+  "stage": "refined",
+  "order": [
+    "off",
+    "on",
+    "on",
+    "off"
+  ],
+  "runs": [
+    {
+      "index": 1,
+      "state": "off",
+      "start": "2026-10-10T05:32:52.075Z",
+      "end": "2026-10-10T05:34:28.531Z",
+      "file": "refined-1-off.json",
+      "samples": 94
+    },
+    {
+      "index": 2,
+      "state": "on",
+      "start": "2026-10-10T05:34:28.533Z",
+      "end": "2026-10-10T05:36:04.920Z",
+      "file": "refined-2-on.json",
+      "samples": 94
+    },
+    {
+      "index": 3,
+      "state": "on",
+      "start": "2026-10-10T05:36:04.922Z",
+      "end": "2026-10-10T05:37:41.293Z",
+      "file": "refined-3-on.json",
+      "samples": 94
+    },
+    {
+      "index": 4,
+      "state": "off",
+      "start": "2026-10-10T05:37:41.295Z",
+      "end": "2026-10-10T05:39:17.656Z",
+      "file": "refined-4-off.json",
+      "samples": 94
+    }
+  ],
+  "startedAt": "2026-10-10T05:32:52.074Z"
+}

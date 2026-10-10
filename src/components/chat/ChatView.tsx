@@ -1,3 +1,4 @@
+import { measureOperation } from "@/services/performance/monitor";
 import { Hash, MessagesSquare } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -8,7 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useChannelMessages } from "@/hooks/use-messages";
 import { useTyping } from "@/hooks/use-typing";
 import { hasPermission } from "@/lib/permissions";
-import { readStatesService } from "@/services/messages";
+import { unreadService } from "@/services/unread";
+import { useReadVisible } from "@/hooks/use-read-visible";
 import type { Channel, MemberWithProfile, MessageWithMeta, Profile } from "@/types";
 
 interface Props {
@@ -49,6 +51,20 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
     toggleReaction,
   } = useChannelMessages({ channelId: channel.id, serverId, userId, profiles, enabled: true });
 
+  const finishChannelLoad = useRef<((failed?: boolean) => void) | null>(null);
+  useEffect(() => {
+    finishChannelLoad.current = measureOperation("ui.channel");
+    return () => {
+      finishChannelLoad.current = null;
+    };
+  }, [channel.id]);
+  useEffect(() => {
+    if (!loading) {
+      finishChannelLoad.current?.(!!error);
+      finishChannelLoad.current = null;
+    }
+  }, [loading, error, channel.id]);
+
   const displayName = me?.profile?.display_name ?? "Alguém";
   const { typingNames, notifyTyping } = useTyping(channel.id, userId, displayName);
 
@@ -64,12 +80,16 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
     if (nearBottom) bottomRef.current?.scrollIntoView({ block: "end" });
   }, [messages.length]);
 
-  useEffect(() => {
-    const last = messages[messages.length - 1];
-    if (!userId || !last) return;
-    onRead(channel.id, last.id);
-    void readStatesService.markRead(channel.id, userId, last.id).catch(() => undefined);
-  }, [messages, channel.id, userId, onRead]);
+  useReadVisible(
+    scrollRef,
+    channel.id,
+    userId ? messages.at(-1)?.id : undefined,
+    loading,
+    async (id) => {
+      await unreadService.markChannel(channel.id, id);
+      onRead(channel.id, id);
+    },
+  );
 
   return (
     <>

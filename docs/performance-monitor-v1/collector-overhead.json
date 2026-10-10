@@ -1,0 +1,89 @@
+{
+  "scope": "Node collector microbenchmark; not whole-app CPU or real call latency",
+  "results": [
+    {
+      "run": 0,
+      "on": false,
+      "records": 50000,
+      "elapsedMs": 3.5123000000000033,
+      "rows": 0
+    },
+    {
+      "run": 1,
+      "on": true,
+      "records": 50000,
+      "elapsedMs": 64.8328,
+      "rows": 1
+    },
+    {
+      "run": 2,
+      "on": false,
+      "records": 50000,
+      "elapsedMs": 3.224199999999996,
+      "rows": 0
+    },
+    {
+      "run": 3,
+      "on": true,
+      "records": 50000,
+      "elapsedMs": 89.2442,
+      "rows": 1
+    },
+    {
+      "run": 4,
+      "on": false,
+      "records": 50000,
+      "elapsedMs": 1.542100000000005,
+      "rows": 0
+    },
+    {
+      "run": 5,
+      "on": true,
+      "records": 50000,
+      "elapsedMs": 92.00710000000001,
+      "rows": 1
+    },
+    {
+      "run": 6,
+      "on": false,
+      "records": 50000,
+      "elapsedMs": 2.512399999999957,
+      "rows": 0
+    },
+    {
+      "run": 7,
+      "on": true,
+      "records": 50000,
+      "elapsedMs": 85.4135,
+      "rows": 1
+    },
+    {
+      "run": 8,
+      "on": false,
+      "records": 50000,
+      "elapsedMs": 1.6453000000000202,
+      "rows": 0
+    },
+    {
+      "run": 9,
+      "on": true,
+      "records": 50000,
+      "elapsedMs": 69.70870000000002,
+      "rows": 1
+    },
+    {
+      "run": 10,
+      "on": false,
+      "records": 50000,
+      "elapsedMs": 1.0425000000000182,
+      "rows": 0
+    },
+    {
+      "run": 11,
+      "on": true,
+      "records": 50000,
+      "elapsedMs": 75.33360000000005,
+      "rows": 1
+    }
+  ]
+}

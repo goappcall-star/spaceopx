@@ -409,23 +409,24 @@ export const directMessagesService = {
     const missing = [...new Set(messages.map((m) => m.sender_id))].filter(
       (id) => !knownProfiles.has(id),
     );
-    const fetched = await profilesService.listByIds(missing);
+    const replyIds = [...new Set(messages.map((m) => m.reply_to_id).filter(Boolean))] as string[];
+    const [fetched, replies, reactionRows] = await Promise.all([
+      profilesService.listByIds(missing),
+      replyIds.length
+        ? supabase.from("direct_messages").select("*").in("id", replyIds)
+        : Promise.resolve({ data: [] }),
+      directMessagesService.listReactions(messages.map((m) => m.id)),
+    ]);
     const profiles = new Map(knownProfiles);
     for (const p of fetched) profiles.set(p.id, p);
-
-    const replyIds = [...new Set(messages.map((m) => m.reply_to_id).filter(Boolean))] as string[];
     const replyMap = new Map<string, DirectMessage>();
-    if (replyIds.length > 0) {
-      const { data } = await supabase.from("direct_messages").select("*").in("id", replyIds);
-      for (const row of data ?? []) replyMap.set(row.id, toDm(row));
-    }
+    for (const row of replies.data ?? []) replyMap.set(row.id, toDm(row));
     const missingReplyAuthors = [
       ...new Set([...replyMap.values()].map((reply) => reply.sender_id)),
     ].filter((id) => !profiles.has(id));
     for (const profile of await profilesService.listByIds(missingReplyAuthors))
       profiles.set(profile.id, profile);
 
-    const reactionRows = await directMessagesService.listReactions(messages.map((m) => m.id));
     const byMessage = new Map<string, MessageReaction[]>();
     for (const row of reactionRows) {
       byMessage.set(row.message_id, [...(byMessage.get(row.message_id) ?? []), row]);

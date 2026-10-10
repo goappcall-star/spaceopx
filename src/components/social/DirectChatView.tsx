@@ -1,3 +1,6 @@
+import { useQueryClient } from "@tanstack/react-query";
+import { useReadVisible } from "@/hooks/use-read-visible";
+import { unreadService } from "@/services/unread";
 import { useGlobalPresence } from "@/hooks/use-global-presence";
 import { Gamepad2, LogOut, Phone, Users, Video } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -40,6 +43,7 @@ export function DirectChatView({
   const [membersOpen, setMembersOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
   const { data: members = [] } = useConversationMembers(conversation.id);
   const profiles = useMemo(() => {
@@ -91,11 +95,16 @@ export function DirectChatView({
     if (nearBottom) bottomRef.current?.scrollIntoView({ block: "end" });
   }, [messages.length]);
 
-  // Reading the conversation clears its unread badge.
-  useEffect(() => {
-    if (!userId) return;
-    void conversationsService.markRead(conversation.id).catch(() => undefined);
-  }, [conversation.id, messages.length, userId]);
+  useReadVisible(
+    scrollRef,
+    conversation.id,
+    userId ? messages.at(-1)?.id : undefined,
+    loading,
+    async (id) => {
+      await unreadService.markConversation(conversation.id, id);
+      await queryClient.invalidateQueries({ queryKey: ["conversations", userId] });
+    },
+  );
 
   return (
     <>

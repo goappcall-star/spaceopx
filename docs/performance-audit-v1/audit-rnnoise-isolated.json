@@ -1,0 +1,19 @@
+{
+  "engine": "RNNoise @shiguredo/rnnoise-wasm 2025.1.5",
+  "node": "v24.14.1",
+  "cpuModel": "AMD Ryzen 5 4500 6-Core Processor              ",
+  "frames": 6000,
+  "audioSeconds": 60,
+  "loadMs": 58.62719999999996,
+  "meanFrameMs": 2.0589168166666645,
+  "p95FrameMs": 4.042100000000573,
+  "p99FrameMs": 7.512299999999868,
+  "maxFrameMs": 29.58849999999984,
+  "benchmarkWallMs": 12469.0273,
+  "computePercentOfOneCore": 15.573333333333334,
+  "whiteNoiseReductionDb": 31.55733053816327,
+  "fifoDelayMs": 10.666666666666666,
+  "measuredCleanSpeechLagSamples": 1471,
+  "measuredCleanSpeechLagMs": 30.645833333333332,
+  "scope": "Local Node/WASM processing benchmark; excludes browser capture, codec, jitter buffer and network. Lag measured by speech cross-correlation, not end-to-end latency."
+}

@@ -25,6 +25,7 @@ const run = (program, args) => {
   );
   if (result.status !== 0)
     throw new Error(`${program} failed: ${result.stderr || result.error?.message}`);
+  return result.stdout;
 };
 run("createdb", [database]);
 console.log(`Isolated local fixture: ${database}`);
@@ -32,6 +33,16 @@ run("psql", ["-d", database, "-v", "ON_ERROR_STOP=1", "-f", "tests/security-boot
 for (const file of readdirSync("supabase/migrations")
   .filter((name) => name.endsWith(".sql"))
   .sort()) {
+  const publicationQuery = [
+    "-d",
+    database,
+    "-At",
+    "-c",
+    "SELECT schemaname || '.' || tablename FROM pg_publication_tables WHERE pubname='supabase_realtime' ORDER BY 1",
+  ];
+  const before = file.includes("private_permission_invalidations")
+    ? run("psql", publicationQuery).trim().split(/\r?\n/).filter(Boolean)
+    : null;
   run("psql", [
     "-d",
     database,
@@ -40,6 +51,32 @@ for (const file of readdirSync("supabase/migrations")
     "-f",
     path.join("supabase/migrations", file),
   ]);
+  if (before) {
+    const after = run("psql", publicationQuery).trim().split(/\r?\n/).filter(Boolean);
+    if (
+      JSON.stringify(after) !==
+      JSON.stringify([...before, "public.permission_invalidations"].sort())
+    ) {
+      throw new Error("Realtime correction changed an existing publication member");
+    }
+  }
 }
 run("psql", ["-d", database, "-v", "ON_ERROR_STOP=1", "-f", "tests/security-write-guards.sql"]);
+run("psql", ["-d", database, "-v", "ON_ERROR_STOP=1", "-f", "tests/unread-counts.sql"]);
+run("psql", [
+  "-d",
+  database,
+  "-v",
+  "ON_ERROR_STOP=1",
+  "-f",
+  "tests/private-permission-invalidations.sql",
+]);
+run("psql", [
+  "-d",
+  database,
+  "-v",
+  "ON_ERROR_STOP=1",
+  "-f",
+  "tests/performance-monitor-access.sql",
+]);
 console.log("Security migration, RLS isolation, write limits and normal workflows: PASS");

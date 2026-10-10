@@ -32,6 +32,7 @@ export interface DesktopActivityState {
 declare global {
   interface Window {
     lobbyxDesktop?: {
+      performance?: () => Promise<{ cpu: number | null; memory: number; version: string }>;
       updates?: {
         state: () => Promise<DesktopUpdateState>;
         check: () => Promise<DesktopUpdateState>;

@@ -144,6 +144,13 @@ export function loadVoiceProvider(audioExports, additions = {}) {
   const environment = {
     exports: {},
     require: (id) => {
+      if (id === "@/services/performance/monitor")
+        return {
+          registerProbe: () => () => {},
+          collectionGeneration: () => 0,
+          recordMetric: () => {},
+          metrics: { enabled: false },
+        };
       if (id === "./audio-processing") return audioExports;
       if (id === "@/integrations/supabase/client")
         return { supabase: { removeChannel: async () => undefined } };

@@ -1,5 +1,6 @@
 import { openScreenSharePanel } from "@/services/screen-share-panel";
 import { VoiceIcon } from "./VoiceIcon";
+import { AudioOutputControl } from "./AudioOutputControl";
 
 import { Button } from "@/components/ui/button";
 import { NoiseSuppressionToggle } from "@/components/voice/NoiseSuppressionToggle";
@@ -106,21 +107,7 @@ export function VoiceBar({
           )}
           <span className="sr-only">{muted ? "Ativar microfone" : "Silenciar microfone"}</span>
         </Button>
-        <Button
-          size="sm"
-          className="h-9 rounded-lg border border-border/40 shadow-none"
-          variant={deafened ? "destructive" : "secondary"}
-          title={deafened ? "Ativar áudio" : "Silenciar áudio"}
-          onClick={toggleDeafen}
-          aria-pressed={deafened}
-        >
-          {deafened ? (
-            <VoiceIcon kind="headphones" off className="h-5 w-5" />
-          ) : (
-            <VoiceIcon kind="headphones" className="h-5 w-5" />
-          )}
-          <span className="sr-only">{deafened ? "Ativar áudio" : "Silenciar áudio"}</span>
-        </Button>
+        <AudioOutputControl deafened={deafened} onToggle={toggleDeafen} />
 
         {(supportsCamera() || supportsScreenShare()) && (
           <div className="contents">

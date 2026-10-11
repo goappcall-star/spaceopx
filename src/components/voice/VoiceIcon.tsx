@@ -28,8 +28,7 @@ export function VoiceIcon({
           {kind === "mic" && <rect x="8" y="2" width="8" height="13" rx="4" />}
           {kind === "headphones" && (
             <>
-              <rect x="3" y="11" width="5" height="10" rx="2.5" />
-              <rect x="16" y="11" width="5" height="10" rx="2.5" />
+              <path d="M4.2 12.3c1.8-.5 3.8.6 4.5 2.7l.7 2.1c.4 1.3-.1 2.6-1.3 3.1l-1 .4c-1.4.5-2.5-.1-3.2-1.4l-1.1-2.6c-.8-1.9-.4-3.7 1.4-4.3ZM19.8 12.3c-1.8-.5-3.8.6-4.5 2.7l-.7 2.1c-.4 1.3.1 2.6 1.3 3.1l1 .4c1.4.5 2.5-.1 3.2-1.4l1.1-2.6c.8-1.9.4-3.7-1.4-4.3Z" />
             </>
           )}
           {kind === "camera" && (
@@ -60,7 +59,9 @@ export function VoiceIcon({
         </g>
         <g stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           {kind === "mic" && <path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4M8 22h8" />}
-          {kind === "headphones" && <path d="M4 12v-2a8 8 0 0 1 16 0v2" />}
+          {kind === "headphones" && (
+            <path d="M3.7 14.4A8.7 8.7 0 0 1 3 11a9 9 0 0 1 18 0 8.7 8.7 0 0 1-.7 3.4" />
+          )}
           {kind === "connection" && (
             <path d="M4 13a7 7 0 0 1 7 7M4 7a13 13 0 0 1 13 13M4 2a18 18 0 0 1 18 18" />
           )}

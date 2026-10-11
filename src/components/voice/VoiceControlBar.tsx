@@ -1,5 +1,6 @@
 import { openScreenSharePanel } from "@/services/screen-share-panel";
 import { VoiceIcon } from "./VoiceIcon";
+import { AudioOutputControl } from "./AudioOutputControl";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -131,17 +132,7 @@ export function VoiceControlBar() {
           </ControlButton>
         )}
 
-        <ControlButton
-          label={deafened ? "Reativar áudio" : "Silenciar áudio"}
-          danger={deafened}
-          onClick={toggleDeafen}
-        >
-          {deafened ? (
-            <VoiceIcon kind="headphones" off className="h-5 w-5" />
-          ) : (
-            <VoiceIcon kind="headphones" className="h-5 w-5" />
-          )}
-        </ControlButton>
+        <AudioOutputControl deafened={deafened} onToggle={toggleDeafen} />
 
         <ControlButton label="Voz e áudio" onClick={() => setDevicesOpen(true)}>
           <VoiceIcon kind="settings" className="h-5 w-5" />

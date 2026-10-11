@@ -1,0 +1,474 @@
+{
+  "platform": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "kind": "synthetic local RTC, timer-driven canvas, no real capture or cross-client/audio validation",
+  "rows": [
+    {
+      "round": 0,
+      "enabled": false,
+      "durationMs": 8530.099999999627,
+      "frames": 392,
+      "frameIntervalP50": 20.5,
+      "frameIntervalP95": 31.5,
+      "jsHeapBefore": 27768661,
+      "jsHeapAfter": 28140178,
+      "stats": null
+    },
+    {
+      "round": 0,
+      "enabled": true,
+      "durationMs": 8516,
+      "frames": 388,
+      "frameIntervalP50": 20.699999999254942,
+      "frameIntervalP95": 31.299999998882413,
+      "jsHeapBefore": 28140178,
+      "jsHeapAfter": 28536276,
+      "stats": {
+        "active": true,
+        "requested": {
+          "resolution": 1080,
+          "fps": 30,
+          "mode": "auto",
+          "audio": true
+        },
+        "capture": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 30,
+          "audio": false
+        },
+        "peers": [
+          {
+            "width": 1920,
+            "height": 1080,
+            "fps": 12,
+            "bitrate": 580275.7555435887,
+            "loss": 0,
+            "rtt": 0.0039369999999999995,
+            "limitation": "none",
+            "codec": "video/VP8",
+            "encoder": null,
+            "status": "sending"
+          }
+        ],
+        "warning": null
+      }
+    },
+    {
+      "round": 1,
+      "enabled": true,
+      "durationMs": 8509.700000001118,
+      "frames": 383,
+      "frameIntervalP50": 20.299999998882413,
+      "frameIntervalP95": 32,
+      "jsHeapBefore": 28536276,
+      "jsHeapAfter": 28010604,
+      "stats": {
+        "active": true,
+        "requested": {
+          "resolution": 1080,
+          "fps": 30,
+          "mode": "auto",
+          "audio": true
+        },
+        "capture": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 30,
+          "audio": false
+        },
+        "peers": [
+          {
+            "width": 1920,
+            "height": 1080,
+            "fps": 9,
+            "bitrate": 464249.39041328436,
+            "loss": 0,
+            "rtt": 0.003067,
+            "limitation": "none",
+            "codec": "video/VP8",
+            "encoder": null,
+            "status": "sending"
+          }
+        ],
+        "warning": null
+      }
+    },
+    {
+      "round": 1,
+      "enabled": false,
+      "durationMs": 8526.900000000373,
+      "frames": 336,
+      "frameIntervalP50": 20.200000001117587,
+      "frameIntervalP95": 36.19999999925494,
+      "jsHeapBefore": 28010604,
+      "jsHeapAfter": 28377124,
+      "stats": null
+    },
+    {
+      "round": 2,
+      "enabled": false,
+      "durationMs": 8911,
+      "frames": 118,
+      "frameIntervalP50": 23.09999999962747,
+      "frameIntervalP95": 250.5,
+      "jsHeapBefore": 28377124,
+      "jsHeapAfter": 28027128,
+      "stats": null
+    },
+    {
+      "round": 2,
+      "enabled": true,
+      "durationMs": 8517.800000000745,
+      "frames": 306,
+      "frameIntervalP50": 21.5,
+      "frameIntervalP95": 66.19999999925494,
+      "jsHeapBefore": 28027528,
+      "jsHeapAfter": 28391888,
+      "stats": {
+        "active": true,
+        "requested": {
+          "resolution": 1080,
+          "fps": 30,
+          "mode": "auto",
+          "audio": true
+        },
+        "capture": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 30,
+          "audio": false
+        },
+        "peers": [
+          {
+            "width": 1920,
+            "height": 1080,
+            "fps": 2,
+            "bitrate": 109091.37586780437,
+            "loss": 0,
+            "rtt": 0.0034029999999999998,
+            "limitation": "none",
+            "codec": "video/VP8",
+            "encoder": null,
+            "status": "sending"
+          }
+        ],
+        "warning": null
+      }
+    },
+    {
+      "resolution": 720,
+      "fps": 15,
+      "synthetic": true,
+      "snapshot": {
+        "active": true,
+        "requested": {
+          "resolution": 720,
+          "fps": 15,
+          "mode": "auto",
+          "audio": true
+        },
+        "capture": {
+          "width": 1280,
+          "height": 720,
+          "fps": 15,
+          "audio": false
+        },
+        "peers": [
+          {
+            "width": 480,
+            "height": 270,
+            "fps": 15,
+            "bitrate": 538528.3535561339,
+            "loss": 0,
+            "rtt": 0.002121,
+            "limitation": "bandwidth",
+            "codec": "video/VP8",
+            "encoder": null,
+            "status": "sending"
+          }
+        ],
+        "warning": null
+      }
+    },
+    {
+      "resolution": 720,
+      "fps": 30,
+      "synthetic": true,
+      "snapshot": {
+        "active": true,
+        "requested": {
+          "resolution": 720,
+          "fps": 30,
+          "mode": "auto",
+          "audio": true
+        },
+        "capture": {
+          "width": 1280,
+          "height": 720,
+          "fps": 30,
+          "audio": false
+        },
+        "peers": [
+          {
+            "width": 960,
+            "height": 540,
+            "fps": 9,
+            "bitrate": 648557.0301595627,
+            "loss": 0,
+            "rtt": 0.0012209999999999999,
+            "limitation": "bandwidth",
+            "codec": "video/VP8",
+            "encoder": null,
+            "status": "sending"
+          }
+        ],
+        "warning": null
+      }
+    },
+    {
+      "resolution": 720,
+      "fps": 60,
+      "synthetic": true,
+      "snapshot": {
+        "active": true,
+        "requested": {
+          "resolution": 720,
+          "fps": 60,
+          "mode": "auto",
+          "audio": true
+        },
+        "capture": {
+          "width": 1280,
+          "height": 720,
+          "fps": 60,
+          "audio": false
+        },
+        "peers": [
+          {
+            "width": 480,
+            "height": 270,
+            "fps": 44,
+            "bitrate": 1011913.3746102008,
+            "loss": 0,
+            "rtt": 0.004288,
+            "limitation": "bandwidth",
+            "codec": "video/VP8",
+            "encoder": null,
+            "status": "sending"
+          }
+        ],
+        "warning": null
+      }
+    },
+    {
+      "resolution": 1080,
+      "fps": 15,
+      "synthetic": true,
+      "snapshot": {
+        "active": true,
+        "requested": {
+          "resolution": 1080,
+          "fps": 15,
+          "mode": "auto",
+          "audio": true
+        },
+        "capture": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 15,
+          "audio": false
+        },
+        "peers": [
+          {
+            "width": 480,
+            "height": 270,
+            "fps": 16,
+            "bitrate": 155992.15841399226,
+            "loss": 0,
+            "rtt": 0.001205,
+            "limitation": "bandwidth",
+            "codec": "video/VP8",
+            "encoder": null,
+            "status": "sending"
+          }
+        ],
+        "warning": null
+      }
+    },
+    {
+      "resolution": 1080,
+      "fps": 30,
+      "synthetic": true,
+      "snapshot": {
+        "active": true,
+        "requested": {
+          "resolution": 1080,
+          "fps": 30,
+          "mode": "auto",
+          "audio": true
+        },
+        "capture": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 30,
+          "audio": false
+        },
+        "peers": [
+          {
+            "width": 480,
+            "height": 270,
+            "fps": 29,
+            "bitrate": 349250.3623813574,
+            "loss": 0,
+            "rtt": 0.004013,
+            "limitation": "bandwidth",
+            "codec": "video/VP8",
+            "encoder": null,
+            "status": "sending"
+          }
+        ],
+        "warning": null
+      }
+    },
+    {
+      "resolution": 1080,
+      "fps": 60,
+      "synthetic": true,
+      "snapshot": {
+        "active": true,
+        "requested": {
+          "resolution": 1080,
+          "fps": 60,
+          "mode": "auto",
+          "audio": true
+        },
+        "capture": {
+          "width": 1920,
+          "height": 1080,
+          "fps": 60,
+          "audio": false
+        },
+        "peers": [
+          {
+            "width": 640,
+            "height": 360,
+            "fps": 39,
+            "bitrate": 739168.8067180337,
+            "loss": 0,
+            "rtt": 0.001175,
+            "limitation": "bandwidth",
+            "codec": "video/VP8",
+            "encoder": null,
+            "status": "sending"
+          }
+        ],
+        "warning": null
+      }
+    },
+    {
+      "resolution": 1440,
+      "fps": 15,
+      "synthetic": true,
+      "snapshot": {
+        "active": true,
+        "requested": {
+          "resolution": 1440,
+          "fps": 15,
+          "mode": "auto",
+          "audio": true
+        },
+        "capture": {
+          "width": 2560,
+          "height": 1440,
+          "fps": 15,
+          "audio": false
+        },
+        "peers": [
+          {
+            "width": 960,
+            "height": 540,
+            "fps": 15,
+            "bitrate": 616980.9268044276,
+            "loss": 0,
+            "rtt": 0.005814,
+            "limitation": "bandwidth",
+            "codec": "video/VP8",
+            "encoder": null,
+            "status": "sending"
+          }
+        ],
+        "warning": null
+      }
+    },
+    {
+      "resolution": 1440,
+      "fps": 30,
+      "synthetic": true,
+      "snapshot": {
+        "active": true,
+        "requested": {
+          "resolution": 1440,
+          "fps": 30,
+          "mode": "auto",
+          "audio": true
+        },
+        "capture": {
+          "width": 2560,
+          "height": 1440,
+          "fps": 30,
+          "audio": false
+        },
+        "peers": [
+          {
+            "width": 960,
+            "height": 540,
+            "fps": 28,
+            "bitrate": 725749.3873263543,
+            "loss": 0,
+            "rtt": 0.0015409999999999998,
+            "limitation": "bandwidth",
+            "codec": "video/VP8",
+            "encoder": null,
+            "status": "sending"
+          }
+        ],
+        "warning": null
+      }
+    },
+    {
+      "resolution": 1440,
+      "fps": 60,
+      "synthetic": true,
+      "snapshot": {
+        "active": true,
+        "requested": {
+          "resolution": 1440,
+          "fps": 60,
+          "mode": "auto",
+          "audio": true
+        },
+        "capture": {
+          "width": 2560,
+          "height": 1440,
+          "fps": 60,
+          "audio": false
+        },
+        "peers": [
+          {
+            "width": 640,
+            "height": 360,
+            "fps": 41,
+            "bitrate": 646111.3518558958,
+            "loss": 0,
+            "rtt": 0.003998,
+            "limitation": "bandwidth",
+            "codec": "video/VP8",
+            "encoder": null,
+            "status": "sending"
+          }
+        ],
+        "warning": null
+      }
+    }
+  ]
+}

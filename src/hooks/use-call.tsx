@@ -1,3 +1,4 @@
+import type { ScreenShareOptions, ScreenShareController } from "@/services/screen-share";
 import {
   createContext,
   useCallback,
@@ -69,7 +70,8 @@ interface CallContextValue {
   hangUp: () => void;
   toggleMute: () => void;
   toggleCamera: () => Promise<void>;
-  toggleScreenShare: () => Promise<void>;
+  toggleScreenShare: (options?: ScreenShareOptions) => Promise<void>;
+  getScreenShareController: () => ScreenShareController | null;
   dismiss: () => void;
 }
 
@@ -618,27 +620,32 @@ export function CallProviderRoot({
     }
   }, [cameraOn]);
 
-  const toggleScreenShare = useCallback(async () => {
-    const provider = providerRef.current;
-    if (!provider) return;
-    if (screenOn) {
-      provider.stopScreenShare();
-      setScreenOn(false);
-      return;
-    }
-    try {
-      await provider.startScreenShare();
-      if (!provider.screenShareHasAudio)
-        toast.info(
-          "Tela compartilhada sem áudio. Habilite o áudio da aba ou do sistema na seleção, quando disponível.",
-        );
-      // onLocalMedia owns screen state; a late startup completion must not resurrect it.
-    } catch (error) {
-      if ((error as DOMException)?.name === "NotAllowedError")
-        toast.info("Compartilhamento de tela cancelado.");
-      else toast.error("Compartilhamento de tela indisponível.");
-    }
-  }, [screenOn]);
+  const getScreenShareController = useCallback(() => providerRef.current?.screenShare ?? null, []);
+
+  const toggleScreenShare = useCallback(
+    async (options?: ScreenShareOptions) => {
+      const provider = providerRef.current;
+      if (!provider) return;
+      if (screenOn) {
+        provider.stopScreenShare();
+        setScreenOn(false);
+        return;
+      }
+      try {
+        await provider.startScreenShare(options);
+        if (!provider.screenShareHasAudio)
+          toast.info(
+            "Tela compartilhada sem áudio. Habilite o áudio da aba ou do sistema na seleção, quando disponível.",
+          );
+        // onLocalMedia owns screen state; a late startup completion must not resurrect it.
+      } catch (error) {
+        if ((error as DOMException)?.name === "NotAllowedError")
+          toast.info("Compartilhamento de tela cancelado.");
+        else toast.error("Compartilhamento de tela indisponível.");
+      }
+    },
+    [screenOn],
+  );
 
   const dismiss = useCallback(() => {
     setStatus("idle");
@@ -682,6 +689,7 @@ export function CallProviderRoot({
       toggleMute,
       toggleCamera,
       toggleScreenShare,
+      getScreenShareController,
       dismiss,
     }),
     [
@@ -709,6 +717,7 @@ export function CallProviderRoot({
       toggleMute,
       toggleCamera,
       toggleScreenShare,
+      getScreenShareController,
       dismiss,
     ],
   );

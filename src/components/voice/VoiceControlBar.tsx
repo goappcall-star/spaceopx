@@ -1,3 +1,4 @@
+import { openScreenSharePanel } from "@/services/screen-share-panel";
 import { VoiceIcon } from "./VoiceIcon";
 import { useState } from "react";
 
@@ -118,9 +119,9 @@ export function VoiceControlBar() {
 
         {screenAvailable && (
           <ControlButton
-            label={screenOn ? "Parar compartilhamento" : "Compartilhar tela"}
+            label={screenOn ? "Configurar transmissão" : "Compartilhar tela"}
             active={screenOn}
-            onClick={() => void toggleScreenShare()}
+            onClick={() => openScreenSharePanel("voice")}
           >
             {screenOn ? (
               <VoiceIcon kind="screen" off className="h-5 w-5" />

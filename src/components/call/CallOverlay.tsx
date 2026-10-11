@@ -1,3 +1,4 @@
+import { openScreenSharePanel } from "@/services/screen-share-panel";
 import { Mic, MicOff, MonitorUp, Phone, PhoneOff, Video, VideoOff } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -395,10 +396,10 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
                 </CallButton>
 
                 <CallButton
-                  label={screenOn ? "Parar compartilhamento" : "Compartilhar tela"}
+                  label={screenOn ? "Configurar transmissão" : "Compartilhar tela"}
                   active={screenOn}
                   disabled={!connected}
-                  onClick={() => void call.toggleScreenShare()}
+                  onClick={() => openScreenSharePanel("call")}
                 >
                   <MonitorUp className="h-5 w-5" />
                 </CallButton>

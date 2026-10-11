@@ -1,0 +1,17 @@
+{
+  "baseVersion": "0.1.45",
+  "isolatedProfile": true,
+  "actualInstallerLaunched": false,
+  "desktopMainLoaded": true,
+  "mainLoadErrors": [],
+  "rendererErrors": 0,
+  "windows": 1,
+  "render": {
+    "ready": "complete",
+    "bodyPresent": true,
+    "bodyTextLength": 163,
+    "hasLobbyX": true,
+    "hasLogin": true
+  },
+  "ok": true
+}

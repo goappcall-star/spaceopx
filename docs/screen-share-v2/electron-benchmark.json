@@ -1,0 +1,1155 @@
+{
+  "at": "2026-10-11T19:19:49.033Z",
+  "results": {
+    "platform": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.7977.130 Electron/44.4.5 Safari/537.36",
+    "kind": "synthetic local RTC, timer-driven canvas, no real capture or cross-client/audio validation",
+    "rows": [
+      {
+        "round": 0,
+        "enabled": false,
+        "durationMs": 8524.299999998882,
+        "frames": 298,
+        "frameIntervalP50": 30.799999998882413,
+        "frameIntervalP95": 33.5,
+        "jsHeapBefore": 21536949,
+        "jsHeapAfter": 21901863,
+        "stats": null
+      },
+      {
+        "round": 0,
+        "enabled": true,
+        "durationMs": 8507.900000000373,
+        "frames": 292,
+        "frameIntervalP50": 30.800000000745058,
+        "frameIntervalP95": 33.19999999925494,
+        "jsHeapBefore": 21901863,
+        "jsHeapAfter": 21602403,
+        "stats": {
+          "active": true,
+          "requested": {
+            "resolution": 1080,
+            "fps": 30,
+            "mode": "auto",
+            "audio": true
+          },
+          "capture": {
+            "width": 1920,
+            "height": 1080,
+            "fps": 30,
+            "audio": false
+          },
+          "peers": [
+            {
+              "width": 960,
+              "height": 540,
+              "fps": 26,
+              "bitrate": 658540.602290141,
+              "loss": 0,
+              "rtt": 0.0010379999999999999,
+              "limitation": "bandwidth",
+              "codec": "video/VP8",
+              "encoder": null,
+              "status": "sending"
+            }
+          ],
+          "warning": null
+        }
+      },
+      {
+        "round": 1,
+        "enabled": true,
+        "durationMs": 8508.5,
+        "frames": 298,
+        "frameIntervalP50": 30.59999999962747,
+        "frameIntervalP95": 33.20000000111759,
+        "jsHeapBefore": 21602403,
+        "jsHeapAfter": 21098986,
+        "stats": {
+          "active": true,
+          "requested": {
+            "resolution": 1080,
+            "fps": 30,
+            "mode": "auto",
+            "audio": true
+          },
+          "capture": {
+            "width": 1920,
+            "height": 1080,
+            "fps": 30,
+            "audio": false
+          },
+          "peers": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "fps": 26,
+              "bitrate": 997874.5656379994,
+              "loss": 0,
+              "rtt": 0.001816,
+              "limitation": "none",
+              "codec": "video/VP8",
+              "encoder": null,
+              "status": "sending"
+            }
+          ],
+          "warning": null
+        }
+      },
+      {
+        "round": 1,
+        "enabled": false,
+        "durationMs": 8501.60000000149,
+        "frames": 465,
+        "frameIntervalP50": 17.09999999962747,
+        "frameIntervalP95": 27.699999999254942,
+        "jsHeapBefore": 21098986,
+        "jsHeapAfter": 21168133,
+        "stats": null
+      },
+      {
+        "round": 2,
+        "enabled": false,
+        "durationMs": 8505.599999999627,
+        "frames": 486,
+        "frameIntervalP50": 17.09999999962747,
+        "frameIntervalP95": 19.5,
+        "jsHeapBefore": 21168133,
+        "jsHeapAfter": 21421102,
+        "stats": null
+      },
+      {
+        "round": 2,
+        "enabled": true,
+        "durationMs": 8501,
+        "frames": 453,
+        "frameIntervalP50": 17.200000001117587,
+        "frameIntervalP95": 30.40000000037253,
+        "jsHeapBefore": 21421102,
+        "jsHeapAfter": 21731498,
+        "stats": {
+          "active": true,
+          "requested": {
+            "resolution": 1080,
+            "fps": 30,
+            "mode": "auto",
+            "audio": true
+          },
+          "capture": {
+            "width": 1920,
+            "height": 1080,
+            "fps": 30,
+            "audio": false
+          },
+          "peers": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "fps": 16,
+              "bitrate": 1832865.797619844,
+              "loss": 0,
+              "rtt": 0.0015409999999999998,
+              "limitation": "none",
+              "codec": "video/VP8",
+              "encoder": null,
+              "status": "sending"
+            }
+          ],
+          "warning": null
+        }
+      },
+      {
+        "resolution": 720,
+        "fps": 15,
+        "synthetic": true,
+        "snapshot": {
+          "active": true,
+          "requested": {
+            "resolution": 720,
+            "fps": 15,
+            "mode": "auto",
+            "audio": true
+          },
+          "capture": {
+            "width": 1280,
+            "height": 720,
+            "fps": 15,
+            "audio": false
+          },
+          "peers": [
+            {
+              "width": 320,
+              "height": 180,
+              "fps": 15,
+              "bitrate": 188727.78860610718,
+              "loss": 0,
+              "rtt": 0.0025789999999999997,
+              "limitation": "bandwidth",
+              "codec": "video/VP8",
+              "encoder": null,
+              "status": "sending"
+            }
+          ],
+          "warning": null
+        }
+      },
+      {
+        "resolution": 720,
+        "fps": 30,
+        "synthetic": true,
+        "snapshot": {
+          "active": true,
+          "requested": {
+            "resolution": 720,
+            "fps": 30,
+            "mode": "auto",
+            "audio": true
+          },
+          "capture": {
+            "width": 1280,
+            "height": 720,
+            "fps": 30,
+            "audio": false
+          },
+          "peers": [
+            {
+              "width": 320,
+              "height": 180,
+              "fps": 30,
+              "bitrate": 330364.6180464318,
+              "loss": 0,
+              "rtt": 0.00116,
+              "limitation": "bandwidth",
+              "codec": "video/VP8",
+              "encoder": null,
+              "status": "sending"
+            }
+          ],
+          "warning": null
+        }
+      },
+      {
+        "resolution": 720,
+        "fps": 60,
+        "synthetic": true,
+        "snapshot": {
+          "active": true,
+          "requested": {
+            "resolution": 720,
+            "fps": 60,
+            "mode": "auto",
+            "audio": true
+          },
+          "capture": {
+            "width": 1280,
+            "height": 720,
+            "fps": 60,
+            "audio": false
+          },
+          "peers": [
+            {
+              "width": 960,
+              "height": 540,
+              "fps": 36,
+              "bitrate": 635483.0577545371,
+              "loss": 0,
+              "rtt": 0.001465,
+              "limitation": "bandwidth",
+              "codec": "video/VP8",
+              "encoder": null,
+              "status": "sending"
+            }
+          ],
+          "warning": null
+        }
+      },
+      {
+        "resolution": 1080,
+        "fps": 15,
+        "synthetic": true,
+        "snapshot": {
+          "active": true,
+          "requested": {
+            "resolution": 1080,
+            "fps": 15,
+            "mode": "auto",
+            "audio": true
+          },
+          "capture": {
+            "width": 1920,
+            "height": 1080,
+            "fps": 15,
+            "audio": false
+          },
+          "peers": [
+            {
+              "width": 640,
+              "height": 360,
+              "fps": 15,
+              "bitrate": 393186.8362650244,
+              "loss": 0,
+              "rtt": 0.001328,
+              "limitation": "bandwidth",
+              "codec": "video/VP8",
+              "encoder": null,
+              "status": "sending"
+            }
+          ],
+          "warning": null
+        }
+      },
+      {
+        "resolution": 1080,
+        "fps": 30,
+        "synthetic": true,
+        "snapshot": {
+          "active": true,
+          "requested": {
+            "resolution": 1080,
+            "fps": 30,
+            "mode": "auto",
+            "audio": true
+          },
+          "capture": {
+            "width": 1920,
+            "height": 1080,
+            "fps": 30,
+            "audio": false
+          },
+          "peers": [
+            {
+              "width": 320,
+              "height": 180,
+              "fps": 30,
+              "bitrate": 224620.4627841874,
+              "loss": 0,
+              "rtt": 0.001053,
+              "limitation": "bandwidth",
+              "codec": "video/VP8",
+              "encoder": null,
+              "status": "sending"
+            }
+          ],
+          "warning": null
+        }
+      },
+      {
+        "resolution": 1080,
+        "fps": 60,
+        "synthetic": true,
+        "snapshot": {
+          "active": true,
+          "requested": {
+            "resolution": 1080,
+            "fps": 60,
+            "mode": "auto",
+            "audio": true
+          },
+          "capture": {
+            "width": 1920,
+            "height": 1080,
+            "fps": 60,
+            "audio": false
+          },
+          "peers": [
+            {
+              "width": 960,
+              "height": 540,
+              "fps": 33,
+              "bitrate": 515742.2589918059,
+              "loss": 0,
+              "rtt": 0.0012209999999999999,
+              "limitation": "bandwidth",
+              "codec": "video/VP8",
+              "encoder": null,
+              "status": "sending"
+            }
+          ],
+          "warning": null
+        }
+      },
+      {
+        "resolution": 1440,
+        "fps": 15,
+        "synthetic": true,
+        "snapshot": {
+          "active": true,
+          "requested": {
+            "resolution": 1440,
+            "fps": 15,
+            "mode": "auto",
+            "audio": true
+          },
+          "capture": {
+            "width": 2560,
+            "height": 1440,
+            "fps": 15,
+            "audio": false
+          },
+          "peers": [
+            {
+              "width": 480,
+              "height": 270,
+              "fps": 16,
+              "bitrate": 295663.58741157496,
+              "loss": 0,
+              "rtt": 0.001,
+              "limitation": "bandwidth",
+              "codec": "video/VP8",
+              "encoder": null,
+              "status": "sending"
+            }
+          ],
+          "warning": null
+        }
+      },
+      {
+        "resolution": 1440,
+        "fps": 30,
+        "synthetic": true,
+        "snapshot": {
+          "active": true,
+          "requested": {
+            "resolution": 1440,
+            "fps": 30,
+            "mode": "auto",
+            "audio": true
+          },
+          "capture": {
+            "width": 2560,
+            "height": 1440,
+            "fps": 30,
+            "audio": false
+          },
+          "peers": [
+            {
+              "width": 480,
+              "height": 270,
+              "fps": 30,
+              "bitrate": 626107.9416725584,
+              "loss": 0,
+              "rtt": 0.001,
+              "limitation": "bandwidth",
+              "codec": "video/VP8",
+              "encoder": null,
+              "status": "sending"
+            }
+          ],
+          "warning": null
+        }
+      },
+      {
+        "resolution": 1440,
+        "fps": 60,
+        "synthetic": true,
+        "snapshot": {
+          "active": true,
+          "requested": {
+            "resolution": 1440,
+            "fps": 60,
+            "mode": "auto",
+            "audio": true
+          },
+          "capture": {
+            "width": 2560,
+            "height": 1440,
+            "fps": 60,
+            "audio": false
+          },
+          "peers": [
+            {
+              "width": 1280,
+              "height": 720,
+              "fps": 37,
+              "bitrate": 1104427.8756396465,
+              "loss": 0,
+              "rtt": 0.001,
+              "limitation": "bandwidth",
+              "codec": "video/VP8",
+              "encoder": null,
+              "status": "sending"
+            }
+          ],
+          "warning": null
+        }
+      }
+    ]
+  },
+  "cpu": [
+    {
+      "at": 1791746304533,
+      "round": 0,
+      "enabled": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0,
+          "workingSet": 92912
+        },
+        {
+          "type": "GPU",
+          "cpu": 0,
+          "workingSet": 197844
+        },
+        {
+          "type": "Utility",
+          "cpu": 0,
+          "workingSet": 50336
+        },
+        {
+          "type": "Tab",
+          "cpu": 0,
+          "workingSet": 150428
+        }
+      ]
+    },
+    {
+      "at": 1791746306550,
+      "round": 0,
+      "enabled": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.028793424160268907,
+          "workingSet": 92928
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.0647780022882887,
+          "workingSet": 196628
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.18295833649362794,
+          "workingSet": 50384
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.8327862909069337,
+          "workingSet": 151332
+        }
+      ]
+    },
+    {
+      "at": 1791746308559,
+      "round": 0,
+      "enabled": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.06512980245176786,
+          "workingSet": 92968
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.0911442530477966,
+          "workingSet": 191008
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.1512095268722353,
+          "workingSet": 50388
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.790990165795087,
+          "workingSet": 151984
+        }
+      ]
+    },
+    {
+      "at": 1791746310571,
+      "round": 0,
+      "enabled": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.029845865117564378,
+          "workingSet": 92968
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.0667260433539278,
+          "workingSet": 190720
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.15392943558240538,
+          "workingSet": 50404
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.7863609961627172,
+          "workingSet": 153012
+        }
+      ]
+    },
+    {
+      "at": 1791746312581,
+      "round": 0,
+      "enabled": true,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.016926903298474853,
+          "workingSet": 92972
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.1080128160493066,
+          "workingSet": 202200
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.1485293127796219,
+          "workingSet": 50404
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.7890694151621842,
+          "workingSet": 155436
+        }
+      ]
+    },
+    {
+      "at": 1791746314596,
+      "round": 0,
+      "enabled": true,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.008701306800633706,
+          "workingSet": 92980
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.016753713121881,
+          "workingSet": 202208
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.14311322060949483,
+          "workingSet": 50404
+        },
+        {
+          "type": "Tab",
+          "cpu": 1.5662776365323399,
+          "workingSet": 156100
+        }
+      ]
+    },
+    {
+      "at": 1791746316613,
+      "round": 0,
+      "enabled": true,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.03174371013443666,
+          "workingSet": 93064
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.0808421809032636,
+          "workingSet": 202232
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.1510992802136172,
+          "workingSet": 50420
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.9083688285048166,
+          "workingSet": 178468
+        }
+      ]
+    },
+    {
+      "at": 1791746318623,
+      "round": 0,
+      "enabled": true,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.1661051610754905,
+          "workingSet": 93324
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.1173271671914289,
+          "workingSet": 190824
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.16260637839200312,
+          "workingSet": 50420
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.858553693092592,
+          "workingSet": 179204
+        }
+      ]
+    },
+    {
+      "at": 1791746320627,
+      "round": 1,
+      "enabled": true,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.008235587721487397,
+          "workingSet": 93328
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.0608424713339892,
+          "workingSet": 190852
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.17445003316796767,
+          "workingSet": 50420
+        },
+        {
+          "type": "Tab",
+          "cpu": 2.694608038635016,
+          "workingSet": 180488
+        }
+      ]
+    },
+    {
+      "at": 1791746322642,
+      "round": 1,
+      "enabled": true,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.007099415970700623,
+          "workingSet": 93328
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.0982338121220931,
+          "workingSet": 199064
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.14090781365023305,
+          "workingSet": 50420
+        },
+        {
+          "type": "Tab",
+          "cpu": 3.018668287479223,
+          "workingSet": 181096
+        }
+      ]
+    },
+    {
+      "at": 1791746324656,
+      "round": 1,
+      "enabled": true,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.007705014632079344,
+          "workingSet": 93332
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.0649969808802322,
+          "workingSet": 199084
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.16932114955976005,
+          "workingSet": 50396
+        },
+        {
+          "type": "Tab",
+          "cpu": 4.348683746627061,
+          "workingSet": 208396
+        }
+      ]
+    },
+    {
+      "at": 1791746326667,
+      "round": 1,
+      "enabled": true,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.009842536000888523,
+          "workingSet": 93336
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.086175606249884,
+          "workingSet": 199104
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.17985498215581966,
+          "workingSet": 50416
+        },
+        {
+          "type": "Tab",
+          "cpu": 4.524645707235345,
+          "workingSet": 209296
+        }
+      ]
+    },
+    {
+      "at": 1791746328683,
+      "round": 1,
+      "enabled": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.04973346828108075,
+          "workingSet": 93332
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.0867738002024188,
+          "workingSet": 199136
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.20939803056013695,
+          "workingSet": 50452
+        },
+        {
+          "type": "Tab",
+          "cpu": 12.093353016492001,
+          "workingSet": 266868
+        }
+      ]
+    },
+    {
+      "at": 1791746330689,
+      "round": 1,
+      "enabled": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.08833401058844743,
+          "workingSet": 93336
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.3895800031046124,
+          "workingSet": 211484
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.15984730180447,
+          "workingSet": 50496
+        },
+        {
+          "type": "Tab",
+          "cpu": 15.685053425142476,
+          "workingSet": 274680
+        }
+      ]
+    },
+    {
+      "at": 1791746332696,
+      "round": 1,
+      "enabled": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.018111365716554886,
+          "workingSet": 93388
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.2284100768365096,
+          "workingSet": 211516
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2646018026869738,
+          "workingSet": 50488
+        },
+        {
+          "type": "Tab",
+          "cpu": 11.88095112347645,
+          "workingSet": 276704
+        }
+      ]
+    },
+    {
+      "at": 1791746334711,
+      "round": 1,
+      "enabled": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.015589482637642848,
+          "workingSet": 93388
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.2959481162457374,
+          "workingSet": 211544
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.25435523466994125,
+          "workingSet": 50476
+        },
+        {
+          "type": "Tab",
+          "cpu": 13.484014915033711,
+          "workingSet": 278464
+        }
+      ]
+    },
+    {
+      "at": 1791746336728,
+      "round": 1,
+      "enabled": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.0077910459648578385,
+          "workingSet": 93388
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.2846611179134837,
+          "workingSet": 203180
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.237730765900548,
+          "workingSet": 50484
+        },
+        {
+          "type": "Tab",
+          "cpu": 14.496264081779414,
+          "workingSet": 279980
+        }
+      ]
+    },
+    {
+      "at": 1791746338730,
+      "round": 2,
+      "enabled": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.007459878177525119,
+          "workingSet": 93388
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.309504422462292,
+          "workingSet": 204864
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2869668789393161,
+          "workingSet": 50480
+        },
+        {
+          "type": "Tab",
+          "cpu": 16.25563005964379,
+          "workingSet": 282232
+        }
+      ]
+    },
+    {
+      "at": 1791746340738,
+      "round": 2,
+      "enabled": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.006606270745225517,
+          "workingSet": 93388
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.2579349982471795,
+          "workingSet": 204884
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.24535727125964923,
+          "workingSet": 50488
+        },
+        {
+          "type": "Tab",
+          "cpu": 16.659848769666294,
+          "workingSet": 286456
+        }
+      ]
+    },
+    {
+      "at": 1791746342744,
+      "round": 2,
+      "enabled": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.0308695202863256,
+          "workingSet": 93388
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.248432030277807,
+          "workingSet": 201428
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.26661689042714526,
+          "workingSet": 50476
+        },
+        {
+          "type": "Tab",
+          "cpu": 15.45595909843911,
+          "workingSet": 288104
+        }
+      ]
+    },
+    {
+      "at": 1791746344752,
+      "round": 2,
+      "enabled": false,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.043453255852139556,
+          "workingSet": 93392
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.2212908104859361,
+          "workingSet": 201448
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.23833657086882168,
+          "workingSet": 50480
+        },
+        {
+          "type": "Tab",
+          "cpu": 18.109799548205626,
+          "workingSet": 289672
+        }
+      ]
+    },
+    {
+      "at": 1791746346775,
+      "round": 2,
+      "enabled": true,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.024467014510175314,
+          "workingSet": 93396
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.3511405002904757,
+          "workingSet": 211200
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.24479952891197318,
+          "workingSet": 50484
+        },
+        {
+          "type": "Tab",
+          "cpu": 16.948827907592875,
+          "workingSet": 291628
+        }
+      ]
+    },
+    {
+      "at": 1791746348788,
+      "round": 2,
+      "enabled": true,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.023571186224293373,
+          "workingSet": 93400
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.2337710938316289,
+          "workingSet": 211228
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2764075586420673,
+          "workingSet": 50488
+        },
+        {
+          "type": "Tab",
+          "cpu": 17.026105738374323,
+          "workingSet": 293536
+        }
+      ]
+    },
+    {
+      "at": 1791746350807,
+      "round": 2,
+      "enabled": true,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.06026919967356729,
+          "workingSet": 93408
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.2439566031107026,
+          "workingSet": 211256
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.25950927264595447,
+          "workingSet": 50488
+        },
+        {
+          "type": "Tab",
+          "cpu": 14.33456678040267,
+          "workingSet": 295980
+        }
+      ]
+    },
+    {
+      "at": 1791746352830,
+      "round": 2,
+      "enabled": true,
+      "processes": [
+        {
+          "type": "Browser",
+          "cpu": 0.12241893520535052,
+          "workingSet": 93416
+        },
+        {
+          "type": "GPU",
+          "cpu": 1.213527952001577,
+          "workingSet": 199648
+        },
+        {
+          "type": "Utility",
+          "cpu": 0.2525278743936274,
+          "workingSet": 50484
+        },
+        {
+          "type": "Tab",
+          "cpu": 15.271682121082526,
+          "workingSet": 300852
+        }
+      ]
+    }
+  ],
+  "actualCrossClientTest": false
+}

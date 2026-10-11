@@ -1,3 +1,4 @@
+import { openScreenSharePanel } from "@/services/screen-share-panel";
 import { VoiceIcon } from "./VoiceIcon";
 
 import { Button } from "@/components/ui/button";
@@ -145,8 +146,8 @@ export function VoiceBar({
                 size="sm"
                 className="h-9 rounded-lg border border-border/40 shadow-none"
                 variant={screenOn ? "default" : "secondary"}
-                title={screenOn ? "Parar compartilhamento" : "Compartilhar tela"}
-                onClick={() => void toggleScreenShare()}
+                title={screenOn ? "Configurar transmissão" : "Compartilhar tela"}
+                onClick={() => openScreenSharePanel("voice")}
                 aria-pressed={screenOn}
               >
                 {screenOn ? (

@@ -50,6 +50,8 @@ function track(kind) {
     readyState: "live",
     enabled: true,
     events,
+    getSettings: () => ({ width: 1280, height: 720, frameRate: 30 }),
+    applyConstraints: async () => {},
     addEventListener: (event, fn) => (events[event] = fn),
     stop() {
       this.readyState = "ended";
@@ -143,6 +145,18 @@ test("Video-only capture works and browser stop removes both screen tracks", asy
   assert.equal(f.screen.track, null);
   assert.equal(f.micSender.track, f.mic);
 });
+test("Selected 1440p/60 capture does not promise delivered FPS, and disabling system audio keeps voice", async () => {
+  const f = fixture(false);
+  await f.provider.startScreenShare({ resolution: 1440, fps: 60, mode: "performance", audio: false });
+  assert.equal(f.constraints().video.height.max, 1440);
+  assert.equal(f.constraints().video.frameRate.max, 60);
+  assert.equal(f.constraints().audio, false);
+  assert.equal(f.constraints().systemAudio, "exclude");
+  assert.equal(f.provider.screenShare.getSnapshot().capture.fps, 30);
+  assert.equal(f.provider.screenShare.getSnapshot().requested.fps, 60);
+  assert.equal(f.micSender.track, f.mic);
+  f.provider.stopScreenShare();
+});
 test("Screen tracks are available for late peers, and a stale stop event cannot stop a newer capture", async () => {
   const f = fixture();
   await f.provider.startScreenShare();
@@ -153,6 +167,7 @@ test("Screen tracks are available for late peers, and a stale stop event cannot 
   await f.provider.startScreenShare();
   old();
   assert.equal(f.provider.screenStream, next);
+  f.provider.stopScreenShare();
 });
 test("Capture finishing after leaving releases every returned track", async () => {
   const f = fixture();

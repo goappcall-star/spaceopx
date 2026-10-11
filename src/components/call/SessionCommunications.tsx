@@ -1,3 +1,4 @@
+import { ScreenShareDialog } from "@/components/voice/ScreenShareDialog";
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { CallProviderRoot } from "@/hooks/use-call";
@@ -44,6 +45,7 @@ export function SessionCommunications({ children }: { children: ReactNode }) {
             <CallAudioPlayback />
             <CallSoundEffects />
             <IncomingCallDialog />
+            <ScreenShareDialog />
             {children}
             {pathname !== "/app" && <ConnectedVoiceBar floating />}
           </TooltipProvider>

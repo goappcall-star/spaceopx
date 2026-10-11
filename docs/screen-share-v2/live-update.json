@@ -1,0 +1,37 @@
+{
+  "kind": "live synthetic RTC update, not display capture",
+  "connected": true,
+  "sameTrack": true,
+  "trackLive": true,
+  "transceivers": 1,
+  "snapshot": {
+    "active": true,
+    "requested": {
+      "resolution": 720,
+      "fps": 15,
+      "mode": "performance",
+      "audio": true
+    },
+    "capture": {
+      "width": 1280,
+      "height": 720,
+      "fps": 15,
+      "audio": false
+    },
+    "peers": [
+      {
+        "width": 480,
+        "height": 270,
+        "fps": 16,
+        "bitrate": 231008.08899061056,
+        "loss": 0,
+        "rtt": 0.001068,
+        "limitation": "bandwidth",
+        "codec": "video/VP8",
+        "encoder": null,
+        "status": "sending"
+      }
+    ],
+    "warning": null
+  }
+}

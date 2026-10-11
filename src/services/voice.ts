@@ -26,6 +26,12 @@
  * stopped when the corresponding feature is turned off or the user disconnects.
  */
 
+import {
+  ScreenShareController,
+  normalizeScreenOptions,
+  screenConstraints,
+  type ScreenShareOptions,
+} from "./screen-share";
 import { voiceDiagnostic, voiceStage, voiceErrorName } from "./voice-diagnostics";
 import { requestMicrophone } from "./microphone-request";
 import {
@@ -84,7 +90,8 @@ export interface VoiceProvider {
   setUserVolume(userId: string, volume: number): void;
   enableCamera(deviceId?: string): Promise<void>;
   disableCamera(): void;
-  startScreenShare(): Promise<void>;
+  readonly screenShare: ScreenShareController;
+  startScreenShare(options?: ScreenShareOptions): Promise<void>;
   stopScreenShare(): void;
   setDevices(devices: DeviceIds): Promise<void>;
   /** Input gain in percent (0-200) applied to the outgoing microphone. */
@@ -232,6 +239,7 @@ class MeshVoiceProvider implements VoiceProvider {
   private cancelMicrophoneRequest: (() => void) | null = null;
   private cameraStream: MediaStream | null = null;
   private screenStream: MediaStream | null = null;
+  readonly screenShare = new ScreenShareController();
 
   private audioPipeline: MicrophoneAudioPipeline | null = null;
   private analyser: AnalyserNode | null = null;
@@ -397,6 +405,7 @@ class MeshVoiceProvider implements VoiceProvider {
     this.cameraGeneration += 1;
     this.screenGeneration += 1;
     this.microphoneGeneration += 1;
+    this.screenShare.stop();
     if (this.raf !== null) cancelAnimationFrame(this.raf);
     this.raf = null;
     this.analyser = null;
@@ -487,6 +496,7 @@ class MeshVoiceProvider implements VoiceProvider {
 
   /** Tear a single peer down without touching any of the others. */
   private closePeer(id: string, peer: Peer) {
+    if (peer.transceivers.screen) this.screenShare.detach(peer.transceivers.screen.sender);
     if (peer.restartTimer) clearTimeout(peer.restartTimer);
     if (peer.absenceTimer) clearTimeout(peer.absenceTimer);
     peer.pc.onicecandidate = null;
@@ -554,7 +564,7 @@ class MeshVoiceProvider implements VoiceProvider {
     if (initiator) {
       void transceivers.mic?.sender.replaceTrack(this.localTrack("mic"));
       void transceivers.camera?.sender.replaceTrack(this.localTrack("camera"));
-      void transceivers.screen?.sender.replaceTrack(this.localTrack("screen"));
+      this.attachScreenTrack(transceivers.screen?.sender);
       void transceivers.screenAudio?.sender.replaceTrack(this.localTrack("screenAudio"));
     }
 
@@ -689,10 +699,25 @@ class MeshVoiceProvider implements VoiceProvider {
     return this.screenStream?.getVideoTracks()[0] ?? null;
   }
 
+  private attachScreenTrack(sender?: RTCRtpSender) {
+    if (!sender) return;
+    const track = this.localTrack("screen");
+    this.screenShare.detach(sender);
+    void sender
+      .replaceTrack(track)
+      .then(() => {
+        if (track && track === this.localTrack("screen")) this.screenShare.attach(sender);
+      })
+      .catch(() => {
+        if (track === this.localTrack("screen")) this.screenShare.warn();
+      });
+  }
+
   /** Push one media slot to every peer without touching the other slots. */
   private applyLocalTrack(kind: MediaKind, track: MediaStreamTrack | null) {
     for (const peer of this.peers.values()) {
-      void peer.transceivers[kind]?.sender.replaceTrack(track).catch(() => undefined);
+      if (kind === "screen") this.attachScreenTrack(peer.transceivers.screen?.sender);
+      else void peer.transceivers[kind]?.sender.replaceTrack(track).catch(() => undefined);
     }
   }
 
@@ -716,7 +741,8 @@ class MeshVoiceProvider implements VoiceProvider {
       } catch {
         /* direction already fixed by the remote description */
       }
-      void transceiver.sender.replaceTrack(this.localTrack(kind)).catch(() => undefined);
+      if (kind === "screen") this.attachScreenTrack(transceiver.sender);
+      else void transceiver.sender.replaceTrack(this.localTrack(kind)).catch(() => undefined);
     }
   }
 
@@ -1066,18 +1092,21 @@ class MeshVoiceProvider implements VoiceProvider {
     this.events.onLocalMedia?.({ camera: null, screen: this.screenStream });
   }
 
-  async startScreenShare() {
+  async startScreenShare(requested?: ScreenShareOptions) {
     if (this.disposed) throw new DOMException("Voice session ended", "AbortError");
     const generation = ++this.screenGeneration;
+    const options = normalizeScreenOptions(requested);
     const stream = await navigator.mediaDevices.getDisplayMedia({
-      video: { frameRate: { ideal: 15, max: 30 } },
-      audio: {
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false,
-        restrictOwnAudio: true,
-      },
-      systemAudio: "include",
+      video: screenConstraints(options),
+      audio: options.audio
+        ? {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            restrictOwnAudio: true,
+          }
+        : false,
+      systemAudio: options.audio ? "include" : "exclude",
       selfBrowserSurface: "exclude",
     } as DisplayMediaStreamOptions);
     if (this.disposed || generation !== this.screenGeneration) {
@@ -1092,10 +1121,19 @@ class MeshVoiceProvider implements VoiceProvider {
       this.stopScreenShare();
       this.events.onScreenShareEnded?.();
     });
+    if (!track || track.readyState !== "live") {
+      stopStream(stream);
+      this.screenStream = null;
+      throw new DOMException("No live capture", "NotReadableError");
+    }
+    this.screenShare.start(track, options, this.screenShareHasAudio);
     this.applyLocalTrack("screen", track);
     const audioTrack = stream.getAudioTracks()[0] ?? null;
     audioTrack?.addEventListener("ended", () => {
-      if (this.screenStream === stream) this.applyLocalTrack("screenAudio", null);
+      if (this.screenStream === stream) {
+        this.applyLocalTrack("screenAudio", null);
+        this.screenShare.setAudioAvailable(false);
+      }
     });
     this.applyLocalTrack("screenAudio", audioTrack);
     this.broadcast({ screenStarted: true, screenHasAudio: !!audioTrack });
@@ -1104,6 +1142,7 @@ class MeshVoiceProvider implements VoiceProvider {
 
   stopScreenShare() {
     this.screenGeneration += 1;
+    this.screenShare.stop();
     if (!this.screenStream) return;
     stopStream(this.screenStream);
     this.screenStream = null;

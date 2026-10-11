@@ -1,3 +1,4 @@
+import type { ScreenShareOptions, ScreenShareController } from "@/services/screen-share";
 import { voiceDiagnostic, voiceStage } from "@/services/voice-diagnostics";
 import {
   shouldApplyVoiceMove,
@@ -62,7 +63,8 @@ interface VoiceContextValue {
   toggleMute: () => void;
   toggleDeafen: () => void;
   toggleCamera: () => Promise<void>;
-  toggleScreenShare: () => Promise<void>;
+  toggleScreenShare: (options?: ScreenShareOptions) => Promise<void>;
+  getScreenShareController: () => ScreenShareController | null;
   refreshDevices: () => Promise<void>;
   /** True while a push-to-talk key is held (always true in open-mic mode). */
   pttActive: boolean;
@@ -1019,7 +1021,9 @@ export function VoiceProviderRoot({
     }
   }, [refreshDevices, cameraDeviceId]);
 
-  const toggleScreenShare = useCallback(async () => {
+  const getScreenShareController = useCallback(() => providerRef.current?.screenShare ?? null, []);
+
+  const toggleScreenShare = useCallback(async (options?: ScreenShareOptions) => {
     const provider = providerRef.current;
     if (!provider) return;
     if (stateRef.current.screenOn) {
@@ -1028,7 +1032,7 @@ export function VoiceProviderRoot({
       return;
     }
     try {
-      await provider.startScreenShare();
+      await provider.startScreenShare(options);
       if (!provider.screenShareHasAudio)
         toast.info(
           "Tela compartilhada sem áudio. Para transmitir som, habilite o áudio da aba ou do sistema na seleção, quando disponível.",
@@ -1261,6 +1265,7 @@ export function VoiceProviderRoot({
       toggleDeafen,
       toggleCamera,
       toggleScreenShare,
+      getScreenShareController,
       refreshDevices,
       selectDevice,
       setUserVolume,
@@ -1295,6 +1300,7 @@ export function VoiceProviderRoot({
       toggleDeafen,
       toggleCamera,
       toggleScreenShare,
+      getScreenShareController,
       refreshDevices,
       selectDevice,
       setUserVolume,

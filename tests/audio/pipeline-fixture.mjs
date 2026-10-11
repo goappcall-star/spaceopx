@@ -180,6 +180,11 @@ export function loadVoiceProvider(audioExports, additions = {}) {
   // Preserve custom transport fixtures while loading the real cancellation helper.
   const fallbackRequire = environment.require;
   environment.require = (id) => {
+    if (id === "./screen-share") {
+      const moduleEnvironment = { exports: {}, DOMException, Date, document: environment.document, setTimeout: environment.setTimeout, clearTimeout: environment.clearTimeout };
+      vm.runInNewContext(ts.transpileModule(fs.readFileSync(new URL("../../src/services/screen-share.ts", import.meta.url), "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, moduleEnvironment);
+      return moduleEnvironment.exports;
+    }
     if (id === "./voice-diagnostics")
       return {
         voiceDiagnostic: () => {},

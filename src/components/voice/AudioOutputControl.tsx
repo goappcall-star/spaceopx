@@ -3,12 +3,22 @@ import { VoiceIcon } from "./VoiceIcon";
 import { DeviceSettingsDialog } from "./DeviceSettingsDialog";
 import { cn } from "@/lib/utils";
 
-/** Headphones and the separate audio settings arrow from the reference. */
-export function AudioOutputControl({
-  deafened,
+/** Shared split control keeps the same settings arrow for input and output. */
+function AudioDeviceControl({
+  kind,
+  off,
+  pressed,
+  label,
+  settingsLabel,
+  active = false,
   onToggle,
 }: {
-  deafened: boolean;
+  kind: "mic" | "headphones";
+  off: boolean;
+  pressed: boolean;
+  label: string;
+  settingsLabel: string;
+  active?: boolean;
   onToggle: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -17,26 +27,26 @@ export function AudioOutputControl({
       <div
         className={cn(
           "flex h-9 items-center justify-center rounded-lg",
-          deafened ? "text-destructive" : "text-muted-foreground",
+          pressed ? "text-destructive" : active ? "text-primary" : "text-muted-foreground",
         )}
       >
         <button
           type="button"
           onClick={onToggle}
-          aria-pressed={deafened}
-          aria-label={deafened ? "Ativar áudio" : "Silenciar áudio"}
-          title={deafened ? "Ativar áudio" : "Silenciar áudio"}
+          aria-pressed={pressed}
+          aria-label={label}
+          title={label}
           className="flex h-9 w-8 items-center justify-center rounded-md hover:bg-surface-hover hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
         >
-          <VoiceIcon kind="headphones" off={deafened} className="h-5 w-5" />
+          <VoiceIcon kind={kind} off={off} className="h-5 w-5" />
         </button>
         <button
           type="button"
           onClick={() => setOpen(true)}
-          aria-label="Configurações de áudio"
+          aria-label={settingsLabel}
           aria-haspopup="dialog"
           aria-expanded={open}
-          title="Configurações de áudio"
+          title={settingsLabel}
           className="flex h-9 w-5 items-center justify-center rounded-md hover:bg-surface-hover hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
         >
           <svg viewBox="0 0 12 12" fill="none" className="h-3 w-3" aria-hidden="true">
@@ -52,5 +62,50 @@ export function AudioOutputControl({
       </div>
       {open && <DeviceSettingsDialog open={open} onOpenChange={setOpen} />}
     </>
+  );
+}
+
+export function AudioOutputControl({
+  deafened,
+  onToggle,
+}: {
+  deafened: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <AudioDeviceControl
+      kind="headphones"
+      off={deafened}
+      pressed={deafened}
+      label={deafened ? "Ativar áudio" : "Silenciar áudio"}
+      settingsLabel="Configurações de áudio"
+      onToggle={onToggle}
+    />
+  );
+}
+
+export function AudioInputControl({
+  muted,
+  off = muted,
+  active = false,
+  label,
+  onToggle,
+}: {
+  muted: boolean;
+  off?: boolean;
+  active?: boolean;
+  label?: string;
+  onToggle: () => void;
+}) {
+  return (
+    <AudioDeviceControl
+      kind="mic"
+      off={off}
+      pressed={muted}
+      active={active}
+      label={label ?? (muted ? "Ativar microfone" : "Silenciar microfone")}
+      settingsLabel="Configurações do microfone"
+      onToggle={onToggle}
+    />
   );
 }

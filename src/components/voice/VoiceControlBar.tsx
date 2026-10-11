@@ -1,6 +1,6 @@
 import { openScreenSharePanel } from "@/services/screen-share-panel";
 import { VoiceIcon } from "./VoiceIcon";
-import { AudioOutputControl } from "./AudioOutputControl";
+import { AudioInputControl, AudioOutputControl } from "./AudioOutputControl";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -79,7 +79,7 @@ export function VoiceControlBar() {
   return (
     <>
       <div className="border-border bg-surface-elevated/80 mx-auto flex max-w-full flex-wrap justify-center items-center gap-1 sm:gap-2 rounded-2xl border px-3 py-2 backdrop-blur">
-        <ControlButton
+        <AudioInputControl
           label={
             pttMode
               ? `Push to talk — segure ${keyLabel(settings.pttKey)}`
@@ -87,16 +87,11 @@ export function VoiceControlBar() {
                 ? "Ativar microfone"
                 : "Desativar microfone"
           }
-          danger={muted}
+          muted={muted}
+          off={muted || (pttMode && !pttActive)}
           active={!muted && pttMode && pttActive}
-          onClick={toggleMute}
-        >
-          {muted || (pttMode && !pttActive) ? (
-            <VoiceIcon kind="mic" off className="h-5 w-5" />
-          ) : (
-            <VoiceIcon kind="mic" className="h-5 w-5" />
-          )}
-        </ControlButton>
+          onToggle={toggleMute}
+        />
 
         {cameraAvailable && (
           <ControlButton

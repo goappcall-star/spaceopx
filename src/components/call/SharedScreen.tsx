@@ -3,14 +3,21 @@ import { Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { VideoTile, type TileData } from "@/components/voice/VideoTile";
-import { VideoSurface } from "@/components/voice/VideoSurface";
+import { setScreenVolume, useScreenVolumes } from "@/hooks/use-screen-volume";
 
 export function SharedScreen({ tile }: { tile: TileData }) {
   const [expanded, setExpanded] = useState(false);
+  const volumes = useScreenVolumes();
+  const playback = tile.isSelf
+    ? {}
+    : {
+        volume: volumes[tile.userId] ?? 100,
+        onVolumeChange: (volume: number) => setScreenVolume(tile.userId, volume),
+      };
   return (
     <>
       <div className="relative min-h-0 min-w-0 flex-1">
-        <VideoTile tile={tile} className="h-full" large />
+        <VideoTile tile={tile} className="h-full" large {...playback} />
         <Button
           size="icon"
           variant="secondary"
@@ -34,7 +41,7 @@ export function SharedScreen({ tile }: { tile: TileData }) {
             Pressione Escape ou use o botão de fechar para voltar à conversa.
           </DialogDescription>
           <div className="min-h-0 flex-1">
-            <VideoSurface stream={tile.stream} objectFit="contain" />
+            <VideoTile tile={tile} className="h-full" large {...playback} />
           </div>
         </DialogContent>
       </Dialog>

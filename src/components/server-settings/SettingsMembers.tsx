@@ -100,7 +100,7 @@ export function SettingsMembers({
                   {name}
                   {isOwner && <span className="text-primary ml-2 text-[11px]">Proprietário</span>}
                 </p>
-                <p className="text-muted-foreground truncate text-xs">
+                <p className="text-muted-foreground truncate text-xs font-friend font-semibold tracking-normal">
                   @{member.profile?.username ?? "—"}
                   {member.roles.length > 0 &&
                     ` · ${member.roles.map((r) => roleLabel(r.name)).join(", ")}`}

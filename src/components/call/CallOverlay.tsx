@@ -14,6 +14,7 @@ import { conversationsService } from "@/services/social";
 import { toast } from "sonner";
 import { SharedScreen } from "./SharedScreen";
 import { receivedAudioVolume } from "@/lib/audio-volume";
+import { useScreenVolumes } from "@/hooks/use-screen-volume";
 
 function useElapsed(active: boolean) {
   const [seconds, setSeconds] = useState(0);
@@ -33,7 +34,7 @@ function useElapsed(active: boolean) {
 }
 
 /** Plays the peer's microphone audio, independently of the local mic state. */
-function CallAudio({ stream }: { stream: MediaStream | null }) {
+function CallAudio({ stream, volume = 100 }: { stream: MediaStream | null; volume?: number }) {
   const ref = useRef<HTMLAudioElement>(null);
   const { settings } = useAudioSettings();
   const [blocked, setBlocked] = useState(false);
@@ -59,14 +60,19 @@ function CallAudio({ stream }: { stream: MediaStream | null }) {
   }, [stream, attemptPlay]);
 
   useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const outputVolume = Number.isFinite(settings.outputVolume) ? settings.outputVolume : 100;
+    el.volume = receivedAudioVolume(volume, outputVolume, false);
+  }, [volume, settings.outputVolume, stream]);
+
+  useEffect(() => {
     const el = ref.current as
       (HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> }) | null;
     if (!el) return;
-    const volume = Number.isFinite(settings.outputVolume) ? settings.outputVolume : 100;
-    el.volume = receivedAudioVolume(100, volume, false);
     if (typeof el.setSinkId === "function")
       void el.setSinkId(settings.outputDeviceId ?? "").catch(() => undefined);
-  }, [settings.outputVolume, settings.outputDeviceId, stream]);
+  }, [settings.outputDeviceId, stream]);
 
   return (
     <>
@@ -84,15 +90,23 @@ function CallAudio({ stream }: { stream: MediaStream | null }) {
 
 export function CallAudioPlayback() {
   const call = useCall();
+  const screenVolumes = useScreenVolumes();
   return (
     <>
       <CallAudio stream={call.remote?.audio ?? null} />
-      <CallAudio stream={call.remote?.screenAudio ?? null} />
+      <CallAudio
+        stream={call.remote?.screenAudio ?? null}
+        volume={call.peer ? (screenVolumes[call.peer.id] ?? 100) : 100}
+      />
       {Object.entries(call.groupMedia).map(([id, media]) => (
         <CallAudio key={id} stream={media.audio} />
       ))}
       {Object.entries(call.groupMedia).map(([id, media]) => (
-        <CallAudio key={`${id}:screen`} stream={media.screenAudio} />
+        <CallAudio
+          key={`${id}:screen`}
+          stream={media.screenAudio}
+          volume={screenVolumes[id] ?? 100}
+        />
       ))}
     </>
   );

@@ -1,15 +1,4 @@
-import {
-  Headphones,
-  HeadphoneOff,
-  Mic,
-  MicOff,
-  Monitor,
-  MonitorOff,
-  PhoneOff,
-  Signal,
-  Video,
-  VideoOff,
-} from "lucide-react";
+import { VoiceIcon } from "./VoiceIcon";
 
 import { Button } from "@/components/ui/button";
 import { NoiseSuppressionToggle } from "@/components/voice/NoiseSuppressionToggle";
@@ -61,11 +50,11 @@ export function VoiceBar({
       <div className="flex items-center gap-2">
         <span
           className={cn(
-            "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl",
             connected ? "bg-success/15 text-success" : "bg-warning/15 text-warning",
           )}
         >
-          <Signal className={cn("h-3.5 w-3.5", !connected && "animate-pulse")} />
+          <VoiceIcon kind="connection" className="h-5 w-5" />
         </span>
         <button
           type="button"
@@ -93,32 +82,42 @@ export function VoiceBar({
               aria-label="Desconectar da voz"
               onClick={() => void leave()}
             >
-              <PhoneOff className="h-4 w-4" />
+              <VoiceIcon kind="disconnect" className="h-5 w-5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="top">Desconectar</TooltipContent>
         </Tooltip>
       </div>
 
-      <div className="mt-2 grid grid-cols-4 gap-1.5">
+      <div className="mt-2.5 grid grid-cols-4 gap-1.5">
         <Button
           size="sm"
+          className="h-9 rounded-lg border border-border/40 shadow-none"
           variant={muted ? "destructive" : "secondary"}
           title={muted ? "Ativar microfone" : "Silenciar microfone"}
           onClick={toggleMute}
           aria-pressed={muted}
         >
-          {muted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+          {muted ? (
+            <VoiceIcon kind="mic" off className="h-5 w-5" />
+          ) : (
+            <VoiceIcon kind="mic" className="h-5 w-5" />
+          )}
           <span className="sr-only">{muted ? "Ativar microfone" : "Silenciar microfone"}</span>
         </Button>
         <Button
           size="sm"
+          className="h-9 rounded-lg border border-border/40 shadow-none"
           variant={deafened ? "destructive" : "secondary"}
           title={deafened ? "Ativar áudio" : "Silenciar áudio"}
           onClick={toggleDeafen}
           aria-pressed={deafened}
         >
-          {deafened ? <HeadphoneOff className="h-4 w-4" /> : <Headphones className="h-4 w-4" />}
+          {deafened ? (
+            <VoiceIcon kind="headphones" off className="h-5 w-5" />
+          ) : (
+            <VoiceIcon kind="headphones" className="h-5 w-5" />
+          )}
           <span className="sr-only">{deafened ? "Ativar áudio" : "Silenciar áudio"}</span>
         </Button>
 
@@ -127,24 +126,34 @@ export function VoiceBar({
             {supportsCamera() && (
               <Button
                 size="sm"
+                className="h-9 rounded-lg border border-border/40 shadow-none"
                 variant={cameraOn ? "default" : "secondary"}
                 title={cameraOn ? "Desligar câmera" : "Ligar câmera"}
                 onClick={() => void toggleCamera()}
                 aria-pressed={cameraOn}
               >
-                {cameraOn ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
+                {cameraOn ? (
+                  <VoiceIcon kind="camera" className="h-5 w-5" />
+                ) : (
+                  <VoiceIcon kind="camera" off className="h-5 w-5" />
+                )}
                 <span className="sr-only">Câmera</span>
               </Button>
             )}
             {supportsScreenShare() && (
               <Button
                 size="sm"
+                className="h-9 rounded-lg border border-border/40 shadow-none"
                 variant={screenOn ? "default" : "secondary"}
                 title={screenOn ? "Parar compartilhamento" : "Compartilhar tela"}
                 onClick={() => void toggleScreenShare()}
                 aria-pressed={screenOn}
               >
-                {screenOn ? <MonitorOff className="h-4 w-4" /> : <Monitor className="h-4 w-4" />}
+                {screenOn ? (
+                  <VoiceIcon kind="screen" off className="h-5 w-5" />
+                ) : (
+                  <VoiceIcon kind="screen" className="h-5 w-5" />
+                )}
                 <span className="sr-only">Compartilhar tela</span>
               </Button>
             )}

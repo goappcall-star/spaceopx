@@ -114,7 +114,7 @@ export const MessageItem = memo(function MessageItem({
             <QuickProfile userId={message.author_id} side="bottom" className="inline-block">
               <span className="cursor-pointer text-sm font-semibold hover:underline">{name}</span>
             </QuickProfile>
-            <span className="text-muted-foreground font-mono text-[11px]">
+            <span className="text-muted-foreground font-friend font-semibold tracking-normal text-[11px]">
               @{message.author?.username ?? "?"}
             </span>
             <span className="text-muted-foreground text-[11px]">{time(message.created_at)}</span>

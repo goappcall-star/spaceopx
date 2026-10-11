@@ -168,7 +168,9 @@ export function QuickProfileCard({
           </button>
 
           <p className="mt-2 text-base leading-tight font-semibold">{profile.display_name}</p>
-          <p className="text-muted-foreground font-mono text-xs">@{profile.username}</p>
+          <p className="text-muted-foreground font-friend font-semibold tracking-normal text-xs">
+            @{profile.username}
+          </p>
 
           <p className="text-muted-foreground mt-2 flex items-center gap-1.5 text-xs">
             <StatusDot status={status} className="h-2.5 w-2.5" />

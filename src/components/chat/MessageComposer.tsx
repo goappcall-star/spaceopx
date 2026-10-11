@@ -170,7 +170,7 @@ export function MessageComposer({
                   onClick={() => applyMention(member.profile?.username ?? "")}
                 >
                   <span className="font-medium">{member.profile?.display_name}</span>
-                  <span className="text-muted-foreground font-mono text-xs">
+                  <span className="text-muted-foreground font-friend font-semibold tracking-normal text-xs">
                     @{member.profile?.username}
                   </span>
                 </button>

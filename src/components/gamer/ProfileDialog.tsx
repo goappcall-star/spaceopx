@@ -128,7 +128,9 @@ function ProfileDialogBody({
           </Avatar>
 
           <DialogTitle className="mt-3 text-xl">{profile.display_name}</DialogTitle>
-          <p className="text-muted-foreground font-mono text-sm">@{profile.username}</p>
+          <p className="text-muted-foreground font-friend font-semibold tracking-normal text-sm">
+            @{profile.username}
+          </p>
 
           <SocialActions userId={profile.id} onStartDirect={onStartDirect} />
           <WatchStreamButton userId={profile.id} sharedServers={sharedServers} onDone={onDone} />

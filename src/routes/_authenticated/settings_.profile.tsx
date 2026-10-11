@@ -267,7 +267,9 @@ function ProfileSettingsPage() {
                   <div className="space-y-2">
                     <Label>Username</Label>
                     <div className="border-border bg-surface-elevated flex h-9 items-center rounded-md border px-3">
-                      <p className="truncate font-mono text-sm">@{profile?.username}</p>
+                      <p className="truncate  text-sm font-friend font-semibold tracking-normal">
+                        @{profile?.username}
+                      </p>
                     </div>
                     <p className="text-muted-foreground text-xs">Seu username é permanente.</p>
                   </div>
@@ -572,7 +574,7 @@ function ProfileSettingsPage() {
                   />
                 </div>
                 <p className="mt-3 text-lg font-semibold">{form.display_name || "Seu nome"}</p>
-                <p className="text-muted-foreground font-mono text-sm">
+                <p className="text-muted-foreground  text-sm font-friend font-semibold tracking-normal">
                   @{profile?.username ?? "username"}
                 </p>
                 {presence?.status === "playing" && presence.game ? (

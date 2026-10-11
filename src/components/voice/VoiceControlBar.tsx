@@ -1,15 +1,4 @@
-import {
-  Headphones,
-  HeadphoneOff,
-  Mic,
-  MicOff,
-  Monitor,
-  MonitorOff,
-  PhoneOff,
-  Settings,
-  Video,
-  VideoOff,
-} from "lucide-react";
+import { VoiceIcon } from "./VoiceIcon";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -101,9 +90,9 @@ export function VoiceControlBar() {
           onClick={toggleMute}
         >
           {muted || (pttMode && !pttActive) ? (
-            <MicOff className="h-5 w-5" />
+            <VoiceIcon kind="mic" off className="h-5 w-5" />
           ) : (
-            <Mic className="h-5 w-5" />
+            <VoiceIcon kind="mic" className="h-5 w-5" />
           )}
         </ControlButton>
 
@@ -119,7 +108,11 @@ export function VoiceControlBar() {
             active={cameraOn}
             onClick={() => void toggleCamera()}
           >
-            {cameraOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+            {cameraOn ? (
+              <VoiceIcon kind="camera" className="h-5 w-5" />
+            ) : (
+              <VoiceIcon kind="camera" off className="h-5 w-5" />
+            )}
           </ControlButton>
         )}
 
@@ -129,7 +122,11 @@ export function VoiceControlBar() {
             active={screenOn}
             onClick={() => void toggleScreenShare()}
           >
-            {screenOn ? <MonitorOff className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
+            {screenOn ? (
+              <VoiceIcon kind="screen" off className="h-5 w-5" />
+            ) : (
+              <VoiceIcon kind="screen" className="h-5 w-5" />
+            )}
           </ControlButton>
         )}
 
@@ -138,18 +135,22 @@ export function VoiceControlBar() {
           danger={deafened}
           onClick={toggleDeafen}
         >
-          {deafened ? <HeadphoneOff className="h-5 w-5" /> : <Headphones className="h-5 w-5" />}
+          {deafened ? (
+            <VoiceIcon kind="headphones" off className="h-5 w-5" />
+          ) : (
+            <VoiceIcon kind="headphones" className="h-5 w-5" />
+          )}
         </ControlButton>
 
         <ControlButton label="Voz e áudio" onClick={() => setDevicesOpen(true)}>
-          <Settings className="h-5 w-5" />
+          <VoiceIcon kind="settings" className="h-5 w-5" />
         </ControlButton>
 
         <span className="bg-border mx-1 h-7 w-px" aria-hidden />
 
         <NoiseSuppressionToggle />
         <ControlButton label="Sair da chamada" danger onClick={() => void leave()}>
-          <PhoneOff className="h-5 w-5" />
+          <VoiceIcon kind="disconnect" className="h-5 w-5" />
         </ControlButton>
       </div>
 

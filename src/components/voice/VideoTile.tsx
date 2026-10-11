@@ -84,22 +84,30 @@ export function VideoTile({ tile, volume, onVolumeChange, className, large }: Pr
         </div>
       </div>
 
-      {!tile.isSelf && onVolumeChange && tile.kind === "camera" && (
+      {!tile.isSelf && onVolumeChange && (
         <div
           onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}
-          className="pointer-events-auto absolute inset-x-2 top-2 flex items-center gap-2 opacity-100 sm:opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+          className={cn(
+            "pointer-events-auto absolute left-2 top-2 flex items-center gap-2 rounded-lg bg-black/75 px-3 py-2 text-white transition-opacity group-hover:opacity-100 group-focus-within:opacity-100",
+            tile.kind === "screen" ? "right-14 opacity-100" : "right-2 opacity-100 sm:opacity-0",
+          )}
         >
           <Volume2 className="h-3.5 w-3.5 shrink-0 text-white/80" />
           <Slider
             value={[volume ?? 100]}
             min={0}
-            max={200}
+            max={tile.kind === "screen" ? 100 : 200}
             step={5}
-            aria-label={`Volume de ${tile.name}`}
+            aria-label={
+              tile.kind === "screen"
+                ? `Volume da transmissão de ${tile.name}`
+                : `Volume de ${tile.name}`
+            }
             onValueChange={([next]) => onVolumeChange(next ?? 100)}
           />
+          <span className="min-w-9 text-right text-[11px] tabular-nums">{volume ?? 100}%</span>
         </div>
       )}
     </div>

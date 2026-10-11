@@ -35,7 +35,7 @@ export function StatusDot({
     <span
       aria-label={playing ? "Jogando" : STATUS_LABEL[status]}
       className={cn(
-        "block h-3 w-3 rounded-full",
+        "relative z-10 block h-3 w-3 shrink-0 rounded-full",
         playing ? "bg-primary" : STATUS_CLASS[status],
         className,
       )}

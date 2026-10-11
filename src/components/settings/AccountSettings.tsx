@@ -35,7 +35,9 @@ export function AccountSettings() {
             <AvatarFallback>{profile?.display_name.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <h2 className="mt-3 text-lg font-bold">{profile?.display_name}</h2>
-          <p className="text-muted-foreground text-sm">@{profile?.username}</p>
+          <p className="text-muted-foreground text-sm font-friend font-semibold tracking-normal">
+            @{profile?.username}
+          </p>
           <dl className="border-border mt-6 space-y-5 border-t pt-5">
             <div>
               <dt className="text-muted-foreground text-xs font-semibold uppercase">E-mail</dt>

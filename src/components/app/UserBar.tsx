@@ -1,8 +1,9 @@
+import { VoiceIcon } from "@/components/voice/VoiceIcon";
 import { ConnectedVoiceBar } from "@/components/voice/ConnectedVoiceBar";
 import { DownloadWindows } from "@/components/brand/DownloadWindows";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronRight, Copy, LogOut, Repeat, Settings, UserRound } from "lucide-react";
+import { ChevronRight, Copy, LogOut, Repeat, UserRound } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -113,7 +114,7 @@ export function UserBar() {
                 <p className="truncate text-sm font-medium">
                   {profile?.display_name ?? "Carregando..."}
                 </p>
-                <p className="text-muted-foreground truncate font-mono text-[11px]">
+                <p className="text-muted-foreground truncate font-friend font-semibold tracking-normal text-[11px]">
                   @{profile?.username ?? "..."}
                 </p>
               </div>
@@ -154,13 +155,13 @@ export function UserBar() {
                       void navigate({ to: "/settings/profile" });
                     }}
                   >
-                    <Settings className="mr-2 h-4 w-4" /> Editar perfil
+                    <VoiceIcon kind="settings" className="mr-2 h-4 w-4" /> Editar perfil
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{profile?.display_name ?? "—"}</p>
-                <p className="text-muted-foreground truncate font-mono text-[11px]">
+                <p className="text-muted-foreground truncate font-friend font-semibold tracking-normal text-[11px]">
                   @{profile?.username ?? "..."}
                 </p>
               </div>
@@ -213,7 +214,7 @@ export function UserBar() {
                 onClick={() => setOpen(false)}
                 className="hover:bg-surface-hover flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors"
               >
-                <Settings className="h-4 w-4" />
+                <VoiceIcon kind="settings" className="h-5 w-5" />
                 Editar perfil
               </Link>
               <button
@@ -254,7 +255,7 @@ export function UserBar() {
               aria-label="Configurações"
             >
               <Link to="/settings">
-                <Settings className="h-4 w-4" />
+                <VoiceIcon kind="settings" className="h-4 w-4" />
               </Link>
             </Button>
           </TooltipTrigger>

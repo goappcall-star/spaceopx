@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useAudioSettings } from "@/hooks/use-audio-settings";
 import { useVoice } from "@/hooks/use-voice";
 import { receivedAudioVolume } from "@/lib/audio-volume";
+import { useScreenVolumes } from "@/hooks/use-screen-volume";
 import { voiceDiagnostic, voiceErrorName } from "@/services/voice-diagnostics";
 
 function AudioSink({
@@ -76,6 +77,7 @@ function AudioSink({
 export function RemoteAudio() {
   const { remoteMedia, volumes, deafened, restrictions, activeServerId } = useVoice();
   const { settings } = useAudioSettings();
+  const screenVolumes = useScreenVolumes();
   const [blocked, setBlocked] = useState(false);
   const [unlockToken, setUnlockToken] = useState(0);
   const blockedSinks = useRef(new Set<string>());
@@ -95,7 +97,12 @@ export function RemoteAudio() {
                 key={`${userId}:${index}`}
                 sinkId={`${userId}:${index}`}
                 stream={stream}
-                volume={((volumes[userId] ?? 100) * settings.outputVolume) / 100}
+                volume={
+                  ((volumes[userId] ?? 100) *
+                    settings.outputVolume *
+                    (index === 1 ? (screenVolumes[userId] ?? 100) / 100 : 1)) /
+                  100
+                }
                 deafened={
                   deafened ||
                   Boolean(

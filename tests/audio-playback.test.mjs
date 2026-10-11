@@ -4,7 +4,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 
-function fixture(componentName) {
+function fixture(componentName, voice = {}, screenVolumes = {}) {
   let cursor = 0,
     pending = [];
   const slots = [],
@@ -67,8 +67,10 @@ function fixture(componentName) {
         deafened: false,
         restrictions: {},
         activeServerId: "server",
+        ...voice,
       }),
     },
+    "@/hooks/use-screen-volume": { useScreenVolumes: () => screenVolumes },
     "@/lib/audio-volume": {
       receivedAudioVolume: (volume, _output, deafened) => (deafened ? 0 : volume / 100),
     },
@@ -104,6 +106,48 @@ function fixture(componentName) {
   }
   return { render, element, sinks, dispose: () => slots.forEach((slot) => slot?.cleanup?.()) };
 }
+test("Transmission volume changes only its audio sink and preserves other microphones and screens", () => {
+  const screenVolumes = { alice: 35 };
+  const voice = {
+    remoteMedia: { alice: { audio: {}, screenAudio: {} }, bob: { audio: {}, screenAudio: {} } },
+  };
+  const f = fixture("RemoteAudio", voice, screenVolumes);
+  const players = () => f.render().props.children[0].props.children.filter(Boolean);
+  assert.deepEqual(
+    Array.from(players(), (p) => p.props.volume),
+    [100, 35, 100, 100],
+  );
+  screenVolumes.alice = 0;
+  assert.deepEqual(
+    Array.from(players(), (p) => p.props.volume),
+    [100, 0, 100, 100],
+  );
+  screenVolumes.alice = 100;
+  voice.deafened = true;
+  assert.ok(players().every((p) => p.props.deafened));
+});
+
+test("Changing playback volume preserves the received stream and does not stop tracks", () => {
+  const f = fixture("AudioSink");
+  const stream = {};
+  const props = {
+    sinkId: "screen",
+    stream,
+    volume: 100,
+    deafened: false,
+    onBlocked() {},
+    unlockToken: 0,
+  };
+  f.render(props);
+  f.render({ ...props, volume: 25 });
+  assert.equal(f.element.volume, 0.25);
+  assert.equal(f.element.srcObject, stream);
+  f.render({ ...props, volume: 0 });
+  assert.equal(f.element.volume, 0);
+  assert.equal(f.element.paused, false);
+  f.render({ ...props, volume: 100 });
+  assert.equal(f.element.volume, 1);
+});
 test("Returning remote audio to the default output actively resets its sink", async () => {
   const f = fixture("AudioSink");
   const props = {

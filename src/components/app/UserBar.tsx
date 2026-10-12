@@ -1,4 +1,7 @@
 import { VoiceIcon } from "@/components/voice/VoiceIcon";
+import { AudioInputControl, AudioOutputControl } from "@/components/voice/AudioOutputControl";
+import { useVoice } from "@/hooks/use-voice";
+import { useAudioSettings, keyLabel } from "@/hooks/use-audio-settings";
 import { ConnectedVoiceBar } from "@/components/voice/ConnectedVoiceBar";
 import { DownloadWindows } from "@/components/brand/DownloadWindows";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -42,6 +45,9 @@ export function UserBar() {
   const { myStatus, setStatus, connection } = useGlobalPresence();
   const [open, setOpen] = useState(false);
   const { openProfile } = useProfileDialog();
+  const { muted, deafened, toggleMute, toggleDeafen, pttActive } = useVoice();
+  const { settings } = useAudioSettings();
+  const pttMode = settings.inputMode === "ptt";
 
   /** Full teardown so nothing leaks between accounts. */
   async function resetSession() {
@@ -90,7 +96,7 @@ export function UserBar() {
       <div className="px-2.5 py-1">
         <DownloadWindows compact />
       </div>
-      <div className="border-border bg-rail flex items-center gap-2 border-t px-2.5 py-2.5">
+      <div className="border-border bg-rail flex items-center gap-1.5 border-t px-2 py-2.5">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <button
@@ -245,22 +251,39 @@ export function UserBar() {
           </PopoverContent>
         </Popover>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              asChild
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              aria-label="Configurações"
-            >
-              <Link to="/settings">
-                <VoiceIcon kind="settings" className="h-4 w-4" />
-              </Link>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">Configurações</TooltipContent>
-        </Tooltip>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <AudioInputControl
+            compact
+            muted={muted}
+            off={muted || (pttMode && !pttActive)}
+            active={!muted && pttMode && pttActive}
+            onToggle={toggleMute}
+            label={
+              pttMode
+                ? `Push to talk — segure ${keyLabel(settings.pttKey)}`
+                : muted
+                  ? "Ativar microfone"
+                  : "Silenciar microfone"
+            }
+          />
+          <AudioOutputControl compact deafened={deafened} onToggle={toggleDeafen} />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                className="h-8 w-7 shrink-0"
+                aria-label="Configurações"
+              >
+                <Link to="/settings">
+                  <VoiceIcon kind="settings" className="h-4 w-4" />
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">Configurações</TooltipContent>
+          </Tooltip>
+        </div>
       </div>
     </>
   );

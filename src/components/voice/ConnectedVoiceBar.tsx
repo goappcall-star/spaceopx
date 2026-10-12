@@ -22,6 +22,7 @@ export function ConnectedVoiceBar({ floating = false }: { floating?: boolean }) 
       }
     >
       <VoiceBar
+        showAudioControls={floating}
         channelName={`${channel?.name ?? "Canal de voz"} / ${server?.name ?? "Servidor"}`}
         onReturn={() => {
           setVoiceReturn({ serverId: activeServerId, channelId: activeChannelId });

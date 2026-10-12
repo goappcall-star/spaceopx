@@ -20,9 +20,11 @@ const STATE_LABEL: Record<string, string> = {
 export function VoiceBar({
   channelName,
   onReturn,
+  showAudioControls = true,
 }: {
   channelName: string;
   onReturn?: () => void;
+  showAudioControls?: boolean;
 }) {
   const {
     connectionState,
@@ -91,9 +93,13 @@ export function VoiceBar({
         </Tooltip>
       </div>
 
-      <div className="mt-2.5 grid grid-cols-4 gap-1.5">
-        <AudioInputControl muted={muted} onToggle={toggleMute} />
-        <AudioOutputControl deafened={deafened} onToggle={toggleDeafen} />
+      <div className={cn("mt-2.5 grid gap-1.5", showAudioControls ? "grid-cols-4" : "grid-cols-2")}>
+        {showAudioControls && (
+          <>
+            <AudioInputControl muted={muted} onToggle={toggleMute} />
+            <AudioOutputControl deafened={deafened} onToggle={toggleDeafen} />
+          </>
+        )}
 
         {(supportsCamera() || supportsScreenShare()) && (
           <div className="contents">

@@ -43,7 +43,7 @@ function AudioDeviceControl({
             compact ? "w-7" : "w-8",
           )}
         >
-          <VoiceIcon kind={kind} off={off} className="h-5 w-5" />
+          <VoiceIcon kind={kind} off={off} className="h-[18px] w-[18px]" />
         </button>
         <button
           type="button"

@@ -14,7 +14,14 @@ export function VoiceIcon({
 }) {
   const cutoutId = `voice-icon-${useId().replaceAll(":", "")}`;
   return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false" {...props}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      shapeRendering="geometricPrecision"
+      aria-hidden="true"
+      focusable="false"
+      {...props}
+    >
       {off && (
         <defs>
           <mask id={cutoutId}>
@@ -25,10 +32,10 @@ export function VoiceIcon({
       )}
       <g mask={off ? `url(#${cutoutId})` : undefined}>
         <g fill="currentColor">
-          {kind === "mic" && <rect x="8" y="2" width="8" height="13" rx="4" />}
+          {kind === "mic" && <rect x="8.5" y="2.5" width="7" height="12" rx="3.5" />}
           {kind === "headphones" && (
             <>
-              <path d="M4.2 12.3c1.8-.5 3.8.6 4.5 2.7l.7 2.1c.4 1.3-.1 2.6-1.3 3.1l-1 .4c-1.4.5-2.5-.1-3.2-1.4l-1.1-2.6c-.8-1.9-.4-3.7 1.4-4.3ZM19.8 12.3c-1.8-.5-3.8.6-4.5 2.7l-.7 2.1c-.4 1.3.1 2.6 1.3 3.1l1 .4c1.4.5 2.5-.1 3.2-1.4l1.1-2.6c.8-1.9.4-3.7-1.4-4.3Z" />
+              <path d="M4.9 12.2c1.7-.5 3.3.5 3.8 2.1l.8 2.5c.5 1.5-.2 2.9-1.6 3.4-1.5.5-2.8-.2-3.3-1.6l-.9-2.5c-.7-1.8-.4-3.4 1.2-3.9Zm14.2 0c-1.7-.5-3.3.5-3.8 2.1l-.8 2.5c-.5 1.5.2 2.9 1.6 3.4 1.5.5 2.8-.2 3.3-1.6l.9-2.5c.7-1.8.4-3.4-1.2-3.9Z" />
             </>
           )}
           {kind === "camera" && (
@@ -58,9 +65,14 @@ export function VoiceIcon({
           )}
         </g>
         <g stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          {kind === "mic" && <path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4M8 22h8" />}
+          {kind === "mic" && (
+            <path d="M5.5 10.5v1a6.5 6.5 0 0 0 13 0v-1M12 18v3M9 21h6" strokeWidth="2" />
+          )}
           {kind === "headphones" && (
-            <path d="M3.7 14.4A8.7 8.7 0 0 1 3 11a9 9 0 0 1 18 0 8.7 8.7 0 0 1-.7 3.4" />
+            <path
+              d="M4 15.2C3.3 13.9 3 12.5 3 11a9 9 0 0 1 18 0c0 1.5-.3 2.9-1 4.2"
+              strokeWidth="2"
+            />
           )}
           {kind === "connection" && (
             <path d="M4 13a7 7 0 0 1 7 7M4 7a13 13 0 0 1 13 13M4 2a18 18 0 0 1 18 18" />

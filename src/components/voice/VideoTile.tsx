@@ -1,4 +1,5 @@
-import { MicOff, MonitorUp, Volume2 } from "lucide-react";
+import { MonitorUp, Volume2 } from "lucide-react";
+import { VoiceStatusIcons } from "./VoiceStatusIcons";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Slider } from "@/components/ui/slider";
@@ -15,6 +16,7 @@ export interface TileData {
   isSelf: boolean;
   speaking: boolean;
   muted: boolean;
+  deafened?: boolean;
   screenSharing: boolean;
   gameLabel?: string | null;
 }
@@ -80,7 +82,7 @@ export function VideoTile({ tile, volume, onVolumeChange, className, large }: Pr
           {tile.screenSharing && tile.kind === "camera" && (
             <MonitorUp className="text-primary h-3.5 w-3.5" />
           )}
-          {tile.muted && <MicOff className="text-destructive h-3.5 w-3.5" />}
+          <VoiceStatusIcons muted={tile.muted} deafened={tile.deafened ?? false} />
         </div>
       </div>
 

@@ -181,7 +181,7 @@ function AppPage() {
       return;
     }
     if (!channels.some((c) => c.id === activeChannelId)) {
-      setActiveChannelId(channels.find((c) => c.type !== "voice")?.id ?? channels[0]?.id ?? null);
+      setActiveChannelId(channels.find((c) => c.type !== "voice")?.id ?? null);
     }
   }, [channels, activeChannelId]);
 

@@ -1,6 +1,7 @@
 import { VisualBanner } from "@/components/ui/static-image";
 import { LiveGameActivity } from "./LiveGameActivity";
 import { WatchStreamButton } from "./WatchStreamButton";
+import { ProfileVoiceVolume } from "./ProfileVoiceVolume";
 import { ProfileFrameDecoration } from "./ProfileCosmetics";
 import { useProfileDialog } from "./ProfileDialog";
 import { useQueryClient } from "@tanstack/react-query";
@@ -247,6 +248,7 @@ export function QuickProfileCard({
             onStartDirect={onStartDirect}
           />
           <WatchStreamButton userId={profile.id} sharedServers={sharedServers} onDone={onDone} />
+          <ProfileVoiceVolume userId={profile.id} />
         </div>
       </div>
     </div>

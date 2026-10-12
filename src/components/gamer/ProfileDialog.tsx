@@ -2,6 +2,7 @@ import { measureOperation } from "@/services/performance/monitor";
 import { VisualBanner } from "@/components/ui/static-image";
 import { LiveGameActivity } from "./LiveGameActivity";
 import { WatchStreamButton } from "./WatchStreamButton";
+import { ProfileVoiceVolume } from "./ProfileVoiceVolume";
 import { ProfileFrameDecoration } from "./ProfileCosmetics";
 import { useGlobalPresence } from "@/hooks/use-global-presence";
 import {
@@ -134,6 +135,7 @@ function ProfileDialogBody({
 
           <SocialActions userId={profile.id} onStartDirect={onStartDirect} />
           <WatchStreamButton userId={profile.id} sharedServers={sharedServers} onDone={onDone} />
+          <ProfileVoiceVolume userId={profile.id} />
 
           <LiveGameActivity userId={profile.id} className="mt-2" />
           <p className="mt-2 text-xs">

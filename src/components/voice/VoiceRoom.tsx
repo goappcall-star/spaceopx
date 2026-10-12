@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { AutoHideVoiceControls } from "./AutoHideVoiceControls";
 import { AlertTriangle, Loader2, MonitorUp, Video } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -52,8 +53,6 @@ export function VoiceRoom({
     activeChannelId,
     connectionState,
     join,
-    volumes,
-    setUserVolume,
     remoteMedia,
     localCamera,
     localScreen,
@@ -98,6 +97,7 @@ export function VoiceRoom({
         isSelf,
         speaking: participant.speaking,
         muted: participant.muted,
+        deafened: participant.deafened,
         screenSharing: !!screenStream || !!participant.screen,
         gameLabel,
       };
@@ -164,7 +164,7 @@ export function VoiceRoom({
   }
 
   return (
-    <div className="bg-hero-glow flex flex-1 flex-col overflow-hidden">
+    <AutoHideVoiceControls controls={<VoiceControlBar />}>
       <header className="border-border flex flex-wrap items-center justify-between gap-3 border-b px-4 py-2.5">
         <div className="min-w-0">
           <h2 className="truncate text-sm font-semibold">🔊 {channel.name}</h2>
@@ -196,7 +196,7 @@ export function VoiceRoom({
         )}
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-24">
         {connectionState === "error" && (
           <div className="border-destructive/40 bg-destructive/10 text-destructive mb-4 flex items-center gap-2 rounded-xl border p-3 text-sm">
             <AlertTriangle className="h-4 w-4" />
@@ -227,12 +227,7 @@ export function VoiceRoom({
                     onInvite={onInvite}
                     onManageRoles={onManageRoles}
                   >
-                    <VideoTile
-                      tile={tile}
-                      className="h-full w-full"
-                      volume={volumes[tile.userId] ?? 100}
-                      onVolumeChange={(value) => setUserVolume(tile.userId, value)}
-                    />
+                    <VideoTile tile={tile} className="h-full w-full" />
                   </VoiceParticipantActions>
                 </li>
               ))}
@@ -258,8 +253,6 @@ export function VoiceRoom({
                   <VideoTile
                     tile={tile}
                     className="h-full w-full"
-                    volume={volumes[tile.userId] ?? 100}
-                    onVolumeChange={(value) => setUserVolume(tile.userId, value)}
                     large={cameraTiles.length === 1}
                   />
                 </VoiceParticipantActions>
@@ -274,10 +267,6 @@ export function VoiceRoom({
           </ul>
         )}
       </div>
-
-      <div className="px-4 pb-4">
-        <VoiceControlBar />
-      </div>
-    </div>
+    </AutoHideVoiceControls>
   );
 }

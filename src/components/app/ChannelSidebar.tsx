@@ -1,4 +1,6 @@
 import { UnreadBadge } from "./UnreadBadge";
+import { VoiceStatusIcons } from "@/components/voice/VoiceStatusIcons";
+import { voiceChannelAction } from "@/lib/voice-channel-navigation";
 import { ChevronDown, Hash, Plus, Settings, UserPlus, Volume2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { memberHasPermission } from "@/services/permissions";
@@ -42,7 +44,7 @@ interface Props {
   server: Server;
   channels: Channel[];
   activeChannelId: string | null;
-  onSelectChannel: (channelId: string) => void;
+  onSelectChannel: (channelId: string | null) => void;
   onStartDirect?: ((id: string) => void) | undefined;
   members: MemberWithProfile[];
   unreadChannelIds: Set<string>;
@@ -394,8 +396,18 @@ export function ChannelSidebar({
                 }
                 onClick={() => {
                   if (drag.suppressClick()) return;
-                  onSelectChannel(channel.id);
-                  if (voiceChannelId !== channel.id) void join(channel.id);
+                  const action = voiceChannelAction(
+                    voiceChannelId,
+                    activeChannelId,
+                    channel.id,
+                    channels,
+                  );
+                  if (action.kind === "open") {
+                    onSelectChannel(action.selection);
+                  } else {
+                    onSelectChannel(action.selection);
+                    void join(channel.id);
+                  }
                 }}
                 className={cn(
                   "group flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all duration-150",
@@ -477,7 +489,10 @@ export function ChannelSidebar({
                         <span className="ml-auto flex shrink-0 items-center gap-1 text-[10px]">
                           {participant.screen && <span title="Compartilhando tela">🖥️</span>}
                           {participant.camera && <span title="Câmera ligada">🎥</span>}
-                          {participant.muted && <span title="Mudo">🔇</span>}
+                          <VoiceStatusIcons
+                            muted={participant.muted}
+                            deafened={participant.deafened}
+                          />
                         </span>
                       </div>
                     </VoiceParticipantActions>

@@ -1,5 +1,6 @@
 import { openScreenSharePanel } from "@/services/screen-share-panel";
-import { Mic, MicOff, MonitorUp, Phone, PhoneOff, Video, VideoOff } from "lucide-react";
+import { VoiceIcon } from "@/components/voice/VoiceIcon";
+import { Mic, MicOff, Phone, PhoneOff, Video } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -392,7 +393,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
                   disabled={!connected}
                   onClick={() => void call.toggleCamera()}
                 >
-                  {cameraOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+                  <VoiceIcon kind="camera" className="h-5 w-5" />
                 </CallButton>
 
                 <CallButton
@@ -401,7 +402,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
                   disabled={!connected}
                   onClick={() => openScreenSharePanel("call")}
                 >
-                  <MonitorUp className="h-5 w-5" />
+                  <VoiceIcon kind="screen" className="h-5 w-5" />
                 </CallButton>
 
                 <NoiseSuppressionToggle />

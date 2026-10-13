@@ -112,11 +112,7 @@ export function VoiceBar({
                 onClick={() => void toggleCamera()}
                 aria-pressed={cameraOn}
               >
-                {cameraOn ? (
-                  <VoiceIcon kind="camera" className="h-5 w-5" />
-                ) : (
-                  <VoiceIcon kind="camera" off className="h-5 w-5" />
-                )}
+                <VoiceIcon kind="camera" className="h-5 w-5" />
                 <span className="sr-only">Câmera</span>
               </Button>
             )}
@@ -129,11 +125,7 @@ export function VoiceBar({
                 onClick={() => openScreenSharePanel("voice")}
                 aria-pressed={screenOn}
               >
-                {screenOn ? (
-                  <VoiceIcon kind="screen" off className="h-5 w-5" />
-                ) : (
-                  <VoiceIcon kind="screen" className="h-5 w-5" />
-                )}
+                <VoiceIcon kind="screen" className="h-5 w-5" />
                 <span className="sr-only">Compartilhar tela</span>
               </Button>
             )}

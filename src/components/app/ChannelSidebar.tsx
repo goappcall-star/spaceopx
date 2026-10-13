@@ -1,3 +1,4 @@
+import { VoiceIcon } from "@/components/voice/VoiceIcon";
 import { UnreadBadge } from "./UnreadBadge";
 import { VoiceStatusIcons } from "@/components/voice/VoiceStatusIcons";
 import { voiceChannelAction } from "@/lib/voice-channel-navigation";
@@ -487,7 +488,11 @@ export function ChannelSidebar({
                           <span className="sr-only">Falando</span>
                         )}
                         <span className="ml-auto flex shrink-0 items-center gap-1 text-[10px]">
-                          {participant.screen && <span title="Compartilhando tela">🖥️</span>}
+                          {participant.screen && (
+                            <span title="Compartilhando tela" className="text-surface-foreground">
+                              <VoiceIcon kind="screen" className="h-3.5 w-3.5" />
+                            </span>
+                          )}
                           {participant.camera && <span title="Câmera ligada">🎥</span>}
                           <VoiceStatusIcons
                             muted={participant.muted}

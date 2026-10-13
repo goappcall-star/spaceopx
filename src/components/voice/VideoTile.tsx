@@ -1,4 +1,5 @@
-import { MonitorUp, Volume2 } from "lucide-react";
+import { VoiceIcon } from "./VoiceIcon";
+import { Volume2 } from "lucide-react";
 import { VoiceStatusIcons } from "./VoiceStatusIcons";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -80,7 +81,7 @@ export function VideoTile({ tile, volume, onVolumeChange, className, large }: Pr
         </div>
         <div className="flex items-center gap-1.5">
           {tile.screenSharing && tile.kind === "camera" && (
-            <MonitorUp className="text-primary h-3.5 w-3.5" />
+            <VoiceIcon kind="screen" className="h-3.5 w-3.5 text-white" />
           )}
           <VoiceStatusIcons muted={tile.muted} deafened={tile.deafened ?? false} />
         </div>

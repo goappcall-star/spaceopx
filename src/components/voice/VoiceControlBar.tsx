@@ -107,11 +107,7 @@ export function VoiceControlBar() {
             active={cameraOn}
             onClick={() => void toggleCamera()}
           >
-            {cameraOn ? (
-              <VoiceIcon kind="camera" className="h-5 w-5" />
-            ) : (
-              <VoiceIcon kind="camera" off className="h-5 w-5" />
-            )}
+            <VoiceIcon kind="camera" className="h-5 w-5" />
           </ControlButton>
         )}
 
@@ -121,11 +117,7 @@ export function VoiceControlBar() {
             active={screenOn}
             onClick={() => openScreenSharePanel("voice")}
           >
-            {screenOn ? (
-              <VoiceIcon kind="screen" off className="h-5 w-5" />
-            ) : (
-              <VoiceIcon kind="screen" className="h-5 w-5" />
-            )}
+            <VoiceIcon kind="screen" className="h-5 w-5" />
           </ControlButton>
         )}
 

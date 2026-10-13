@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { AutoHideVoiceControls } from "./AutoHideVoiceControls";
-import { AlertTriangle, Loader2, MonitorUp, Video } from "lucide-react";
+import { VoiceIcon } from "./VoiceIcon";
+import { AlertTriangle, Loader2, Video } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { VideoTile, type TileData } from "@/components/voice/VideoTile";
@@ -188,7 +189,7 @@ export function VoiceRoom({
         </div>
         {sharing && (
           <p className="text-primary flex items-center gap-1.5 text-xs">
-            <MonitorUp className="h-3.5 w-3.5" />
+            <VoiceIcon kind="screen" className="h-3.5 w-3.5 text-foreground" />
             {sharing.isSelf
               ? "Você está compartilhando a tela"
               : `${sharing.name} está compartilhando a tela`}

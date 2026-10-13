@@ -1,3 +1,4 @@
+import { FormattedMessage } from "@/components/chat/FormattedMessage";
 import { Check, CornerUpLeft, Pencil, SmilePlus, Trash2, X } from "lucide-react";
 import { memo, useState } from "react";
 
@@ -31,18 +32,6 @@ interface Props {
   onEdit: (id: string, content: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onReact: (id: string, emoji: string) => void;
-}
-
-function renderContent(content: string) {
-  return content.split(/(@[a-z0-9_.-]+)/gi).map((part, index) =>
-    part.startsWith("@") ? (
-      <span key={index} className="bg-primary/15 text-primary rounded px-1 font-medium">
-        {part}
-      </span>
-    ) : (
-      <span key={index}>{part}</span>
-    ),
-  );
 }
 
 function time(iso: string) {
@@ -147,7 +136,7 @@ export const MessageItem = memo(function MessageItem({
           </div>
         ) : (
           <p className="text-foreground/90 text-sm break-words whitespace-pre-wrap">
-            {renderContent(message.content)}
+            <FormattedMessage content={message.content} highlightMentions />
             {message.edited_at && (
               <span className="text-muted-foreground ml-1.5 text-[10px]">(editada)</span>
             )}

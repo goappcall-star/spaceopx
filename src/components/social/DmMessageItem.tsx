@@ -1,3 +1,4 @@
+import { FormattedMessage } from "@/components/chat/FormattedMessage";
 import { Check, CornerUpLeft, Pencil, SmilePlus, Trash2, X } from "lucide-react";
 import { memo, useState } from "react";
 
@@ -142,7 +143,7 @@ export const DmMessageItem = memo(function DmMessageItem({
           </div>
         ) : (
           <p className="text-foreground/90 text-sm break-words whitespace-pre-wrap">
-            {message.content}
+            <FormattedMessage content={message.content} />
             {message.edited_at && (
               <span className="text-muted-foreground ml-1.5 text-[10px]">(editada)</span>
             )}

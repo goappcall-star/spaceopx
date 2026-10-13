@@ -12,6 +12,7 @@ function AudioDeviceControl({
   settingsLabel,
   active = false,
   compact = false,
+  boxed = false,
   onToggle,
 }: {
   kind: "mic" | "headphones";
@@ -21,6 +22,7 @@ function AudioDeviceControl({
   settingsLabel: string;
   active?: boolean;
   compact?: boolean;
+  boxed?: boolean;
   onToggle: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -28,7 +30,8 @@ function AudioDeviceControl({
     <>
       <div
         className={cn(
-          "flex h-9 items-center justify-center rounded-lg",
+          "flex items-center justify-center",
+          boxed ? "h-11 gap-0.5" : "h-9 rounded-lg",
           pressed ? "text-destructive" : active ? "text-primary" : "text-muted-foreground",
         )}
       >
@@ -39,8 +42,20 @@ function AudioDeviceControl({
           aria-label={label}
           title={label}
           className={cn(
-            "flex h-9 items-center justify-center rounded-md hover:bg-surface-hover hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary",
-            compact ? "w-7" : "w-8",
+            "flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary",
+            boxed
+              ? cn(
+                  "h-11 w-11 rounded-xl border transition-colors",
+                  pressed
+                    ? "border-destructive/40 bg-destructive/15 text-destructive hover:bg-destructive/25"
+                    : active
+                      ? "border-primary/50 bg-primary/15 text-primary glow-soft hover:bg-primary/25"
+                      : "border-border bg-surface-elevated text-surface-foreground hover:bg-surface-hover hover:text-foreground",
+                )
+              : cn(
+                  "h-9 rounded-md hover:bg-surface-hover hover:text-foreground",
+                  compact ? "w-7" : "w-8",
+                ),
           )}
         >
           <VoiceIcon kind={kind} off={off} className="h-[18px] w-[18px]" />
@@ -53,7 +68,8 @@ function AudioDeviceControl({
           aria-expanded={open}
           title={settingsLabel}
           className={cn(
-            "flex h-9 items-center justify-center rounded-md hover:bg-surface-hover hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary",
+            "flex items-center justify-center rounded-md hover:bg-surface-hover hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary",
+            boxed ? "h-11" : "h-9",
             compact ? "w-3.5" : "w-5",
           )}
         >
@@ -77,15 +93,18 @@ export function AudioOutputControl({
   deafened,
   onToggle,
   compact = false,
+  boxed = false,
 }: {
   deafened: boolean;
   onToggle: () => void;
   compact?: boolean;
+  boxed?: boolean;
 }) {
   return (
     <AudioDeviceControl
       kind="headphones"
       compact={compact}
+      boxed={boxed}
       off={deafened}
       pressed={deafened}
       label={deafened ? "Ativar áudio" : "Silenciar áudio"}
@@ -102,6 +121,7 @@ export function AudioInputControl({
   label,
   onToggle,
   compact = false,
+  boxed = false,
 }: {
   muted: boolean;
   off?: boolean;
@@ -109,11 +129,13 @@ export function AudioInputControl({
   label?: string;
   onToggle: () => void;
   compact?: boolean;
+  boxed?: boolean;
 }) {
   return (
     <AudioDeviceControl
       kind="mic"
       compact={compact}
+      boxed={boxed}
       off={off}
       pressed={muted}
       active={active}

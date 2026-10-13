@@ -80,6 +80,7 @@ export function VoiceControlBar() {
     <>
       <div className="border-border bg-surface-elevated/80 mx-auto flex max-w-full flex-wrap justify-center items-center gap-1 sm:gap-2 rounded-2xl border px-3 py-2 backdrop-blur">
         <AudioInputControl
+          boxed
           label={
             pttMode
               ? `Push to talk — segure ${keyLabel(settings.pttKey)}`
@@ -92,6 +93,7 @@ export function VoiceControlBar() {
           active={!muted && pttMode && pttActive}
           onToggle={toggleMute}
         />
+        <AudioOutputControl boxed deafened={deafened} onToggle={toggleDeafen} />
 
         {cameraAvailable && (
           <ControlButton
@@ -126,8 +128,6 @@ export function VoiceControlBar() {
             )}
           </ControlButton>
         )}
-
-        <AudioOutputControl deafened={deafened} onToggle={toggleDeafen} />
 
         <ControlButton label="Voz e áudio" onClick={() => setDevicesOpen(true)}>
           <VoiceIcon kind="settings" className="h-5 w-5" />

@@ -8,6 +8,7 @@ import { useVoice } from "@/hooks/use-voice";
 import { blocksService, conversationsService, friendsService } from "@/services/social";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import {
@@ -257,6 +258,22 @@ export function VoiceParticipantActions({
             {!self && (
               <>
                 <DropdownMenuSeparator />
+                <DropdownMenuLabel>Volume do usuário · {volume}%</DropdownMenuLabel>
+                <div
+                  className="px-2 py-3"
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onClick={(event) => event.stopPropagation()}
+                  onKeyDown={(event) => event.stopPropagation()}
+                >
+                  <Slider
+                    aria-label={`Volume de ${name}`}
+                    value={[volume]}
+                    min={0}
+                    max={200}
+                    step={5}
+                    onValueChange={([value]) => voice.setUserVolume(userId, value ?? 100)}
+                  />
+                </div>
                 <DropdownMenuCheckboxItem
                   checked={volume === 0}
                   onSelect={(event) => event.preventDefault()}

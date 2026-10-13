@@ -27,6 +27,8 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { ContextMenuLabel } from "@/components/ui/context-menu";
 import { SettingsMembers } from "@/components/server-settings/SettingsMembers";
 import { ConfirmActionDialog } from "./ConfirmActionDialog";
 import type { MemberWithProfile, Server } from "@/types";
@@ -271,9 +273,29 @@ export function MemberActions({
             <span className="ml-auto text-[10px] text-muted-foreground">Só para você</span>
           </ContextMenuItem>
           {!self && (
-            <ContextMenuItem onSelect={() => edit("alias")}>
-              Adicionar apelido de amigo
-            </ContextMenuItem>
+            <>
+              <ContextMenuLabel>
+                Volume do usuário · {voice.volumes[member.user_id] ?? 100}%
+              </ContextMenuLabel>
+              <div
+                className="px-2 py-3"
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
+              >
+                <Slider
+                  aria-label={`Volume de ${name}`}
+                  min={0}
+                  max={200}
+                  step={5}
+                  value={[voice.volumes[member.user_id] ?? 100]}
+                  onValueChange={([value]) => voice.setUserVolume(member.user_id, value ?? 100)}
+                />
+              </div>
+              <ContextMenuItem onSelect={() => edit("alias")}>
+                Adicionar apelido de amigo
+              </ContextMenuItem>
+            </>
           )}
           <ContextMenuSeparator />
           {(self || (canManageMembers && !owner)) && (

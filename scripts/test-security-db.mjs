@@ -63,6 +63,7 @@ for (const file of readdirSync("supabase/migrations")
 }
 run("psql", ["-d", database, "-v", "ON_ERROR_STOP=1", "-f", "tests/security-write-guards.sql"]);
 run("psql", ["-d", database, "-v", "ON_ERROR_STOP=1", "-f", "tests/unread-counts.sql"]);
+run("psql", ["-d", database, "-v", "ON_ERROR_STOP=1", "-f", "tests/everyone-mentions.sql"]);
 run("psql", [
   "-d",
   database,

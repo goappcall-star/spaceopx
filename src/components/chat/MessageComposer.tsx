@@ -1,7 +1,13 @@
 import { Paperclip, SendHorizonal, Smile, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { mentionedUsernames } from "@/lib/chat-mentions";
+import {
+  completeMention,
+  mentionOptions,
+  mentionQueryAt,
+  mentionedUsernames,
+  type MentionQuery,
+} from "@/lib/chat-mentions";
 
 import { QUICK_EMOJIS } from "@/components/chat/MessageItem";
 import { Button } from "@/components/ui/button";
@@ -42,31 +48,42 @@ export function MessageComposer({
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const [mentionQuery, setMentionQuery] = useState<MentionQuery | null>(null);
+  const [activeMention, setActiveMention] = useState(0);
+  const listId = useId();
+  const pendingCaret = useRef<number | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const suggestions =
-    mentionQuery === null
-      ? []
-      : members
-          .filter((m) => (m.profile?.username ?? "").includes(mentionQuery.toLowerCase()))
-          .slice(0, 6);
+  const suggestions = useMemo(
+    () => (mentionQuery === null ? [] : mentionOptions(members, mentionQuery.query)),
+    [members, mentionQuery],
+  );
+  const selectedMention = Math.min(activeMention, Math.max(0, suggestions.length - 1));
 
-  function handleChange(next: string) {
+  useLayoutEffect(() => {
+    if (pendingCaret.current === null) return;
+    inputRef.current?.focus();
+    inputRef.current?.setSelectionRange(pendingCaret.current, pendingCaret.current);
+    pendingCaret.current = null;
+  }, [value]);
+
+  function updateMention(next: string, caret: number) {
+    setMentionQuery(mentionQueryAt(next, caret));
+    setActiveMention(0);
+  }
+
+  function handleChange(next: string, caret: number) {
     setValue(next);
     onTyping();
-    const match = /(?:^|\s)@([a-z0-9_.-]*)$/i.exec(next);
-    setMentionQuery(match ? (match[1] ?? "") : null);
+    updateMention(next, caret);
   }
 
   function applyMention(username: string) {
-    setValue((prev) =>
-      prev.replace(
-        /(?:^|\s)@([a-z0-9_.-]*)$/i,
-        (m) => `${m.startsWith(" ") ? " " : ""}@${username} `,
-      ),
-    );
+    if (!mentionQuery) return;
+    const next = completeMention(value, mentionQuery, username);
+    pendingCaret.current = next.caret;
+    setValue(next.content);
     setMentionQuery(null);
     inputRef.current?.focus();
   }
@@ -99,7 +116,12 @@ export function MessageComposer({
     try {
       const usernames = mentionedUsernames(value);
       const mentioned = members
-        .filter((m) => m.profile && usernames.has(m.profile.username.toLowerCase()))
+        .filter(
+          (m) =>
+            m.profile &&
+            m.profile.username.toLowerCase() !== "todos" &&
+            usernames.has(m.profile.username.toLowerCase()),
+        )
         .map((m) => m.user_id);
       await onSend({
         content: value,
@@ -161,17 +183,27 @@ export function MessageComposer({
 
       <div className="relative">
         {suggestions.length > 0 && (
-          <ul className="border-border bg-surface-elevated absolute bottom-full left-0 mb-2 w-64 overflow-hidden rounded-xl border shadow-[var(--shadow-overlay)]">
-            {suggestions.map((member) => (
-              <li key={member.id}>
+          <ul
+            id={listId}
+            role="listbox"
+            aria-label="Sugestões de menção"
+            className="border-border bg-surface-elevated absolute bottom-full left-0 mb-2 w-64 overflow-hidden rounded-xl border shadow-[var(--shadow-overlay)]"
+          >
+            {suggestions.map((option, index) => (
+              <li key={option.id} role="presentation">
                 <button
                   type="button"
-                  className="hover:bg-accent flex w-full items-center gap-2 px-3 py-2 text-left text-sm"
-                  onClick={() => applyMention(member.profile?.username ?? "")}
+                  role="option"
+                  id={`${listId}-${index}`}
+                  aria-selected={index === selectedMention}
+                  tabIndex={-1}
+                  className={`hover:bg-accent flex w-full items-center gap-2 px-3 py-2 text-left text-sm ${index === selectedMention ? "bg-accent" : ""}`}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => applyMention(option.username)}
                 >
-                  <span className="font-medium">{member.profile?.display_name}</span>
+                  <span className="font-medium">{option.label}</span>
                   <span className="text-muted-foreground font-friend font-semibold tracking-normal text-xs">
-                    @{member.profile?.username}
+                    @{option.username}
                   </span>
                 </button>
               </li>
@@ -206,8 +238,34 @@ export function MessageComposer({
             placeholder={
               disabled ? "Sem permissão para enviar mensagens" : `Conversar em #${channelName}`
             }
-            onChange={(event) => handleChange(event.target.value)}
+            onChange={(event) => handleChange(event.target.value, event.target.selectionStart)}
+            onClick={(event) => updateMention(value, event.currentTarget.selectionStart)}
+            onKeyUp={(event) => {
+              if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
+                updateMention(value, event.currentTarget.selectionStart);
+            }}
+            aria-label={`Mensagem em ${channelName}`}
+            aria-controls={suggestions.length ? listId : undefined}
+            aria-expanded={suggestions.length > 0}
+            aria-autocomplete="list"
+            aria-activedescendant={suggestions.length ? `${listId}-${selectedMention}` : undefined}
             onKeyDown={(event) => {
+              if (event.nativeEvent.isComposing) return;
+              if (
+                suggestions.length &&
+                ["ArrowDown", "ArrowUp", "Enter", "Tab", "Escape"].includes(event.key) &&
+                !event.shiftKey
+              ) {
+                event.preventDefault();
+                if (event.key === "Escape") setMentionQuery(null);
+                else if (event.key === "ArrowDown" || event.key === "ArrowUp")
+                  setActiveMention(
+                    (selectedMention + (event.key === "ArrowDown" ? 1 : -1) + suggestions.length) %
+                      suggestions.length,
+                  );
+                else applyMention(suggestions[selectedMention]!.username);
+                return;
+              }
               if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault();
                 void submit();

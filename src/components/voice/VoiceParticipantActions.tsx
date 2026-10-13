@@ -113,7 +113,7 @@ export function VoiceParticipantActions({
       <Popover open={profileOpen} onOpenChange={setProfileOpen}>
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <PopoverAnchor asChild>
-            <div className="relative h-full">
+            <div className="relative h-full w-full min-w-0">
               <DropdownMenuTrigger asChild>
                 <span aria-hidden="true" className="pointer-events-none absolute inset-0" />
               </DropdownMenuTrigger>

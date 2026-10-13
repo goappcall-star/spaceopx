@@ -1,4 +1,5 @@
-const { app, BrowserWindow, protocol, net, session, dialog, shell, ipcMain } = require("electron");
+const { app, BrowserWindow, protocol, net, session, dialog, shell, ipcMain, clipboard } = require("electron");
+const { installClipboard } = require("./clipboard.cjs");
 const { installUpdater } = require("./updater.cjs");
 const path = require("node:path");
 const { chooseScreen } = require("./screen-picker.cjs");
@@ -205,7 +206,9 @@ else {
       pendingAuth = null;
       await window.loadURL(initialURL);
       ready = true;
+      const stopClipboard = installClipboard({ window, ipcMain, clipboard, trusted });
       const stopUpdater = installUpdater({ app, window, ipcMain, trusted });
+      window.once("closed", stopClipboard);
       window.once("closed", stopUpdater);
       if (pendingAuth) receiveAuth([pendingAuth]);
     })

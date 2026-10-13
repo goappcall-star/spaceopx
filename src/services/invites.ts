@@ -1,3 +1,4 @@
+import { inviteLink } from "@/lib/invite-link";
 import { supabase } from "@/integrations/supabase/client";
 import type { InvitePreview, ServerInvite } from "@/types";
 
@@ -62,6 +63,5 @@ export const invitesService = {
 };
 
 export function inviteUrl(code: string) {
-  if (typeof window === "undefined") return `/invite/${code}`;
-  return `${window.location.origin}/invite/${code}`;
+  return inviteLink(code, typeof window === "undefined" ? undefined : window.location.origin);
 }

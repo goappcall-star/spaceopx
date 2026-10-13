@@ -1,3 +1,4 @@
+import { copyText } from "@/lib/clipboard";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Copy, Share2, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -31,11 +32,12 @@ const USE_OPTIONS = [
   { value: "25", label: "25 usos" },
 ];
 
-async function copy(text: string) {
+async function copy(text: string, success = "Link copiado.") {
   try {
-    await navigator.clipboard.writeText(text);
+    await copyText(text);
+    toast.success(success);
   } catch {
-    /* clipboard unavailable */
+    toast.error("Não foi possível copiar o link. Tente novamente.");
   }
 }
 
@@ -59,8 +61,7 @@ export function SettingsInvites({ server, canCreate }: { server: Server; canCrea
     onSuccess: async (code) => {
       await queryClient.invalidateQueries({ queryKey: ["invites", server.id] });
       void queryClient.invalidateQueries({ queryKey: ["audit-logs", server.id] });
-      await copy(inviteUrl(code));
-      toast.success("Convite criado e copiado.");
+      await copy(inviteUrl(code), "Convite criado e copiado.");
     },
     onError: (error) => toast.error(inviteErrorMessage(error)),
   });
@@ -86,8 +87,7 @@ export function SettingsInvites({ server, canCreate }: { server: Server; canCrea
         /* cancelled */
       }
     }
-    await copy(url);
-    toast.success("Link copiado para compartilhar.");
+    await copy(url, "Link copiado para compartilhar.");
   }
 
   return (
@@ -151,7 +151,6 @@ export function SettingsInvites({ server, canCreate }: { server: Server; canCrea
               aria-label="Copiar link"
               onClick={() => {
                 void copy(inviteUrl(invite.code));
-                toast.success("Link copiado.");
               }}
             >
               <Copy className="h-4 w-4" />

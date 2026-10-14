@@ -27,6 +27,8 @@ import type { MemberWithProfile } from "@/types";
 import { useMyServers, useServerChannels, useServerMembers } from "@/hooks/use-servers";
 import { useVoiceMemberDrag } from "@/hooks/use-voice-member-drag";
 import { memberHasPermission } from "@/services/permissions";
+import { serverAdminService } from "@/services/server-admin";
+import { ConfirmActionDialog } from "@/components/app/ConfirmActionDialog";
 import {
   requestVoiceDisconnect,
   setVoiceRestriction,
@@ -53,6 +55,7 @@ export function VoiceParticipantActions({
   const [menuOpen, setMenuOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState("");
+  const [confirmation, setConfirmation] = useState<"kick" | "ban" | null>(null);
   const { user } = useAuth();
   const self = user?.id === userId;
   const call = useOptionalCall();
@@ -62,6 +65,8 @@ export function VoiceParticipantActions({
   const { data: servers = [] } = useMyServers();
   const me = serverMembers.find((m) => m.user_id === user?.id);
   const server = servers.find((s) => s.id === member?.server_id);
+  const canKick = !!server && memberHasPermission(me, server.owner_id, "kick_members");
+  const canBan = !!server && memberHasPermission(me, server.owner_id, "ban_members");
   const location = voiceMemberLocation(
     voice.participantsByChannel,
     userId,
@@ -91,8 +96,10 @@ export function VoiceParticipantActions({
       await action();
       await query.invalidateQueries({ queryKey: ["social"] });
       if (success) toast.success(success);
+      return true;
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível concluir a ação.");
+      return false;
     }
   }
   function mute(value: boolean) {
@@ -145,69 +152,12 @@ export function VoiceParticipantActions({
               </div>
             </div>
           </PopoverAnchor>
-          <DropdownMenuContent side="right" align="start" className="w-60">
-            {canMove && source && session && member?.server_id && userId !== server?.owner_id && (
-              <>
-                <DropdownMenuCheckboxItem
-                  checked={restriction?.muted ?? false}
-                  onCheckedChange={(enabled) =>
-                    void run(
-                      () => setVoiceRestriction(member.server_id, userId, "muted", enabled),
-                      "Microfone atualizado no servidor.",
-                    )
-                  }
-                >
-                  Silenciar microfone para todos
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={restriction?.deafened ?? false}
-                  onCheckedChange={(enabled) =>
-                    void run(
-                      () => setVoiceRestriction(member.server_id, userId, "deafened", enabled),
-                      "Áudio atualizado no servidor.",
-                    )
-                  }
-                >
-                  Silenciar áudio do membro
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuItem
-                  className="text-destructive"
-                  onSelect={() =>
-                    void run(
-                      () => requestVoiceDisconnect(userId, source[0], session),
-                      "Desconexão solicitada.",
-                    )
-                  }
-                >
-                  Desconectar da chamada
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </>
-            )}
-            {canMove && (!source || !session) && (
-              <DropdownMenuItem disabled>Mover para</DropdownMenuItem>
-            )}
-            {canMove && source && session && (
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>Mover para</DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  {channels
-                    .filter((c) => c.type === "voice" && c.id !== source[0])
-                    .map((c) => (
-                      <DropdownMenuItem
-                        key={c.id}
-                        onSelect={() =>
-                          void run(() => requestVoiceMove(userId, source[0], c.id, session), "")
-                        }
-                      >
-                        {c.name}
-                      </DropdownMenuItem>
-                    ))}
-                  {channels.filter((c) => c.type === "voice" && c.id !== source[0]).length ===
-                    0 && <DropdownMenuLabel>Nenhum outro canal de voz</DropdownMenuLabel>}
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            )}
+          <DropdownMenuContent
+            side="right"
+            align="start"
+            className="w-72 max-h-[calc(100dvh-2rem)] overflow-y-auto"
+          >
+            <DropdownMenuItem onSelect={() => setProfileOpen(true)}>Perfil</DropdownMenuItem>
             <DropdownMenuItem
               onSelect={() =>
                 void run(
@@ -275,6 +225,7 @@ export function VoiceParticipantActions({
                   />
                 </div>
                 <DropdownMenuCheckboxItem
+                  indicatorSide="right"
                   checked={volume === 0}
                   onSelect={(event) => event.preventDefault()}
                   onCheckedChange={mute}
@@ -282,6 +233,7 @@ export function VoiceParticipantActions({
                   Silenciar
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem
+                  indicatorSide="right"
                   checked={videoHidden}
                   onSelect={(event) => event.preventDefault()}
                   onCheckedChange={(value) => voice.setVideoHidden(userId, value)}
@@ -306,6 +258,7 @@ export function VoiceParticipantActions({
                   Adicionar amigo
                 </DropdownMenuItem>
                 <DropdownMenuCheckboxItem
+                  indicatorSide="right"
                   checked={volume === 0 && videoHidden}
                   onSelect={(event) => event.preventDefault()}
                   onCheckedChange={(value) => {
@@ -316,7 +269,7 @@ export function VoiceParticipantActions({
                   Ignorar nesta chamada
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuItem
-                  className="text-destructive"
+                  className="text-destructive focus:text-destructive focus:bg-destructive/10"
                   onSelect={() => void run(() => blocksService.block(userId), "Usuário bloqueado.")}
                 >
                   Bloquear
@@ -343,6 +296,92 @@ export function VoiceParticipantActions({
                 )}
               </DropdownMenuSubContent>
             </DropdownMenuSub>
+            {canMove && (!source || !session) && (
+              <DropdownMenuItem disabled>Mover para</DropdownMenuItem>
+            )}
+            {canMove && source && session && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>Mover para</DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  {channels
+                    .filter((c) => c.type === "voice" && c.id !== source[0])
+                    .map((c) => (
+                      <DropdownMenuItem
+                        key={c.id}
+                        onSelect={() =>
+                          void run(() => requestVoiceMove(userId, source[0], c.id, session), "")
+                        }
+                      >
+                        {c.name}
+                      </DropdownMenuItem>
+                    ))}
+                  {channels.filter((c) => c.type === "voice" && c.id !== source[0]).length ===
+                    0 && <DropdownMenuLabel>Nenhum outro canal de voz</DropdownMenuLabel>}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            )}
+            {((canMove && source && session) ||
+              (!self && member && userId !== server?.owner_id && (canKick || canBan))) && (
+              <DropdownMenuSeparator />
+            )}
+            {canMove && source && session && member?.server_id && userId !== server?.owner_id && (
+              <>
+                <DropdownMenuCheckboxItem
+                  indicatorSide="right"
+                  className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                  checked={restriction?.muted ?? false}
+                  onCheckedChange={(enabled) =>
+                    void run(
+                      () => setVoiceRestriction(member.server_id, userId, "muted", enabled),
+                      "Microfone atualizado no servidor.",
+                    )
+                  }
+                >
+                  Silenciar microfone para todos
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  indicatorSide="right"
+                  className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                  checked={restriction?.deafened ?? false}
+                  onCheckedChange={(enabled) =>
+                    void run(
+                      () => setVoiceRestriction(member.server_id, userId, "deafened", enabled),
+                      "Áudio atualizado no servidor.",
+                    )
+                  }
+                >
+                  Silenciar áudio do membro
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                  onSelect={() =>
+                    void run(
+                      () => requestVoiceDisconnect(userId, source[0], session),
+                      "Desconexão solicitada.",
+                    )
+                  }
+                >
+                  Desconectar da chamada
+                </DropdownMenuItem>
+              </>
+            )}
+            {!self && member && userId !== server?.owner_id && canKick && (
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                onSelect={() => setConfirmation("kick")}
+              >
+                Expulsar {name}
+              </DropdownMenuItem>
+            )}
+            {!self && member && userId !== server?.owner_id && canBan && (
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                onSelect={() => setConfirmation("ban")}
+              >
+                Banir {name}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onSelect={() => void run(() => navigator.clipboard.writeText(userId), "ID copiado.")}
             >
@@ -359,6 +398,26 @@ export function VoiceParticipantActions({
           />
         </PopoverContent>
       </Popover>
+      {confirmation && member && user && (
+        <ConfirmActionDialog
+          title={`${confirmation === "ban" ? "Banir" : "Expulsar"} ${name}?`}
+          description={
+            confirmation === "ban"
+              ? "O membro será removido e não poderá retornar até o banimento ser revogado."
+              : "O membro será removido deste servidor."
+          }
+          label={confirmation === "ban" ? "Banir membro" : "Expulsar membro"}
+          onClose={() => setConfirmation(null)}
+          onConfirm={() =>
+            run(async () => {
+              if (confirmation === "ban")
+                await serverAdminService.banMember(member.server_id, userId, null, user.id);
+              else await serverAdminService.kickMember(member.id);
+              await query.invalidateQueries({ queryKey: ["members", member.server_id] });
+            }, "Moderação aplicada.")
+          }
+        />
+      )}
       <Dialog open={noteOpen} onOpenChange={setNoteOpen}>
         <DialogContent>
           <DialogTitle>Nota sobre {name}</DialogTitle>

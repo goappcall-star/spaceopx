@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { QuickProfile } from "@/components/gamer/QuickProfile";
@@ -70,6 +70,7 @@ export function MemberActions({
     call = useOptionalCall(),
     voice = useVoice(),
     query = useQueryClient();
+  const previousVolume = useRef(100);
   const { openProfile } = useProfileDialog();
   const { data: channels = [] } = useServerChannels(server.id);
   const { data: members = [] } = useServerMembers(server.id);
@@ -158,70 +159,7 @@ export function MemberActions({
             </QuickProfile>
           </div>
         </ContextMenuTrigger>
-        <ContextMenuContent className="w-64">
-          {canMove && source && session && member.user_id !== server.owner_id && (
-            <>
-              <ContextMenuCheckboxItem
-                checked={restriction?.muted ?? false}
-                onCheckedChange={(enabled) =>
-                  void run(
-                    () => setVoiceRestriction(server.id, member.user_id, "muted", enabled),
-                    "Microfone atualizado no servidor.",
-                  )
-                }
-              >
-                Silenciar microfone para todos
-              </ContextMenuCheckboxItem>
-              <ContextMenuCheckboxItem
-                checked={restriction?.deafened ?? false}
-                onCheckedChange={(enabled) =>
-                  void run(
-                    () => setVoiceRestriction(server.id, member.user_id, "deafened", enabled),
-                    "Áudio atualizado no servidor.",
-                  )
-                }
-              >
-                Silenciar áudio do membro
-              </ContextMenuCheckboxItem>
-              <ContextMenuItem
-                className="text-destructive"
-                onSelect={() =>
-                  void run(
-                    () => requestVoiceDisconnect(member.user_id, source[0], session),
-                    "Desconexão solicitada.",
-                  )
-                }
-              >
-                Desconectar da chamada
-              </ContextMenuItem>
-              <ContextMenuSeparator />
-            </>
-          )}
-          {canMove && (!source || !session) && (
-            <ContextMenuItem disabled>Mover para</ContextMenuItem>
-          )}
-          {canMove && source && session && (
-            <ContextMenuSub>
-              <ContextMenuSubTrigger>Mover para</ContextMenuSubTrigger>
-              <ContextMenuSubContent>
-                {channels
-                  .filter((c) => c.type === "voice" && c.id !== source[0])
-                  .map((c) => (
-                    <ContextMenuItem
-                      key={c.id}
-                      onSelect={() =>
-                        void run(
-                          () => requestVoiceMove(member.user_id, source[0], c.id, session),
-                          "",
-                        )
-                      }
-                    >
-                      {c.name}
-                    </ContextMenuItem>
-                  ))}
-              </ContextMenuSubContent>
-            </ContextMenuSub>
-          )}
+        <ContextMenuContent className="w-72 max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <ContextMenuItem onSelect={() => openProfile(member.user_id)}>Perfil</ContextMenuItem>
           <ContextMenuItem
             onSelect={() =>
@@ -292,6 +230,26 @@ export function MemberActions({
                   onValueChange={([value]) => voice.setUserVolume(member.user_id, value ?? 100)}
                 />
               </div>
+              <ContextMenuCheckboxItem
+                indicatorSide="right"
+                checked={(voice.volumes[member.user_id] ?? 100) === 0}
+                onSelect={(event) => event.preventDefault()}
+                onCheckedChange={(checked) => {
+                  const volume = voice.volumes[member.user_id] ?? 100;
+                  if (checked && volume > 0) previousVolume.current = volume;
+                  voice.setUserVolume(member.user_id, checked ? 0 : previousVolume.current);
+                }}
+              >
+                Silenciar
+              </ContextMenuCheckboxItem>
+              <ContextMenuCheckboxItem
+                indicatorSide="right"
+                checked={voice.hiddenVideos[member.user_id] ?? false}
+                onSelect={(event) => event.preventDefault()}
+                onCheckedChange={(checked) => voice.setVideoHidden(member.user_id, checked)}
+              >
+                Desativar vídeo
+              </ContextMenuCheckboxItem>
               <ContextMenuItem onSelect={() => edit("alias")}>
                 Adicionar apelido de amigo
               </ContextMenuItem>
@@ -333,6 +291,7 @@ export function MemberActions({
                 </ContextMenuItem>
               )}
               <ContextMenuCheckboxItem
+                indicatorSide="right"
                 checked={
                   (voice.volumes[member.user_id] ?? 100) === 0 &&
                   Boolean(voice.hiddenVideos[member.user_id])
@@ -345,7 +304,7 @@ export function MemberActions({
                 Ignorar nesta chamada
               </ContextMenuCheckboxItem>
               <ContextMenuItem
-                className="text-destructive"
+                className="text-destructive focus:text-destructive focus:bg-destructive/10"
                 onSelect={() =>
                   void run(() => blocksService.block(member.user_id), "Usuário bloqueado.")
                 }
@@ -363,6 +322,7 @@ export function MemberActions({
                     .filter((role) => !role.is_owner && role.name !== "OWNER")
                     .map((role) => (
                       <ContextMenuCheckboxItem
+                        indicatorSide="right"
                         key={role.id}
                         checked={member.roles.some((r) => r.id === role.id)}
                         onCheckedChange={(checked) => {
@@ -393,18 +353,94 @@ export function MemberActions({
               )}
             </ContextMenuSubContent>
           </ContextMenuSub>
+          {canMove && (!source || !session) && (
+            <ContextMenuItem disabled>Mover para</ContextMenuItem>
+          )}
+          {canMove && source && session && (
+            <ContextMenuSub>
+              <ContextMenuSubTrigger>Mover para</ContextMenuSubTrigger>
+              <ContextMenuSubContent>
+                {channels
+                  .filter((c) => c.type === "voice" && c.id !== source[0])
+                  .map((c) => (
+                    <ContextMenuItem
+                      key={c.id}
+                      onSelect={() =>
+                        void run(
+                          () => requestVoiceMove(member.user_id, source[0], c.id, session),
+                          "",
+                        )
+                      }
+                    >
+                      {c.name}
+                    </ContextMenuItem>
+                  ))}
+              </ContextMenuSubContent>
+            </ContextMenuSub>
+          )}
+          {(canMove || canManageRoles || canKick || canBan) && <ContextMenuSeparator />}
           {(canManageRoles || canKick || canBan) && (
-            <ContextMenuItem onSelect={() => setEditor("moderation")}>
+            <ContextMenuItem
+              className="text-destructive focus:text-destructive focus:bg-destructive/10"
+              onSelect={() => setEditor("moderation")}
+            >
               Abrir na visualização de moderador
             </ContextMenuItem>
           )}
+          {canMove && source && session && member.user_id !== server.owner_id && (
+            <>
+              <ContextMenuCheckboxItem
+                indicatorSide="right"
+                className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                checked={restriction?.muted ?? false}
+                onCheckedChange={(enabled) =>
+                  void run(
+                    () => setVoiceRestriction(server.id, member.user_id, "muted", enabled),
+                    "Microfone atualizado no servidor.",
+                  )
+                }
+              >
+                Silenciar microfone para todos
+              </ContextMenuCheckboxItem>
+              <ContextMenuCheckboxItem
+                indicatorSide="right"
+                className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                checked={restriction?.deafened ?? false}
+                onCheckedChange={(enabled) =>
+                  void run(
+                    () => setVoiceRestriction(server.id, member.user_id, "deafened", enabled),
+                    "Áudio atualizado no servidor.",
+                  )
+                }
+              >
+                Silenciar áudio do membro
+              </ContextMenuCheckboxItem>
+              <ContextMenuItem
+                className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                onSelect={() =>
+                  void run(
+                    () => requestVoiceDisconnect(member.user_id, source[0], session),
+                    "Desconexão solicitada.",
+                  )
+                }
+              >
+                Desconectar da chamada
+              </ContextMenuItem>
+            </>
+          )}
           {!self && !owner && canKick && (
-            <ContextMenuItem className="text-destructive" onSelect={() => setConfirmation("kick")}>
+            <ContextMenuItem
+              className="text-destructive focus:text-destructive focus:bg-destructive/10"
+              onSelect={() => setConfirmation("kick")}
+            >
               Expulsar {name}
             </ContextMenuItem>
           )}
           {!self && !owner && canBan && (
-            <ContextMenuItem className="text-destructive" onSelect={() => setConfirmation("ban")}>
+            <ContextMenuItem
+              className="text-destructive focus:text-destructive focus:bg-destructive/10"
+              onSelect={() => setConfirmation("ban")}
+            >
               Banir {name}
             </ContextMenuItem>
           )}

@@ -4,6 +4,7 @@ mkdirSync("public/sounds", { recursive: true });
 for (const [name, notes] of [
   ["enter", [660, 880]],
   ["leave", [660, 440]],
+  ["screen-start", [784, 1175]],
 ]) {
   const rate = 22050,
     seconds = 0.28,

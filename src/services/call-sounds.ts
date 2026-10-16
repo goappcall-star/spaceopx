@@ -1,4 +1,14 @@
-export type CallSound = "enter" | "leave";
+export type CallSound = "enter" | "leave" | "screen-start";
+
+/** Capture state, rather than clicks or quality changes, drives the local cue. */
+export function createScreenShareSoundTracker() {
+  let sharing = false;
+  return (active: boolean): CallSound[] => {
+    const started = active && !sharing;
+    sharing = active;
+    return started ? ["screen-start"] : [];
+  };
+}
 
 /** Changes of room membership, rather than speaking or reconnect events, drive the cues. */
 export function createCallSoundTracker() {

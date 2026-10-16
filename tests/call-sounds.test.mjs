@@ -35,11 +35,31 @@ test("Reconnect and failed startup are silent; moving to another room emits leav
   assert.deepEqual(failure(null, false, []), []);
 });
 test("Original audio assets are short nonempty mono PCM WAV files", () => {
-  for (const kind of ["enter", "leave"]) {
+  for (const kind of ["enter", "leave", "screen-start"]) {
     const wav = fs.readFileSync(`public/sounds/call-${kind}.wav`);
     assert.equal(wav.toString("ascii", 0, 4), "RIFF");
     assert.equal(wav.readUInt16LE(22), 1);
     assert.ok(wav.length < 15000 && wav.length > 10000);
     assert.ok(wav.subarray(44).some((byte) => byte !== 0));
   }
+});
+
+test("Screen cue only follows successful capture starts, including restart", () => {
+  const update = runtime.exports.createScreenShareSoundTracker();
+  const step = (active) => Array.from(update(active));
+  assert.deepEqual(step(false), []); // Cancelled picker or denied permission.
+  assert.deepEqual(step(true), ["screen-start"]);
+  assert.deepEqual(step(true), []); // Rerenders, quality changes, reconnect.
+  assert.deepEqual(step(false), []); // Stop or call exit.
+  assert.deepEqual(step(true), ["screen-start"]);
+});
+
+test("Server and private capture trackers are independent and do not replay skipped cues", () => {
+  const server = runtime.exports.createScreenShareSoundTracker();
+  const privateCall = runtime.exports.createScreenShareSoundTracker();
+  server(true); // Consumed even when playback is disabled by preferences.
+  assert.deepEqual(Array.from(server(true)), []);
+  assert.deepEqual(Array.from(privateCall(true)), ["screen-start"]);
+  privateCall(false);
+  assert.deepEqual(Array.from(server(true)), []);
 });

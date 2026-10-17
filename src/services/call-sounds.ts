@@ -1,4 +1,22 @@
-export type CallSound = "enter" | "leave" | "screen-start";
+export type CallSound =
+  "enter" | "leave" | "screen-start" | "mic-mute" | "mic-unmute" | "deafen" | "undeafen";
+
+export function isAudioControlSound(sound: CallSound) {
+  return ["mic-mute", "mic-unmute", "deafen", "undeafen"].includes(sound);
+}
+
+/** One confirmation per state change; deafen takes priority when both change together. */
+export function createAudioControlSoundTracker() {
+  let previous: { scope: string | null; muted: boolean; deafened: boolean } | undefined;
+  return (scope: string | null, muted: boolean, deafened: boolean): CallSound[] => {
+    const before = previous;
+    previous = { scope, muted, deafened };
+    if (!scope || !before || before.scope !== scope) return [];
+    if (before.deafened !== deafened) return [deafened ? "deafen" : "undeafen"];
+    if (before.muted !== muted) return [muted ? "mic-mute" : "mic-unmute"];
+    return [];
+  };
+}
 
 /** Capture state, rather than clicks or quality changes, drives the local cue. */
 export function createScreenShareSoundTracker() {

@@ -266,7 +266,7 @@ export function AudioSettingsPanel({ compact = false }: { compact?: boolean }) {
           <h3 className="text-sm font-semibold tracking-wide uppercase">Saída</h3>
         </div>
         <div className="flex items-center justify-between gap-4">
-          <Label htmlFor="call-sounds">Sons de chamadas e início do compartilhamento</Label>
+          <Label htmlFor="call-sounds">Efeitos sonoros de chamadas e controles de áudio</Label>
           <Switch
             id="call-sounds"
             checked={settings.callSoundsEnabled}

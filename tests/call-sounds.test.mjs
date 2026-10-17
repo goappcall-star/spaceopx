@@ -35,13 +35,50 @@ test("Reconnect and failed startup are silent; moving to another room emits leav
   assert.deepEqual(failure(null, false, []), []);
 });
 test("Original audio assets are short nonempty mono PCM WAV files", () => {
-  for (const kind of ["enter", "leave", "screen-start"]) {
+  for (const kind of [
+    "enter",
+    "leave",
+    "screen-start",
+    "mic-mute",
+    "mic-unmute",
+    "deafen",
+    "undeafen",
+  ]) {
     const wav = fs.readFileSync(`public/sounds/call-${kind}.wav`);
     assert.equal(wav.toString("ascii", 0, 4), "RIFF");
     assert.equal(wav.readUInt16LE(22), 1);
     assert.ok(wav.length < 15000 && wav.length > 10000);
     assert.ok(wav.subarray(44).some((byte) => byte !== 0));
   }
+});
+
+test("Microphone and headphones confirm once, with deafen priority for combined changes", () => {
+  const update = runtime.exports.createAudioControlSoundTracker();
+  const step = (muted, deafened) => Array.from(update("user", muted, deafened));
+  assert.deepEqual(step(false, false), []);
+  assert.deepEqual(step(true, false), ["mic-mute"]);
+  assert.deepEqual(step(true, false), []);
+  assert.deepEqual(step(false, false), ["mic-unmute"]);
+  assert.deepEqual(step(true, true), ["deafen"]);
+  assert.deepEqual(step(true, false), ["undeafen"]);
+  assert.deepEqual(step(true, true), ["deafen"]);
+  assert.deepEqual(step(false, false), ["undeafen"]);
+});
+
+test("Initial state, session changes and disabled playback do not replay confirmations", () => {
+  const update = runtime.exports.createAudioControlSoundTracker();
+  assert.deepEqual(Array.from(update("user", true, true)), []);
+  update("user", false, false); // Consumed even when playback disabled.
+  assert.deepEqual(Array.from(update("user", false, false)), []);
+  assert.deepEqual(Array.from(update(null, false, false)), []);
+  assert.deepEqual(Array.from(update("another-user", true, false)), []);
+});
+
+test("Only local control confirmations may bypass deafen, never call or screen cues", () => {
+  for (const sound of ["mic-mute", "mic-unmute", "deafen", "undeafen"])
+    assert.equal(runtime.exports.isAudioControlSound(sound), true);
+  for (const sound of ["enter", "leave", "screen-start"])
+    assert.equal(runtime.exports.isAudioControlSound(sound), false);
 });
 
 test("Screen cue only follows successful capture starts, including restart", () => {

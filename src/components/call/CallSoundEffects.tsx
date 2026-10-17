@@ -6,6 +6,8 @@ import { useAudioSettings } from "@/hooks/use-audio-settings";
 import {
   createCallSoundTracker,
   createScreenShareSoundTracker,
+  createAudioControlSoundTracker,
+  isAudioControlSound,
   type CallSound,
 } from "@/services/call-sounds";
 
@@ -18,10 +20,16 @@ export function CallSoundEffects() {
   const enter = useRef<HTMLAudioElement>(null);
   const leave = useRef<HTMLAudioElement>(null);
   const screenStart = useRef<HTMLAudioElement>(null);
+  const micMute = useRef<HTMLAudioElement>(null);
+  const micUnmute = useRef<HTMLAudioElement>(null);
+  const deafen = useRef<HTMLAudioElement>(null);
+  const undeafen = useRef<HTMLAudioElement>(null);
   const voiceTracker = useRef(createCallSoundTracker());
   const callTracker = useRef(createCallSoundTracker());
   const voiceScreenTracker = useRef(createScreenShareSoundTracker());
   const privateScreenTracker = useRef(createScreenShareSoundTracker());
+  const voiceControlTracker = useRef(createAudioControlSoundTracker());
+  const privateControlTracker = useRef(createAudioControlSoundTracker());
   const playbackQueue = useRef(Promise.resolve());
   const alive = useRef(true);
   const options = useRef(settings);
@@ -30,7 +38,15 @@ export function CallSoundEffects() {
   deafened.current = voice.deafened;
   useEffect(() => {
     alive.current = true;
-    const elements = [enter.current, leave.current, screenStart.current];
+    const elements = [
+      enter.current,
+      leave.current,
+      screenStart.current,
+      micMute.current,
+      micUnmute.current,
+      deafen.current,
+      undeafen.current,
+    ];
     return () => {
       alive.current = false;
       elements.forEach((element) => element?.pause());
@@ -79,24 +95,42 @@ export function CallSoundEffects() {
       ),
       ...voiceScreenTracker.current(voiceSharing),
       ...privateScreenTracker.current(privateSharing),
+      ...voiceControlTracker.current(user?.id ?? null, voice.muted, voice.deafened),
+      ...privateControlTracker.current(room, call.muted, false),
     ];
-    if (!settings.callSoundsEnabled || voice.deafened || settings.outputVolume <= 0) return;
+    if (!settings.callSoundsEnabled || settings.outputVolume <= 0) return;
     for (const sound of sounds) {
-      const element =
-        sound === "screen-start"
-          ? screenStart.current
-          : sound === "enter"
-            ? enter.current
-            : leave.current;
+      // Control confirmations remain audible when incoming call audio is deafened.
+      const controlCue = isAudioControlSound(sound);
+      if (voice.deafened && !controlCue) continue;
+      const element = {
+        enter: enter.current,
+        leave: leave.current,
+        "screen-start": screenStart.current,
+        "mic-mute": micMute.current,
+        "mic-unmute": micUnmute.current,
+        deafen: deafen.current,
+        undeafen: undeafen.current,
+      }[sound];
       if (!element) continue;
       playbackQueue.current = playbackQueue.current
         .catch(() => undefined)
         .then(async () => {
-          if (!alive.current || !options.current.callSoundsEnabled || deafened.current) return;
+          if (
+            !alive.current ||
+            !options.current.callSoundsEnabled ||
+            (deafened.current && !controlCue)
+          )
+            return;
           const sink = element as HTMLAudioElement & { setSinkId?: (id: string) => Promise<void> };
           if (sink.setSinkId)
             await sink.setSinkId(options.current.outputDeviceId ?? "").catch(() => undefined);
-          if (!alive.current || !options.current.callSoundsEnabled || deafened.current) return;
+          if (
+            !alive.current ||
+            !options.current.callSoundsEnabled ||
+            (deafened.current && !controlCue)
+          )
+            return;
           element.volume = Math.max(0, Math.min(1, options.current.outputVolume / 100)) * 0.35;
           element.currentTime = 0;
           // Autoplay failures must never prevent a call from opening or closing.
@@ -115,12 +149,19 @@ export function CallSoundEffects() {
     settings.callSoundsEnabled,
     settings.outputVolume,
     voice.deafened,
+    voice.muted,
+    call.muted,
+    user?.id,
   ]);
   return (
     <div hidden aria-hidden="true">
       <audio ref={enter} src="/sounds/call-enter.wav" preload="auto" />
       <audio ref={leave} src="/sounds/call-leave.wav" preload="auto" />
       <audio ref={screenStart} src="/sounds/call-screen-start.wav" preload="auto" />
+      <audio ref={micMute} src="/sounds/call-mic-mute.wav" preload="auto" />
+      <audio ref={micUnmute} src="/sounds/call-mic-unmute.wav" preload="auto" />
+      <audio ref={deafen} src="/sounds/call-deafen.wav" preload="auto" />
+      <audio ref={undeafen} src="/sounds/call-undeafen.wav" preload="auto" />
     </div>
   );
 }

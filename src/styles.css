@@ -353,6 +353,7 @@ html[data-desktop-titlebar="true"] body {
   height: var(--desktop-titlebar-height);
   display: flex;
   align-items: center;
+  gap: 6px;
   padding-inline: 12px 150px;
   overflow: hidden;
   background: var(--background);
@@ -361,6 +362,12 @@ html[data-desktop-titlebar="true"] body {
   font-weight: 500;
   user-select: none;
   -webkit-app-region: drag;
+}
+.desktop-titlebar img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  pointer-events: none;
 }
 html[data-desktop-fullscreen="true"] .desktop-titlebar {
   display: none;

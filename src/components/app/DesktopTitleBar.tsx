@@ -73,6 +73,7 @@ export function DesktopTitleBar() {
 
   return enabled ? (
     <header ref={bar} className="desktop-titlebar">
+      <img src="/lobbyx-logo.png" alt="" aria-hidden="true" draggable={false} />
       LobbyX
     </header>
   ) : null;

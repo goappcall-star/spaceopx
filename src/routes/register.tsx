@@ -2,12 +2,12 @@ import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-r
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { ArrowRight, AtSign, LockKeyhole, Mail, UserRound } from "lucide-react";
 
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { AuthShell } from "@/components/auth/AuthShell";
+import { AuthField } from "@/components/auth/AuthField";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { authService } from "@/services/auth";
 import { safeRedirect } from "@/lib/redirect";
@@ -39,6 +39,7 @@ function RegisterPage() {
   const [form, setForm] = useState({ email: "", password: "", username: "", displayName: "" });
   const [submitting, setSubmitting] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     if (!loading && isAuthenticated) void navigate({ href: destination, replace: true });
@@ -57,6 +58,10 @@ function RegisterPage() {
     }
     if (form.password.length < 8) {
       toast.error("A senha precisa ter ao menos 8 caracteres.");
+      return;
+    }
+    if (form.password !== confirmPassword) {
+      toast.error("As senhas precisam ser iguais.");
       return;
     }
 
@@ -90,6 +95,7 @@ function RegisterPage() {
   if (emailSent) {
     return (
       <AuthShell
+        layout="scenic"
         title="Confirme seu e-mail"
         subtitle="Enviamos um link de confirmação para você."
         footer={
@@ -108,8 +114,9 @@ function RegisterPage() {
 
   return (
     <AuthShell
-      title="Criar conta"
-      subtitle="Leva menos de um minuto."
+      layout="scenic"
+      title="Criar conta no LobbyX"
+      subtitle="Junte-se à nossa comunidade e faça parte de algo maior."
       footer={
         <>
           Já tem conta?{" "}
@@ -119,58 +126,80 @@ function RegisterPage() {
         </>
       }
     >
-      <GoogleSignInButton destination={destination} />
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="displayName">Nome de exibição</Label>
-          <Input
+      <form onSubmit={handleSubmit} className="auth-scenic-form">
+        <div className="auth-field-row">
+          <AuthField
+            label="Nome de exibição"
+            icon={UserRound}
             id="displayName"
+            autoComplete="nickname"
+            maxLength={60}
             required
             value={form.displayName}
             onChange={(e) => update("displayName", e.target.value)}
-            placeholder="Ana Souza"
+            placeholder="Nome de exibição"
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="username">Username</Label>
-          <Input
+          <AuthField
+            label="Nome de usuário"
+            icon={AtSign}
             id="username"
+            autoComplete="username"
+            aria-describedby="username-help"
+            maxLength={32}
             required
             value={form.username}
             onChange={(e) => update("username", e.target.value)}
-            placeholder="ana.souza"
-            className="font-mono"
-          />
-          <p className="text-muted-foreground text-xs">Único, minúsculo, sem espaços.</p>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">E-mail</Label>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={form.email}
-            onChange={(e) => update("email", e.target.value)}
-            placeholder="voce@exemplo.com"
+            placeholder="Nome de usuário"
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Senha</Label>
-          <Input
-            id="password"
-            type="password"
-            autoComplete="new-password"
-            required
-            value={form.password}
-            onChange={(e) => update("password", e.target.value)}
-            placeholder="Mínimo de 8 caracteres"
-          />
-        </div>
-        <Button type="submit" className="w-full" disabled={submitting}>
+        <p id="username-help" className="auth-field-help">
+          Usuário único, minúsculo e sem espaços.
+        </p>
+        <AuthField
+          label="E-mail"
+          icon={Mail}
+          id="email"
+          type="email"
+          autoComplete="email"
+          required
+          value={form.email}
+          onChange={(e) => update("email", e.target.value)}
+          placeholder="E-mail"
+        />
+        <AuthField
+          label="Senha"
+          icon={LockKeyhole}
+          id="password"
+          type="password"
+          autoComplete="new-password"
+          required
+          minLength={8}
+          value={form.password}
+          onChange={(e) => update("password", e.target.value)}
+          placeholder="Mínimo de 8 caracteres"
+        />
+        <AuthField
+          label="Confirmar senha"
+          icon={LockKeyhole}
+          id="confirmPassword"
+          type="password"
+          autoComplete="new-password"
+          required
+          minLength={8}
+          value={confirmPassword}
+          onChange={(event) => setConfirmPassword(event.target.value)}
+          placeholder="Confirmar senha"
+        />
+        <Button type="submit" className="auth-submit" disabled={submitting}>
           {submitting ? "Criando..." : "Criar conta"}
+          <ArrowRight size={19} aria-hidden="true" />
         </Button>
       </form>
+      <GoogleSignInButton
+        destination={destination}
+        placement="after"
+        label="Cadastrar com Google"
+      />
     </AuthShell>
   );
 }

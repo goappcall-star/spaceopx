@@ -2,12 +2,12 @@ import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-r
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { ArrowRight, Mail, LockKeyhole } from "lucide-react";
 
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { AuthShell } from "@/components/auth/AuthShell";
+import { AuthField } from "@/components/auth/AuthField";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { authService } from "@/services/auth";
 import { safeRedirect } from "@/lib/redirect";
@@ -62,8 +62,9 @@ function LoginPage() {
 
   return (
     <AuthShell
-      title="Entrar"
-      subtitle="Acesse sua conta para continuar."
+      layout="scenic"
+      title="Entrar no LobbyX"
+      subtitle="Acesse sua conta e continue de onde parou."
       footer={
         <>
           Ainda não tem conta?{" "}
@@ -73,44 +74,38 @@ function LoginPage() {
         </>
       }
     >
-      <GoogleSignInButton destination={destination} />
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">E-mail</Label>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="voce@exemplo.com"
-          />
+      <form onSubmit={handleSubmit} className="auth-scenic-form">
+        <AuthField
+          label="E-mail"
+          icon={Mail}
+          id="email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="E-mail"
+        />
+        <AuthField
+          label="Senha"
+          icon={LockKeyhole}
+          id="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Senha"
+        />
+        <div className="auth-form-options">
+          <Link to="/forgot-password">Esqueci minha senha</Link>
         </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Senha</Label>
-            <Link
-              to="/forgot-password"
-              className="text-muted-foreground hover:text-primary text-xs"
-            >
-              Esqueceu a senha?
-            </Link>
-          </div>
-          <Input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-          />
-        </div>
-        <Button type="submit" className="w-full" disabled={submitting}>
+        <Button type="submit" className="auth-submit" disabled={submitting}>
           {submitting ? "Entrando..." : "Entrar"}
+          <ArrowRight size={19} aria-hidden="true" />
         </Button>
       </form>
+      <GoogleSignInButton destination={destination} placement="after" label="Entrar com Google" />
     </AuthShell>
   );
 }

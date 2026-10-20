@@ -3,7 +3,15 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { authService } from "@/services/auth";
 
-export function GoogleSignInButton({ destination }: { destination: string }) {
+export function GoogleSignInButton({
+  destination,
+  placement = "before",
+  label = "Continuar com Google",
+}: {
+  destination: string;
+  placement?: "before" | "after";
+  label?: string;
+}) {
   const [busy, setBusy] = useState(false);
   async function connect() {
     setBusy(true);
@@ -20,7 +28,12 @@ export function GoogleSignInButton({ destination }: { destination: string }) {
     }
   }
   return (
-    <div className="mb-5 space-y-4">
+    <div className={placement === "after" ? "auth-google" : "mb-5 space-y-4"}>
+      {placement === "after" && (
+        <div className="auth-divider">
+          <span>ou continue com</span>
+        </div>
+      )}
       <Button
         type="button"
         variant="outline"
@@ -46,9 +59,11 @@ export function GoogleSignInButton({ destination }: { destination: string }) {
             d="M12 5.96c1.47 0 2.79.5 3.82 1.5l2.87-2.87A9.6 9.6 0 0 0 12 2a10 10 0 0 0-8.94 5.49l3.35 2.59C7.2 7.72 9.4 5.96 12 5.96Z"
           />
         </svg>
-        {busy ? "Conectando…" : "Continuar com Google"}
+        {busy ? "Conectando…" : label}
       </Button>
-      <div className="text-muted-foreground text-center text-xs">ou continue com e-mail</div>
+      {placement === "before" && (
+        <div className="text-muted-foreground text-center text-xs">ou continue com e-mail</div>
+      )}
     </div>
   );
 }

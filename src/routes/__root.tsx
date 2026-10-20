@@ -21,6 +21,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PerformanceInstrumentation } from "@/components/performance/PerformanceInstrumentation";
 import { DesktopUpdates } from "@/components/app/DesktopUpdates";
+import { DesktopTitleBar } from "@/components/app/DesktopTitleBar";
 import { redactSecrets } from "@/lib/redact-secrets.mjs";
 
 function NotFoundComponent() {
@@ -149,6 +150,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AppearanceSync />
+        <DesktopTitleBar />
         <VisualQualitySync />
         <DesktopUpdates />
         <PerformanceInstrumentation />

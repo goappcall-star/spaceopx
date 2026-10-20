@@ -32,6 +32,11 @@ export interface DesktopActivityState {
 declare global {
   interface Window {
     lobbyxDesktop?: {
+      titleBar?: {
+        appearance: (colors: { background: string; foreground: string }) => Promise<boolean>;
+        state: () => Promise<{ fullscreen: boolean }>;
+        subscribe: (callback: (state: { fullscreen: boolean }) => void) => () => void;
+      };
       clipboard?: { writeText: (text: string) => Promise<boolean> };
       performance?: () => Promise<{ cpu: number | null; memory: number; version: string }>;
       updates?: {

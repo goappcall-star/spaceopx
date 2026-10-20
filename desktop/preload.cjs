@@ -1,5 +1,17 @@
 const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld("lobbyxDesktop", {
+  titleBar:
+    process.platform === "win32"
+      ? {
+          appearance: (colors) => ipcRenderer.invoke("desktop:titlebar-appearance", colors),
+          state: () => ipcRenderer.invoke("desktop:titlebar-state"),
+          subscribe: (callback) => {
+            const listener = (_event, state) => callback(state);
+            ipcRenderer.on("desktop:titlebar-state", listener);
+            return () => ipcRenderer.removeListener("desktop:titlebar-state", listener);
+          },
+        }
+      : undefined,
   clipboard: { writeText: (text) => ipcRenderer.invoke("desktop:clipboard-write", text) },
   performance: () => ipcRenderer.invoke("desktop:performance"),
   activity: () => ipcRenderer.invoke("desktop:activity"),

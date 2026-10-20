@@ -1,5 +1,16 @@
-const { app, BrowserWindow, protocol, net, session, dialog, shell, ipcMain, clipboard } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  protocol,
+  net,
+  session,
+  dialog,
+  shell,
+  ipcMain,
+  clipboard,
+} = require("electron");
 const { installClipboard } = require("./clipboard.cjs");
+const { titlebarOptions, installTitlebar } = require("./titlebar.cjs");
 const { installUpdater } = require("./updater.cjs");
 const path = require("node:path");
 const { chooseScreen } = require("./screen-picker.cjs");
@@ -87,6 +98,7 @@ else {
         minWidth: 800,
         minHeight: 600,
         title: "LobbyX",
+        ...titlebarOptions,
         icon: path.join(__dirname, "web", "favicon.ico"),
         backgroundColor: "#0b1019",
         autoHideMenuBar: true,
@@ -101,6 +113,8 @@ else {
           partition: "persist:lobbyx",
         },
       });
+      const stopTitlebar = installTitlebar({ window, ipcMain, trusted });
+      window.once("closed", stopTitlebar);
       const permissionPrompts = new Map();
       ses.setPermissionCheckHandler((contents, permission, origin, details) => {
         if (contents !== window?.webContents || !trusted(origin)) return false;

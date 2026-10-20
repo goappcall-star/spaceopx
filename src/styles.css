@@ -336,6 +336,42 @@
   }
 }
 
+/* Reserve the overlay row only in the Windows desktop shell, never on WEB. */
+html[data-desktop-titlebar="true"] {
+  --desktop-titlebar-height: 32px;
+}
+html[data-desktop-titlebar="true"][data-desktop-fullscreen="true"] {
+  --desktop-titlebar-height: 0px;
+}
+html[data-desktop-titlebar="true"] body {
+  padding-top: var(--desktop-titlebar-height);
+}
+.desktop-titlebar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 10000;
+  height: var(--desktop-titlebar-height);
+  display: flex;
+  align-items: center;
+  padding-inline: 12px 150px;
+  overflow: hidden;
+  background: var(--background);
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 500;
+  user-select: none;
+  -webkit-app-region: drag;
+}
+html[data-desktop-fullscreen="true"] .desktop-titlebar {
+  display: none;
+}
+html[data-desktop-titlebar="true"] :is(.h-dvh, .settings-layout) {
+  height: calc(100dvh - var(--desktop-titlebar-height));
+}
+html[data-desktop-titlebar="true"] :is(.min-h-screen, .min-h-dvh) {
+  min-height: calc(100dvh - var(--desktop-titlebar-height));
+}
+
 @utility bg-hero-glow {
   background-image: var(--gradient-hero);
 }
@@ -512,25 +548,38 @@ html[data-visual-quality="optimized"] .glass-panel,
 html[data-visual-quality="maximum"] .glass-panel,
 html[data-visual-quality="optimized"] [class*="backdrop-blur"],
 html[data-visual-quality="maximum"] [class*="backdrop-blur"] {
-  backdrop-filter: none !important; background-color: var(--color-surface);
+  backdrop-filter: none !important;
+  background-color: var(--color-surface);
 }
 html[data-visual-quality="optimized"] .lx-fx,
-html[data-visual-quality="maximum"] .lx-fx { animation-play-state: paused !important; }
+html[data-visual-quality="maximum"] .lx-fx {
+  animation-play-state: paused !important;
+}
 html[data-visual-quality="optimized"] .lx-anime-frame [filter],
 html[data-visual-quality="maximum"] .lx-anime-frame [filter],
 html[data-visual-quality="optimized"] .lx-flaming-cut [filter],
-html[data-visual-quality="maximum"] .lx-flaming-cut [filter] { filter: none !important; }
+html[data-visual-quality="maximum"] .lx-flaming-cut [filter] {
+  filter: none !important;
+}
 html[data-visual-quality="optimized"] [class*="animate-pulse"],
-html[data-visual-quality="optimized"] .shimmer { animation-play-state: paused !important; }
+html[data-visual-quality="optimized"] .shimmer {
+  animation-play-state: paused !important;
+}
 html[data-visual-quality="optimized"] [class*="shadow"],
 html[data-visual-quality="maximum"] [class*="shadow"],
 html[data-visual-quality="optimized"] .glass-panel,
-html[data-visual-quality="maximum"] .glass-panel { box-shadow: none !important; }
+html[data-visual-quality="maximum"] .glass-panel {
+  box-shadow: none !important;
+}
 html[data-visual-quality="maximum"] *,
 html[data-visual-quality="maximum"] *::before,
 html[data-visual-quality="maximum"] *::after {
-  animation: none !important; transition: none !important; scroll-behavior: auto !important;
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
 }
 html[data-page-hidden="true"] *,
 html[data-page-hidden="true"] *::before,
-html[data-page-hidden="true"] *::after { animation-play-state: paused !important; }
+html[data-page-hidden="true"] *::after {
+  animation-play-state: paused !important;
+}

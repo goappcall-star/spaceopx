@@ -1,3 +1,4 @@
+import { CommunityEvents } from "./CommunityEvents";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CommunityHome } from "./CommunityHome";
@@ -39,6 +40,15 @@ export function CommunityWorkspace({
     <>
       {data.experience.home_enabled ? (
         <CommunityHome
+          events={
+            <CommunityEvents
+              key={`${userId}:${server.id}`}
+              serverId={server.id}
+              userId={userId}
+              channels={visible}
+              onChannel={onChannel}
+            />
+          }
           server={server}
           data={data}
           channels={visible}
@@ -59,6 +69,16 @@ export function CommunityWorkspace({
           >
             Revisar boas-vindas
           </button>
+          <div className="mt-8 rounded-xl border border-border p-5">
+            <h2 className="mb-4 font-semibold">Eventos da comunidade</h2>
+            <CommunityEvents
+              key={`${userId}:${server.id}`}
+              serverId={server.id}
+              userId={userId}
+              channels={visible}
+              onChannel={onChannel}
+            />
+          </div>
         </section>
       )}
       {onboarding && (

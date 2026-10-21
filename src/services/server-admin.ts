@@ -126,6 +126,9 @@ export const serverAdminService = {
 };
 
 export const AUDIT_ACTION_LABELS: Record<string, string> = {
+  community_event_created: "Evento criado",
+  community_event_updated: "Evento atualizado",
+  community_event_cancelled: "Evento cancelado",
   community_activated: "Comunidade ativada",
   community_deactivated: "Comunidade desativada",
   community_settings_updated: "Comunidade atualizada",

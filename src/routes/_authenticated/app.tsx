@@ -1,3 +1,4 @@
+import { useCommunityEventNotifications } from "@/hooks/use-community-event-notifications";
 import { measureOperation } from "@/services/performance/monitor";
 import { useSessionServer } from "@/components/call/SessionCommunications";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
@@ -74,6 +75,7 @@ export const Route = createFileRoute("/_authenticated/app")({
 function AppPage() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  useCommunityEventNotifications(user?.id);
   const { server: serverParam, channel: channelParam } = useSearch({ from: "/_authenticated/app" });
   const { data: servers = [], isLoading: loadingServers } = useMyServers();
   const {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ArrowRight,
   CalendarDays,
@@ -21,7 +21,9 @@ export function CommunityHome({
   onChannel,
   onOnboarding,
   onSettings,
+  events,
 }: {
+  events?: ReactNode;
   server: Server;
   data: CommunityExperience;
   channels: Channel[];
@@ -210,12 +212,12 @@ export function CommunityHome({
                     A comunidade ainda não definiu seus interesses.
                   </p>
                 ))}
-              {module === "events" && (
-                <p className="text-sm text-muted-foreground">
-                  Eventos estarão disponíveis em uma próxima fase. Nenhum evento pode ser criado
-                  nesta versão.
-                </p>
-              )}
+              {module === "events" &&
+                (events ?? (
+                  <p className="text-sm text-muted-foreground">
+                    Eventos indisponíveis nesta prévia.
+                  </p>
+                ))}
             </section>
           ))}
         </div>

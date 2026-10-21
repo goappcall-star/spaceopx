@@ -69,6 +69,7 @@ run("psql", [...args, "-f", "tests/community-fixture.sql"]);
 console.log(run("psql", [...args, "-f", "tests/community-foundation.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-transactions.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-experience.sql"]));
+console.log(run("psql", [...args, "-f", "tests/community-events.sql"]));
 
 async function concurrent(sql) {
   return new Promise((resolve) => {
@@ -217,6 +218,86 @@ if (
 console.log(
   "Concurrent role escalation: onboarding rechecks the locked role, rejects new privilege, no deadlock.",
 );
+
+// 3A: global event UUID collision across two independently locked servers must not overwrite.
+const eventId = "ce000000-0000-0000-0000-000000000099";
+const eventPayload = (serverKey, description = "synthetic") =>
+  `jsonb_build_object('title','Concurrent event','description','${description}','cover_url',NULL,'channel_id',community_test.id('${serverKey}-welcome'),'starts_at',clock_timestamp()+interval '1 day','ends_at',NULL,'timezone','UTC')`;
+run("psql", [
+  ...args,
+  "-c",
+  `BEGIN;SET LOCAL ROLE authenticated;SELECT community_test.actor(8); SELECT public.save_server_community(community_test.id('b'),community_test.payload('b'),0);COMMIT;`,
+]);
+const firstEvent = concurrent(
+  actor +
+    `SET LOCAL application_name='community_event_create_first'; SELECT public.save_community_event(community_test.id('a'),'${eventId}',${eventPayload("a")},0);SELECT pg_sleep(1.5);COMMIT;`,
+);
+await waitForSleeper("community_event_create_first");
+const collidingEvent = concurrent(
+  `BEGIN;SET LOCAL ROLE authenticated; SELECT community_test.actor(8);SELECT public.save_community_event(community_test.id('b'),'${eventId}',${eventPayload("b")},0);COMMIT;`,
+);
+const collision = await Promise.all([firstEvent, collidingEvent]);
+if (
+  collision[0].code !== 0 ||
+  collision[1].code === 0 ||
+  !/community_revision_conflict/.test(collision[1].err)
+)
+  throw Error("Event cross-server collision failed: " + JSON.stringify(collision));
+console.log("Event UUID collision across servers: original preserved; second creation rejected.");
+const editFirst = concurrent(
+  actor +
+    `SET LOCAL application_name='community_event_edit_first';SELECT public.save_community_event(community_test.id('a'),'${eventId}',${eventPayload("a", "first edit")},1);SELECT pg_sleep(1.5);COMMIT;`,
+);
+await waitForSleeper("community_event_edit_first");
+const editSecond = concurrent(
+  actor +
+    `SELECT public.save_community_event(community_test.id('a'),'${eventId}',${eventPayload("a", "second edit")},1);COMMIT;`,
+);
+const edits = await Promise.all([editFirst, editSecond]);
+if (edits[0].code !== 0 || edits[1].code === 0 || !/community_revision_conflict/.test(edits[1].err))
+  throw Error("Concurrent event edits failed: " + JSON.stringify(edits));
+console.log("Two event editors: one commit, one explicit revision conflict.");
+run("psql", [
+  ...args,
+  "-c",
+  `BEGIN;SET LOCAL ROLE authenticated;SELECT community_test.actor(6);SELECT public.respond_community_event('${eventId}',2,'going',true);COMMIT;`,
+]);
+const revokeEventManager = concurrent(
+  actor +
+    `SET LOCAL application_name='community_event_revoke';SELECT public.set_community_role_permission(community_test.id('a'),'c2000000-0000-0000-0000-000000000004',false);SELECT pg_sleep(1.5);COMMIT;`,
+);
+await waitForSleeper("community_event_revoke");
+const revokedEventEdit = concurrent(
+  `BEGIN;SET LOCAL ROLE authenticated;SELECT community_test.actor(5);SELECT public.save_community_event(community_test.id('a'),'${eventId}',${eventPayload("a", "must reject")},2);COMMIT;`,
+);
+const revokedEdits = await Promise.all([revokeEventManager, revokedEventEdit]);
+if (
+  revokedEdits[0].code !== 0 ||
+  revokedEdits[1].code === 0 ||
+  !/community_not_authorized/.test(revokedEdits[1].err)
+)
+  throw Error("Revoked event editor failed: " + JSON.stringify(revokedEdits));
+console.log("Event edit waiting behind revocation: backend rejects the revoked manager.");
+run("psql", [
+  ...args,
+  "-c",
+  actor +
+    `SELECT public.save_community_event(community_test.id('a'),'${eventId}',${eventPayload("a", "notify update")},2);COMMIT;`,
+]);
+const deliveries = await Promise.all([
+  concurrent("SELECT public.dispatch_community_event_notifications(100);"),
+  concurrent("SELECT public.dispatch_community_event_notifications(100);"),
+]);
+if (deliveries.some((r) => r.code !== 0))
+  throw Error("Concurrent event workers failed: " + JSON.stringify(deliveries));
+const delivered = run("psql", [
+  ...args,
+  "-At",
+  "-c",
+  `SELECT count(*)=1 FROM public.community_event_notifications WHERE event_id='${eventId}' AND revision=3 AND kind='updated';`,
+]).trim();
+if (delivered !== "t") throw Error("Concurrent workers duplicated event notification");
+console.log("Two event workers: exactly one durable notification for the opted-in member.");
 
 // Run prior DB security/notification suites against the complete schema as regressions.
 for (const file of [

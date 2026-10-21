@@ -8,6 +8,56 @@ export type Database = {
   };
   public: {
     Tables: {
+      community_events: {
+        Row: {
+          id: string;
+          server_id: string;
+          channel_id: string | null;
+          title: string;
+          description: string;
+          cover_url: string | null;
+          starts_at: string;
+          ends_at: string | null;
+          timezone: string;
+          status: string;
+          revision: number;
+          created_by: string | null;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      community_event_rsvps: {
+        Row: {
+          event_id: string;
+          member_id: string;
+          response: string;
+          notify: boolean;
+          notified_revision: number;
+          reminded_revision: number;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      community_event_notifications: {
+        Row: {
+          id: string;
+          event_id: string;
+          member_id: string;
+          revision: number;
+          kind: string;
+          created_at: string;
+          read_at: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       community_rule_revisions: {
         Row: { server_id: string; revision: number; rules: Json; created_at: string };
         Insert: { server_id: string; revision: number; rules: Json; created_at?: string };
@@ -1099,6 +1149,37 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      list_community_events: {
+        Args: {
+          _server_id: string;
+          _mode?: string;
+          _after_start?: string;
+          _after_id?: string;
+          _limit?: number;
+        };
+        Returns: Json;
+      };
+      save_community_event: {
+        Args: { _server_id: string; _event_id: string; _payload: Json; _expected_revision: number };
+        Returns: Json;
+      };
+      cancel_community_event: {
+        Args: { _event_id: string; _expected_revision: number };
+        Returns: undefined;
+      };
+      respond_community_event: {
+        Args: {
+          _event_id: string;
+          _expected_revision: number;
+          _response: string;
+          _notify: boolean;
+        };
+        Returns: undefined;
+      };
+      dispatch_community_event_notifications: { Args: { _limit?: number }; Returns: number };
+      list_my_community_event_notifications: { Args: never; Returns: Json };
+      read_community_event_notifications: { Args: { _ids: string[] }; Returns: undefined };
+      can_view_community_event: { Args: { _event_id: string }; Returns: boolean };
       get_community_experience: { Args: { _server_id: string }; Returns: Json };
       save_community_experience: {
         Args: { _server_id: string; _payload: Json; _expected_revision: number };

@@ -1,5 +1,6 @@
 import { CommunityEvents } from "./CommunityEvents";
 import { CommunityProgression } from "./CommunityProgression";
+import { CommunityObjectives } from "./CommunityObjectives";
 import { CommunitySafetyTools } from "./CommunitySafetyTools";
 import { CommunityReportButton } from "./CommunityReportButton";
 import { useState } from "react";
@@ -54,12 +55,19 @@ export function CommunityWorkspace({
       {data.experience.home_enabled ? (
         <CommunityHome
           progression={
-            <CommunityProgression
-              key={`${userId}:${server.id}`}
-              serverId={server.id}
-              userId={userId}
-              canManage={data.can_manage}
-            />
+            <>
+              <CommunityProgression
+                key={`${userId}:${server.id}`}
+                serverId={server.id}
+                userId={userId}
+                canManage={data.can_manage}
+              />
+              <CommunityObjectives
+                key={`objectives:${userId}:${server.id}`}
+                serverId={server.id}
+                userId={userId}
+              />
+            </>
           }
           reportNotice={(id) => (
             <CommunityReportButton serverId={server.id} kind="notice" targetId={id} />

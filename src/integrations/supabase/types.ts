@@ -1453,6 +1453,15 @@ export type Database = {
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean };
       can_manage_community: { Args: { _server_id: string }; Returns: boolean };
       get_community_progression: { Args: { _server_id: string }; Returns: Json };
+      get_community_objectives: { Args: { _server_id: string }; Returns: Json };
+      list_community_achievements: {
+        Args: { _server_id: string; _after?: string; _limit?: number };
+        Returns: Json;
+      };
+      list_community_mission_history: {
+        Args: { _server_id: string; _before?: string; _limit?: number };
+        Returns: Json;
+      };
       list_community_xp_history: {
         Args: { _server_id: string; _before?: string; _limit?: number };
         Returns: Json;

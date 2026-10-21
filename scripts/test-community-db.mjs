@@ -73,6 +73,8 @@ console.log(run("psql", [...args, "-f", "tests/community-events.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-discovery.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-moderation.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-progression.sql"]));
+console.log(run("psql", [...args, "-f", "tests/community-objectives.sql"]));
+console.log(run("psql", [...args, "-f", "tests/community-objectives-states.sql"]));
 
 async function concurrent(sql) {
   return new Promise((resolve) => {
@@ -111,6 +113,24 @@ const state = run("psql", [
   "SELECT count(*)=1 AND min(revision)=1 FROM server_community_settings WHERE server_id=community_test.id('a');",
 ]);
 if (!state.includes("t")) throw Error("Concurrent activation duplicated data");
+// Existing community upgrade uses a separate disposable DB so its historical
+// audit rows do not alter the invariants of the original Phase 1 fixture.
+const upgradeDatabase = database + "_upgrade4b";
+run("createdb", ["-h", "127.0.0.1", "-p", port, "-U", "postgres", "-w", upgradeDatabase]);
+const upgradeArgs = args.map((arg) => (arg === database ? upgradeDatabase : arg));
+run("psql", [...upgradeArgs, "-f", "tests/security-bootstrap.sql"]);
+for (const file of fs
+  .readdirSync("supabase/migrations")
+  .filter((f) => f.endsWith(".sql"))
+  .sort()) {
+  if (file === "20261021070000_community_missions_achievements.sql")
+    run("psql", [...upgradeArgs, "-f", "tests/community-objectives-upgrade-fixture.sql"]);
+  run("psql", [...upgradeArgs, "-f", path.join("supabase/migrations", file)]);
+}
+console.log(run("psql", [...upgradeArgs, "-f", "tests/community-objectives-upgrade.sql"]));
+console.log(
+  `4B upgrade: existing activation/publication never backfilled; separate local database retained: ${upgradeDatabase}`,
+);
 console.log(
   "Concurrent activation: one commit, one explicit revision conflict; no duplicate community.",
 );
@@ -534,7 +554,62 @@ console.log(
 );
 run("psql", [...args, "-c", "UPDATE security_private.community_xp_policy SET enabled=false;"]);
 
+// 4B: concurrent completion and replay share the 4A server lock and wallet.
+run("psql", [
+  ...args,
+  "-c",
+  `UPDATE security_private.community_xp_policy SET enabled=true,activity_xp=10,daily_cap=1000,weekly_cap=1000;
+ UPDATE security_private.community_objective_verifiers SET enabled=true;
+ INSERT INTO security_private.community_verified_activities(id,server_id,source,evidence_key,expires_at)
+ SELECT ('d4b30000-0000-0000-0000-'||lpad(n::text,12,'0'))::uuid,community_test.id('a'),'backend_verified_activity',gen_random_uuid(),clock_timestamp()+interval '1 hour' FROM generate_series(1,4)n;`,
+]);
+const missionCall = (n) =>
+  `SELECT consume_verified_community_activity(community_test.id('a'),'d4b30000-0000-0000-0000-${String(n).padStart(12, "0")}');`;
+run("psql", [...args, "-c", missionCall(1)]);
+const missionFirst = concurrent(
+  `BEGIN;SET LOCAL application_name='community_mission_finish';${missionCall(2)}SELECT pg_sleep(1.5);COMMIT;`,
+);
+await waitForSleeper("community_mission_finish");
+const missionRace = await Promise.all([missionFirst, concurrent(missionCall(3))]);
+if (missionRace.some((r) => r.code !== 0))
+  throw Error("Mission completion race: " + JSON.stringify(missionRace));
+const missionReplays = await Promise.all([concurrent(missionCall(3)), concurrent(missionCall(3))]);
+if (missionReplays.some((r) => r.code !== 0 || !r.out.includes('"replayed": true')))
+  throw Error("Mission replay race: " + JSON.stringify(missionReplays));
+if (
+  run("psql", [
+    ...args,
+    "-At",
+    "-c",
+    `SELECT (SELECT count(*)=1 FROM community_mission_progress WHERE server_id=community_test.id('a') AND completed_at IS NOT NULL) AND (SELECT progress=3 FROM community_mission_progress WHERE server_id=community_test.id('a') AND objective_id='verified_weekly') AND (SELECT xp=430 FROM community_xp_accounts WHERE server_id=community_test.id('a'));`,
+  ]).trim() !== "t"
+)
+  throw Error("Mission race duplicated progress/reward or exceeded expected wallet");
+console.log(
+  "Mission completion and replay races: one completion/reward, no recursive progress, same wallet exactly 430 XP.",
+);
+const verifierRevoker = concurrent(
+  `BEGIN;SET LOCAL application_name='community_mission_revoke';UPDATE security_private.community_objective_verifiers SET enabled=false;SELECT pg_sleep(1.5);COMMIT;`,
+);
+await waitForSleeper("community_mission_revoke");
+const revokedMission = await Promise.all([verifierRevoker, concurrent(missionCall(4))]);
+if (
+  revokedMission.some((r) => r.code !== 0) ||
+  run("psql", [
+    ...args,
+    "-At",
+    "-c",
+    `SELECT progress=3 FROM community_mission_progress WHERE server_id=community_test.id('a') AND objective_id='verified_weekly';`,
+  ]).trim() !== "t"
+)
+  throw Error("Revoked mission verifier advanced progress: " + JSON.stringify(revokedMission));
+console.log(
+  "Verifier revocation race: mission progress is not advanced after the verifier lock recheck.",
+);
+run("psql", [...args, "-c", "UPDATE security_private.community_xp_policy SET enabled=false;"]);
+
 // Run prior DB security/notification suites against the complete schema as regressions.
+console.log(run("psql", [...args, "-f", "tests/community-objectives-cascade.sql"]));
 for (const file of [
   "security-write-guards.sql",
   "unread-counts.sql",

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { createRoot } from "react-dom/client";
 import { Button } from "@/components/ui/button";
 import {
   ReportQueueView,
@@ -38,7 +37,7 @@ const base: CommunityReport = {
   created_at: stamp,
   decisions: [],
 };
-export function ModerationPreview() {
+export function ModerationPreview({ embedded = false }: { embedded?: boolean } = {}) {
   const [tab, setTab] = useState("Denúncias"),
     [reports, setReports] = useState([base]),
     [warnings, setWarnings] = useState<CommunityWarning[]>([]),
@@ -83,11 +82,13 @@ export function ModerationPreview() {
     setNotice("Operação realizada apenas em memória nesta prévia.");
   }
   return (
-    <div className="bg-background text-foreground min-h-screen">
-      <div className="border-border text-muted-foreground border-b p-3 text-xs">
-        PRÉVIA LOCAL · componentes reais · dados fictícios · callbacks em memória · sem Supabase,
-        autenticação ou permissões reais
-      </div>
+    <div className={"bg-background text-foreground " + (embedded ? "" : "min-h-screen")}>
+      {!embedded && (
+        <div className="border-border text-muted-foreground border-b p-3 text-xs">
+          PRÉVIA LOCAL · componentes reais · dados fictícios · callbacks em memória · sem Supabase,
+          autenticação ou permissões reais
+        </div>
+      )}
       <main className="mx-auto max-w-5xl space-y-5 p-4 sm:p-7">
         <header className="flex items-center gap-3">
           <img src="/lobbyx-logo.png" alt="LobbyX" className="h-10 w-10" />
@@ -287,6 +288,3 @@ export function ModerationPreview() {
     </div>
   );
 }
-const root = createRoot(document.getElementById("root")!);
-root.render(<ModerationPreview />);
-if (import.meta.hot) import.meta.hot.dispose(() => root.unmount());

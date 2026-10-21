@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { CommunityModerationConsole } from "./CommunityModerationConsole";
 import { CommunityReportButton } from "./CommunityReportButton";
 import type { ModerationPerson } from "./ModerationViews";
+const CommunityModerationConsole = lazy(() =>
+  import("./CommunityModerationConsole").then((m) => ({ default: m.CommunityModerationConsole })),
+);
 export function CommunitySafetyTools({
   serverId,
   userId,
@@ -49,13 +51,17 @@ export function CommunitySafetyTools({
           <DialogDescription>
             Os recursos disponíveis dependem das suas permissões atuais.
           </DialogDescription>
-          <CommunityModerationConsole
-            key={`${userId}:${serverId}`}
-            userId={userId}
-            serverId={serverId}
-            people={people}
-            roles={roles}
-          />
+          {open && (
+            <Suspense fallback={<p role="status">Carregando moderação…</p>}>
+              <CommunityModerationConsole
+                key={`${userId}:${serverId}`}
+                userId={userId}
+                serverId={serverId}
+                people={people}
+                roles={roles}
+              />
+            </Suspense>
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -93,7 +93,8 @@ export function AchievementCard({ achievement: a }: { achievement: CommunityAchi
       </div>
       {a.reward_id && (
         <p className="mt-3 text-xs text-muted-foreground">
-          Desbloqueio cosmético registrado; aplicação visual ainda indisponível.
+          Desbloqueio cosmético registrado. A disponibilidade pode ser consultada em Recompensas e
+          personalização.
         </p>
       )}
     </article>
@@ -188,7 +189,8 @@ export function MissionDetailsView({ mission: m }: { mission: CommunityMission }
       )}
       {m.reward_id && (
         <p className="text-muted-foreground">
-          Recompensa cosmética registrada, ainda sem aplicação visual nesta fase.
+          Recompensa cosmética registrada. Consulte Recompensas e personalização para verificar a
+          disponibilidade.
         </p>
       )}
       {m.status === "unavailable" && (

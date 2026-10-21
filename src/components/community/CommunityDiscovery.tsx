@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { moderationService } from "@/services/community-moderation";
-import { CommunityModerationConsole } from "./CommunityModerationConsole";
 import { CommunityReportButton } from "./CommunityReportButton";
 import { COMMUNITY_V1_ENABLED } from "@/lib/community-feature";
 import { discoveryService } from "@/services/community-discovery";
 import { discoveryError, emptyDiscoveryFilters } from "@/lib/community-discovery";
 import { CommunityDiscoveryView, CommunityPresentationView } from "./CommunityDiscoveryView";
 import type { DiscoveryCursor, DiscoveryFilters } from "@/types/community-discovery";
+const CommunityModerationConsole = lazy(() =>
+  import("./CommunityModerationConsole").then((m) => ({ default: m.CommunityModerationConsole })),
+);
 export function CommunityDiscovery({
   userId,
   onEnter,
@@ -41,7 +43,7 @@ export function CommunityDiscovery({
   const page = useQuery({
     queryKey: ["community-directory", userId, debounced, cursor],
     queryFn: () => discoveryService.search(debounced, cursor),
-    enabled: enabled && !selected,
+    enabled: enabled && !selected && !safety,
     gcTime: 0,
     staleTime: 0,
     retry: false,
@@ -50,7 +52,7 @@ export function CommunityDiscovery({
   const highlighted = useQuery({
     queryKey: ["community-directory-featured", userId],
     queryFn: () => discoveryService.search({ ...emptyDiscoveryFilters, featured: true }),
-    enabled: enabled && !selected,
+    enabled: enabled && !selected && !safety,
     gcTime: 0,
     retry: false,
     refetchInterval: 60000,
@@ -58,7 +60,7 @@ export function CommunityDiscovery({
   const detail = useQuery({
     queryKey: ["community-presentation", userId, selected],
     queryFn: () => discoveryService.presentation(selected!),
-    enabled: enabled && !!selected,
+    enabled: enabled && !!selected && !safety,
     gcTime: 0,
     staleTime: 0,
     retry: false,
@@ -68,7 +70,7 @@ export function CommunityDiscovery({
     queries: recent.map((id) => ({
       queryKey: ["community-presentation", userId, id],
       queryFn: () => discoveryService.presentation(id),
-      enabled: enabled && !selected,
+      enabled: enabled && !selected && !safety,
       gcTime: 0,
       staleTime: 0,
       retry: false,
@@ -107,7 +109,9 @@ export function CommunityDiscovery({
         <Button variant="ghost" className="mb-4" onClick={() => setSafety(false)}>
           Voltar para Explorar
         </Button>
-        <CommunityModerationConsole key={userId} userId={userId} />
+        <Suspense fallback={<p role="status">Carregando moderação…</p>}>
+          <CommunityModerationConsole key={userId} userId={userId} />
+        </Suspense>
       </section>
     );
   if (selected) {

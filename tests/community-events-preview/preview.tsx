@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { createRoot } from "react-dom/client";
+import { useState, type ReactNode } from "react";
 import { CommunityHome } from "@/components/community/CommunityHome";
 import { CommunityEventList } from "@/components/community/CommunityEventList";
 import { CommunityEventEditor } from "@/components/community/CommunityEventEditor";
+import { Button } from "@/components/ui/button";
 import { DEFAULT_EXPERIENCE } from "@/lib/community-experience";
 import type { Server, Channel } from "@/types";
 import type { CommunityExperience } from "@/types/community-experience";
@@ -62,7 +62,11 @@ const data: CommunityExperience = {
     updated_at: stamp,
   },
 };
-export function CommunityEventsPreview() {
+function EventsOnly({ events }: { events?: ReactNode }) {
+  return <div className="p-4 sm:p-7">{events}</div>;
+}
+export function CommunityEventsPreview({ embedded = false }: { embedded?: boolean } = {}) {
+  const Home = embedded ? EventsOnly : CommunityHome;
   const [items, setItems] = useState<CommunityEvent[]>([]),
     [editing, setEditing] = useState<{ event: CommunityEvent | null } | null>(null),
     [mode, setMode] = useState<EventMode>("upcoming"),
@@ -76,11 +80,54 @@ export function CommunityEventsPreview() {
           : Date.parse(e.starts_at) >= Date.now()),
   );
   return (
-    <main className="flex h-dvh flex-col bg-background text-foreground">
-      <p className="border-b border-border px-4 py-2 text-[11px] text-muted-foreground">
-        PRÉVIA LOCAL · servidor e usuário fictícios · callbacks em memória, sem Supabase {message}
-      </p>
-      <CommunityHome
+    <main className={"flex flex-col bg-background text-foreground " + (embedded ? "" : "h-dvh")}>
+      {!embedded && (
+        <p className="border-b border-border px-4 py-2 text-[11px] text-muted-foreground">
+          PRÉVIA LOCAL · servidor e usuário fictícios · callbacks em memória, sem Supabase {message}
+        </p>
+      )}
+      {embedded && message && (
+        <p role="status" className="px-4 pt-4 text-sm text-primary">
+          {message}
+        </p>
+      )}
+      {embedded && (
+        <div className="px-4 pt-4">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              const now = new Date();
+              setItems([
+                {
+                  id: "ca000000-0000-0000-0000-000000000003",
+                  server_id: sid,
+                  title: "Encontro cooperativo · fixture",
+                  description: "Exemplo fictício carregado somente em memória.",
+                  cover_url: null,
+                  channel_id: cid,
+                  starts_at: new Date(now.getTime() + 86400000).toISOString(),
+                  ends_at: null,
+                  timezone: "America/Sao_Paulo",
+                  status: "scheduled",
+                  revision: 1,
+                  created_at: now.toISOString(),
+                  updated_at: now.toISOString(),
+                  my_response: "none",
+                  my_notify: false,
+                  interested_count: 0,
+                  going_count: 0,
+                },
+              ]);
+              setMode("upcoming");
+              setMessage("Exemplo fictício carregado. Não é um evento real.");
+            }}
+          >
+            Carregar evento fictício
+          </Button>
+        </div>
+      )}
+      <Home
         server={server}
         data={data}
         channels={channels}
@@ -159,4 +206,3 @@ export function CommunityEventsPreview() {
     </main>
   );
 }
-createRoot(document.getElementById("root")!).render(<CommunityEventsPreview />);

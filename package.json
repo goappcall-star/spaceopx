@@ -25,6 +25,7 @@
     "preview:community-progression": "vite --config tests/community-progression-preview/vite.config.mjs",
     "preview:community-objectives": "vite --config tests/community-objectives-preview/vite.config.mjs",
     "preview:community-evolution": "vite --config tests/community-evolution-preview/vite.config.mjs",
+    "preview:communities": "vite --config tests/community-unified-preview/vite.config.mjs",
     "test:community-http": "node scripts/test-community-http.mjs",
     "test:community-db": "node scripts/test-community-db.mjs"
   },

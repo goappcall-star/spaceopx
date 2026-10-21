@@ -1,0 +1,6 @@
+@import "../../src/styles.css";
+@source "./";
+@source "../community-events-preview";
+@source "../community-discovery-preview";
+@source "../community-moderation-preview";
+@source "../community-evolution-preview";

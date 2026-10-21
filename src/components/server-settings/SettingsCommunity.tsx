@@ -156,7 +156,7 @@ export function SettingsCommunity({
             </h3>
             <p className="text-muted-foreground mt-1 text-xs">
               {settings?.enabled
-                ? "Ativa neste servidor · Fase 1"
+                ? "Ativa neste servidor · configurações e ferramentas da comunidade"
                 : settings
                   ? "Configuração preservada · comunidade desativada"
                   : "Organização, regras e identidade para o mesmo servidor"}
@@ -331,7 +331,8 @@ export function SettingsCommunity({
         <LockKeyhole className="text-primary h-5 w-5 shrink-0" />
         <p className="text-muted-foreground text-xs">
           Ativar a comunidade não publica o servidor. A descoberta exige escolha explícita do
-          proprietário. Evolução coletiva não está disponível nesta fase.
+          proprietário. A evolução coletiva usa critérios próprios; ganhos automáticos dependem de
+          uma fonte confiável explicitamente habilitada.
         </p>
       </div>
       {authorized && settings?.enabled && (

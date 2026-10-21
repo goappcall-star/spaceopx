@@ -110,7 +110,7 @@ export function CommunityActivationWizard({
         <div className="flex items-center gap-3">
           <Logo compact />
           <div>
-            <p className="text-muted-foreground text-xs">Comunidades LobbyX · Fase 1</p>
+            <p className="text-muted-foreground text-xs">Comunidades LobbyX</p>
             <h3 className="text-lg font-semibold">
               {editing
                 ? "Configurar comunidade"
@@ -198,8 +198,7 @@ export function CommunityActivationWizard({
           <>
             <h4 className="font-semibold">Regras claras para todos</h4>
             <p className="text-muted-foreground text-sm">
-              Adicione de 1 a 20 regras. O aceite obrigatório faz parte do onboarding da Fase 2 e
-              não é habilitado nesta etapa.
+              Adicione de 1 a 20 regras. Configure o aceite obrigatório nas opções de boas-vindas.
             </p>
             <div className="space-y-3">
               {rules.map((rule, index) => (

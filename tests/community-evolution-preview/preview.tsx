@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import {
   CommunityObjectivesView,
   MissionDetailsView,
   AchievementCard,
+  MissionHistoryView,
 } from "@/components/community/CommunityObjectivesView";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { CommunityObjectives, CommunityMission } from "@/types/community-objectives";
-import { createRoot } from "react-dom/client";
 import {
   CommunityStatisticsView,
   CommunityCosmeticsView,
@@ -133,14 +133,23 @@ const experience: CommunityExperience = {
     role_ids: [],
   },
 };
-export function Preview() {
-  const [tab, setTab] = useState<"home" | "statistics" | "cosmetics">("home"),
+export function Preview({
+  view,
+  embedded = false,
+  home,
+}: {
+  view?: "home" | "statistics" | "cosmetics" | "evolution";
+  embedded?: boolean;
+  home?: Partial<ComponentProps<typeof CommunityHome>>;
+} = {}) {
+  const [localTab, setTab] = useState<"home" | "statistics" | "cosmetics">("home"),
     [data, setData] = useState(base),
     [preview, setPreview] = useState<Appearance | null>(null),
     [days, setDays] = useState(30),
     [empty, setEmpty] = useState(false),
     [mission, setMission] = useState<CommunityMission | null>(null),
     [objectivePanel, setObjectivePanel] = useState<"gallery" | "history" | null>(null);
+  const tab = view ?? localTab;
   const end = new Date();
   end.setUTCHours(0, 0, 0, 0);
   end.setUTCDate(end.getUTCDate() + 1);
@@ -232,33 +241,37 @@ export function Preview() {
   };
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-primary/20 bg-background p-3">
-        <p className="text-xs text-primary">
-          PRÉVIA LOCAL 4C · DADOS FICTÍCIOS · SEM SUPABASE · APLICAÇÃO SÓ NA MEMÓRIA
-        </p>
-        <nav className="flex flex-wrap gap-2">
-          {(["home", "statistics", "cosmetics"] as const).map((t) => (
-            <Button
-              key={t}
-              size="sm"
-              variant={tab === t ? "default" : "outline"}
-              onClick={() => setTab(t)}
-            >
-              {t === "home" ? "Home" : t === "statistics" ? "Estatísticas" : "Personalização"}
-            </Button>
-          ))}
-        </nav>
-      </header>
-      <div className="mx-auto flex max-w-[1550px]">
-        <aside className="hidden w-56 shrink-0 border-r border-border p-6 lg:block">
-          <img src="/lobbyx-logo.png" alt="LobbyX" className="h-10 w-10" />
-          <p className="mt-5 font-semibold">Órbita</p>
-          <p className="mt-2 text-xs text-muted-foreground">Comunidade de demonstração</p>
-          <p className="mt-6 text-sm text-primary">Página inicial</p>
-          <p className="mt-5 text-xs text-muted-foreground">
-            Navegação e hotbar existentes preservadas.
+      {!embedded && (
+        <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-primary/20 bg-background p-3">
+          <p className="text-xs text-primary">
+            PRÉVIA LOCAL 4C · DADOS FICTÍCIOS · SEM SUPABASE · APLICAÇÃO SÓ NA MEMÓRIA
           </p>
-        </aside>
+          <nav className="flex flex-wrap gap-2">
+            {(["home", "statistics", "cosmetics"] as const).map((t) => (
+              <Button
+                key={t}
+                size="sm"
+                variant={tab === t ? "default" : "outline"}
+                onClick={() => setTab(t)}
+              >
+                {t === "home" ? "Home" : t === "statistics" ? "Estatísticas" : "Personalização"}
+              </Button>
+            ))}
+          </nav>
+        </header>
+      )}
+      <div className="mx-auto flex max-w-[1550px]">
+        {!embedded && (
+          <aside className="hidden w-56 shrink-0 border-r border-border p-6 lg:block">
+            <img src="/lobbyx-logo.png" alt="LobbyX" className="h-10 w-10" />
+            <p className="mt-5 font-semibold">Órbita</p>
+            <p className="mt-2 text-xs text-muted-foreground">Comunidade de demonstração</p>
+            <p className="mt-6 text-sm text-primary">Página inicial</p>
+            <p className="mt-5 text-xs text-muted-foreground">
+              Navegação e hotbar existentes preservadas.
+            </p>
+          </aside>
+        )}
         <main className="min-w-0 flex-1">
           {tab === "home" ? (
             <CommunityHome
@@ -275,6 +288,7 @@ export function Preview() {
                   Estatísticas
                 </Button>
               }
+              {...home}
               progression={
                 <>
                   <CommunityProgressionView data={progression} />
@@ -289,7 +303,17 @@ export function Preview() {
             />
           ) : (
             <div className="space-y-5 p-4 md:p-8">
-              {tab === "statistics" ? (
+              {tab === "evolution" ? (
+                <>
+                  <CommunityProgressionView data={progression} />
+                  <CommunityObjectivesView
+                    data={objectives}
+                    onDetails={setMission}
+                    onGallery={() => setObjectivePanel("gallery")}
+                    onHistory={() => setObjectivePanel("history")}
+                  />
+                </>
+              ) : tab === "statistics" ? (
                 <>
                   <Button variant="outline" onClick={() => setEmpty(!empty)}>
                     {empty ? "Exemplo com registros" : "Período sem registros"}
@@ -361,16 +385,10 @@ export function Preview() {
               <AchievementCard key={a.objective_id} achievement={a} />
             ))
           ) : (
-            <p>
-              Consulte o cenário completo de missões na prévia local da Fase 4B. Esta prévia cobre
-              estatísticas e personalização.
-            </p>
+            <MissionHistoryView missions={[]} onDetails={setMission} />
           )}
         </DialogContent>
       </Dialog>
     </div>
   );
 }
-const root = createRoot(document.getElementById("root")!);
-root.render(<Preview />);
-if (import.meta.hot) import.meta.hot.dispose(() => root.unmount());

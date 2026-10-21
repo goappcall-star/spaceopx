@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { createRoot } from "react-dom/client";
 import { Toaster } from "sonner";
 import {
   CommunityDiscoveryView,
@@ -30,7 +29,7 @@ const fixture: PublicCommunity = {
   published_at: stamp,
   featured: false,
 };
-export function DiscoveryPreview() {
+export function DiscoveryPreview({ embedded = false }: { embedded?: boolean } = {}) {
   const [tab, setTab] = useState<"explore" | "settings">("explore"),
     [filters, setFilters] = useState(emptyDiscoveryFilters),
     [items, setItems] = useState<PublicCommunity[]>([]),
@@ -64,11 +63,13 @@ export function DiscoveryPreview() {
     setSelected(null);
   }
   return (
-    <div className="bg-background text-foreground min-h-screen">
-      <div className="border-border text-muted-foreground border-b p-3 text-xs">
-        PRÉVIA LOCAL · dados fictícios identificados · callbacks em memória · sem Supabase, login ou
-        publicação
-      </div>
+    <div className={"bg-background text-foreground " + (embedded ? "" : "min-h-screen")}>
+      {!embedded && (
+        <div className="border-border text-muted-foreground border-b p-3 text-xs">
+          PRÉVIA LOCAL · dados fictícios identificados · callbacks em memória · sem Supabase, login
+          ou publicação
+        </div>
+      )}
       <nav className="border-border flex flex-wrap gap-2 border-b p-3">
         {(["explore", "settings"] as const).map((t) => (
           <button
@@ -156,6 +157,4 @@ export function DiscoveryPreview() {
     </div>
   );
 }
-const root = createRoot(document.getElementById("root")!);
-root.render(<DiscoveryPreview />);
 if (import.meta.hot) import.meta.hot.dispose(() => root.unmount());

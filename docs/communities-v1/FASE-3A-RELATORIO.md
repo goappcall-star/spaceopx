@@ -197,6 +197,11 @@ pendentes, apesar dos contratos correspondentes passarem no SQL.
 
 Capturas em `C:/Users/nicol/Documents/Codex/2026-10-03/vo/outputs/`:
 
+- [Home final, captura direta do navegador](/C:/Users/nicol/Documents/Codex/2026-10-03/vo/outputs/community-3a-final.png)
+- [Editor final, captura direta do navegador](/C:/Users/nicol/Documents/Codex/2026-10-03/vo/outputs/community-3a-final-editor.png)
+
+As duas capturas finais foram conferidas visualmente. Capturas anteriores abaixo tiveram redimensionamento pelo provedor e podem perder nitidez; a captura auxiliar `community-3a-narrow.png` ficou incompleta e não serve como evidência visual.
+
 - [Lista e participação](/C:/Users/nicol/Documents/Codex/2026-10-03/vo/outputs/community-3a-events.png)
 - [Editor](/C:/Users/nicol/Documents/Codex/2026-10-03/vo/outputs/community-3a-editor.png)
 - [Escolha de horário repetido](/C:/Users/nicol/Documents/Codex/2026-10-03/vo/outputs/community-3a-dst.png)

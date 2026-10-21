@@ -8,8 +8,87 @@ export type Database = {
   };
   public: {
     Tables: {
+      community_moderator_roles: {
+        Row: { role_id: string; server_id: string; capabilities: string[]; updated_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      community_security_settings: {
+        Row: {
+          server_id: string;
+          revision: number;
+          enabled: boolean;
+          burst_limit: number;
+          repeat_limit: number;
+          mentions_limit: number;
+          blocked_domains: string[];
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      community_reports: {
+        Row: {
+          id: string;
+          server_id: string;
+          scope: string;
+          kind: string;
+          target_id: string;
+          channel_id: string | null;
+          reporter_id: string | null;
+          category: string;
+          description: string | null;
+          evidence: string | null;
+          evidence_until: string;
+          private_until: string;
+          status: string;
+          revision: number;
+          reviewed_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      community_warnings: {
+        Row: {
+          id: string;
+          server_id: string;
+          target_user_id: string | null;
+          author_id: string | null;
+          reason: string;
+          reason_until: string;
+          status: string;
+          revision: number;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      community_moderation_decisions: {
+        Row: {
+          id: string;
+          server_id: string;
+          scope: string;
+          entity_id: string;
+          actor_id: string | null;
+          action: string;
+          reason: string | null;
+          reason_until: string;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       community_directory: {
         Row: {
+          last_public_presentation: Json | null;
+          suspended_by: string | null;
+          public_snapshot_until: string | null;
           server_id: string;
           status: string;
           revision: number;
@@ -1186,6 +1265,78 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      has_platform_safety_access: { Args: Record<PropertyKey, never>; Returns: boolean };
+      can_moderate_community: {
+        Args: { _server_id: string; _capability: string };
+        Returns: boolean;
+      };
+      community_moderation_access: { Args: { _server_id?: string }; Returns: Json };
+      set_community_moderator_role: {
+        Args: { _server_id: string; _role_id: string; _capabilities: string[] };
+        Returns: undefined;
+      };
+      get_community_security: { Args: { _server_id: string }; Returns: Json };
+      save_community_security: {
+        Args: { _server_id: string; _payload: Json; _expected_revision: number };
+        Returns: undefined;
+      };
+      submit_community_report: {
+        Args: {
+          _id: string;
+          _server_id: string;
+          _kind: string;
+          _target_id: string;
+          _category: string;
+          _description?: string;
+        };
+        Returns: string;
+      };
+      list_community_reports: {
+        Args: {
+          _server_id?: string;
+          _status?: string;
+          _search?: string;
+          _before_time?: string;
+          _before_id?: string;
+          _limit?: number;
+          _mine?: boolean;
+        };
+        Returns: Json;
+      };
+      review_community_report: {
+        Args: { _id: string; _expected_revision: number; _status: string; _reason: string };
+        Returns: undefined;
+      };
+      moderate_community_member: {
+        Args: {
+          _action_id: string;
+          _server_id: string;
+          _target: string;
+          _action: string;
+          _reason: string;
+        };
+        Returns: undefined;
+      };
+      review_community_warning: {
+        Args: { _id: string; _expected_revision: number; _reason: string };
+        Returns: undefined;
+      };
+      list_community_moderation_history: {
+        Args: {
+          _server_id?: string;
+          _mode?: string;
+          _before_time?: string;
+          _before_id?: string;
+          _limit?: number;
+        };
+        Returns: Json;
+      };
+      get_platform_directory_review: { Args: { _server_id: string }; Returns: Json };
+      moderate_platform_directory: {
+        Args: { _server_id: string; _expected_revision: number; _action: string; _reason: string };
+        Returns: undefined;
+      };
+      prune_community_moderation_data: { Args: { _limit?: number }; Returns: number };
       community_is_discoverable: { Args: { _server_id: string }; Returns: boolean };
       search_community_directory: {
         Args: {

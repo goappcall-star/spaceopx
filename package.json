@@ -21,6 +21,7 @@
     "desktop:release": "node scripts/publish-desktop-release.mjs",
     "preview:community-events": "vite --config tests/community-events-preview/vite.config.mjs",
     "preview:community-discovery": "vite --config tests/community-discovery-preview/vite.config.mjs",
+    "preview:community-moderation": "vite --config tests/community-moderation-preview/vite.config.mjs",
     "test:community-http": "node scripts/test-community-http.mjs",
     "test:community-db": "node scripts/test-community-db.mjs"
   },

@@ -126,6 +126,13 @@ export const serverAdminService = {
 };
 
 export const AUDIT_ACTION_LABELS: Record<string, string> = {
+  community_report_reviewed: "Denúncia analisada",
+  community_member_warn: "Advertência registrada",
+  community_member_kick: "Membro expulso pela Central",
+  community_member_ban: "Membro banido pela Central",
+  community_security_updated: "Segurança da comunidade atualizada",
+  community_moderator_role_updated: "Permissões de moderação atualizadas",
+  community_warning_revoked: "Advertência revogada",
   community_directory_published: "Comunidade publicada no diretório",
   community_directory_unlisted: "Comunidade retirada do diretório",
   community_directory_joined: "Ingresso pela descoberta",

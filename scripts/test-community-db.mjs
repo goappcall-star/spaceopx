@@ -71,6 +71,7 @@ console.log(run("psql", [...args, "-f", "tests/community-transactions.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-experience.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-events.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-discovery.sql"]));
+console.log(run("psql", [...args, "-f", "tests/community-moderation.sql"]));
 
 async function concurrent(sql) {
   return new Promise((resolve) => {
@@ -241,9 +242,18 @@ const collision = await Promise.all([firstEvent, collidingEvent]);
 if (
   collision[0].code !== 0 ||
   collision[1].code === 0 ||
-  !/community_revision_conflict/.test(collision[1].err)
+  !/community_revision_conflict|community_not_authorized/.test(collision[1].err)
 )
   throw Error("Event cross-server collision failed: " + JSON.stringify(collision));
+if (
+  run("psql", [
+    ...args,
+    "-At",
+    "-c",
+    `SELECT server_id=community_test.id('a') AND revision=1 AND title='Concurrent event' FROM community_events WHERE id='${eventId}';`,
+  ]).trim() !== "t"
+)
+  throw Error("Cross-server event was overwritten");
 console.log("Event UUID collision across servers: original preserved; second creation rejected.");
 const editFirst = concurrent(
   actor +
@@ -375,6 +385,88 @@ if (
 )
   throw Error("Concurrent ban bypassed: " + JSON.stringify(bannedJoin));
 console.log("Directory join waiting behind ban: rejected after current ban recheck.");
+
+run("psql", [
+  ...args,
+  "-c",
+  actor +
+    `UPDATE public.roles SET position=10 WHERE id=community_test.id('delegate-role'); SELECT public.set_community_moderator_role(community_test.id('a'),community_test.id('delegate-role'),ARRAY['warnings']);COMMIT;`,
+]);
+const modRevoke = concurrent(
+  actor +
+    `SET LOCAL application_name='moderation_cap_revoke';SELECT public.set_community_moderator_role(community_test.id('a'),community_test.id('delegate-role'),'{}');SELECT pg_sleep(2);COMMIT;`,
+);
+await waitForSleeper("moderation_cap_revoke");
+const revokedModeration = await Promise.all([
+  modRevoke,
+  concurrent(
+    `BEGIN;SET LOCAL ROLE authenticated;SELECT community_test.actor(2);SELECT public.moderate_community_member('cc000000-0000-0000-0000-000000000099',community_test.id('a'),community_test.user_id(5),'warn','Must reject revoked moderator.');COMMIT;`,
+  ),
+]);
+if (
+  revokedModeration[0].code !== 0 ||
+  revokedModeration[1].code === 0 ||
+  !revokedModeration[1].err.includes("moderation_not_authorized")
+)
+  throw Error("Revoked moderator acted: " + JSON.stringify(revokedModeration));
+console.log("Moderation waiting behind role revocation: backend denies sanction.");
+run("psql", [
+  ...args,
+  "-c",
+  `INSERT INTO security_private.platform_safety_staff(user_id) VALUES(community_test.user_id(7));`,
+]);
+const staffRevoke = concurrent(
+  `BEGIN;SET LOCAL application_name='platform_staff_revoke';UPDATE security_private.platform_safety_staff SET enabled=false WHERE user_id=community_test.user_id(7);SELECT pg_sleep(2);COMMIT;`,
+);
+await waitForSleeper("platform_staff_revoke");
+const revokedStaff = await Promise.all([
+  staffRevoke,
+  concurrent(
+    `BEGIN;SET LOCAL ROLE authenticated;SELECT community_test.actor(7);SELECT public.moderate_platform_directory(community_test.id('a'),2,'suspend','Must reject revoked staff.');COMMIT;`,
+  ),
+]);
+if (
+  revokedStaff[0].code !== 0 ||
+  revokedStaff[1].code === 0 ||
+  !revokedStaff[1].err.includes("moderation_not_authorized")
+)
+  throw Error("Revoked staff acted: " + JSON.stringify(revokedStaff));
+console.log("Platform action waiting behind identity revocation: backend denies suspension.");
+run("psql", [
+  ...args,
+  "-c",
+  actor +
+    `SELECT public.save_community_security(community_test.id('a'),'{"enabled":true,"burst_limit":3,"repeat_limit":2,"mentions_limit":8,"blocked_domains":[]}',0);COMMIT;`,
+]);
+const spamActor = `BEGIN;SET LOCAL ROLE authenticated;SELECT community_test.actor(6);`;
+const spamFirst = concurrent(
+  spamActor +
+    `INSERT INTO messages(channel_id,author_id,content) VALUES(community_test.id('a-welcome'),auth.uid(),'Concurrent spam A1'),(community_test.id('a-welcome'),auth.uid(),'Concurrent spam A2');SET LOCAL application_name='community_spam_first';SELECT pg_sleep(2);COMMIT;`,
+);
+await waitForSleeper("community_spam_first");
+const spamRace = await Promise.all([
+  spamFirst,
+  concurrent(
+    spamActor +
+      `INSERT INTO messages(channel_id,author_id,content) VALUES(community_test.id('a-welcome'),auth.uid(),'Concurrent spam B1'),(community_test.id('a-welcome'),auth.uid(),'Concurrent spam B2');COMMIT;`,
+  ),
+]);
+if (
+  spamRace[0].code !== 0 ||
+  spamRace[1].code === 0 ||
+  !spamRace[1].err.includes("community_spam_rate")
+)
+  throw Error("Concurrent spam bypassed guard: " + JSON.stringify(spamRace));
+if (
+  run("psql", [
+    ...args,
+    "-At",
+    "-c",
+    `SELECT count(*)<=3 FROM messages WHERE author_id=community_test.user_id(6) AND content LIKE 'Concurrent spam %';`,
+  ]).trim() !== "t"
+)
+  throw Error("Spam exceeded configured burst");
+console.log("Two simultaneous message batches: configured burst enforced after advisory lock.");
 
 // Run prior DB security/notification suites against the complete schema as regressions.
 for (const file of [

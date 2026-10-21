@@ -3,6 +3,7 @@ import { Ban, Image as ImageIcon, Link2, ScrollText, Settings2, Shield, Users } 
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { COMMUNITY_V1_ENABLED } from "@/lib/community-feature";
+import { useServerRoles } from "@/hooks/use-server-admin";
 import { cn } from "@/lib/utils";
 import { SettingsAccess } from "./SettingsAccess";
 import { SettingsAudit } from "./SettingsAudit";
@@ -18,9 +19,22 @@ import type { MemberWithProfile, Server } from "@/types";
 const SettingsCommunity = lazy(() =>
   import("./SettingsCommunity").then((m) => ({ default: m.SettingsCommunity })),
 );
+const CommunityModerationConsole = lazy(() =>
+  import("@/components/community/CommunityModerationConsole").then((m) => ({
+    default: m.CommunityModerationConsole,
+  })),
+);
 
 type SectionId =
-  "community" | "profile" | "access" | "members" | "roles" | "invites" | "bans" | "audit";
+  | "community"
+  | "moderation"
+  | "profile"
+  | "access"
+  | "members"
+  | "roles"
+  | "invites"
+  | "bans"
+  | "audit";
 
 interface Props {
   server: Server;
@@ -39,11 +53,15 @@ export function ServerSettingsDialog({
 }: Props) {
   const { can, isOwner } = useServerAbilities(server, members, currentUserId);
   const [section, setSection] = useState<SectionId>("profile");
+  const { data: moderationRoles = [] } = useServerRoles(
+    open && COMMUNITY_V1_ENABLED ? server.id : "",
+  );
 
   type SectionItem = { id: SectionId; label: string; icon: typeof Shield; group: string };
   const sections: SectionItem[] = (
     [
       { id: "community", label: "Comunidade", icon: Users, group: "Geral" },
+      { id: "moderation", label: "Moderação", icon: Shield, group: "Comunidade" },
       { id: "profile", label: "Perfil do servidor", icon: ImageIcon, group: "Geral" },
       { id: "access", label: "Acesso e interações", icon: Settings2, group: "Geral" },
       { id: "members", label: "Membros", icon: Users, group: "Comunidade" },
@@ -54,6 +72,7 @@ export function ServerSettingsDialog({
     ] as SectionItem[]
   ).filter((item) => {
     if (item.id === "community") return COMMUNITY_V1_ENABLED;
+    if (item.id === "moderation") return COMMUNITY_V1_ENABLED;
     if (item.id === "bans") return can("ban_members");
     if (item.id === "audit") return can("view_audit_log");
     if (item.id === "invites") return can("create_invite") || can("manage_server");
@@ -129,6 +148,22 @@ export function ServerSettingsDialog({
               </Suspense>
             )}
             {section === "profile" && <SettingsProfile server={server} readOnly={readOnlyServer} />}
+            {section === "moderation" && open && COMMUNITY_V1_ENABLED && (
+              <Suspense fallback={<p role="status">Carregando moderação…</p>}>
+                <CommunityModerationConsole
+                  key={`${server.id}:${currentUserId}`}
+                  serverId={server.id}
+                  userId={currentUserId}
+                  people={members.map((m) => ({
+                    id: m.user_id,
+                    name: m.profile?.display_name ?? "Membro",
+                  }))}
+                  roles={moderationRoles
+                    .filter((r) => !r.is_owner && !["OWNER", "MEMBER"].includes(r.name))
+                    .map((r) => ({ id: r.id, name: r.name }))}
+                />
+              </Suspense>
+            )}
             {section === "access" && <SettingsAccess server={server} readOnly={readOnlyServer} />}
             {section === "members" && (
               <SettingsMembers

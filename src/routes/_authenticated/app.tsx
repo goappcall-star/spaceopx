@@ -454,6 +454,7 @@ function AppPage() {
                   data={community.data}
                   channels={channels}
                   me={me}
+                  members={members}
                   userId={user.id}
                   unavailable={community.isError || community.isPaused}
                   onChannel={(id) => {

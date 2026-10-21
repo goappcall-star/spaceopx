@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { moderationService } from "@/services/community-moderation";
+import { CommunityModerationConsole } from "./CommunityModerationConsole";
+import { CommunityReportButton } from "./CommunityReportButton";
 import { COMMUNITY_V1_ENABLED } from "@/lib/community-feature";
 import { discoveryService } from "@/services/community-discovery";
 import { discoveryError, emptyDiscoveryFilters } from "@/lib/community-discovery";
@@ -26,6 +29,15 @@ export function CommunityDiscovery({
     return () => clearTimeout(timer);
   }, [filters]);
   const enabled = COMMUNITY_V1_ENABLED && !!userId;
+  const [safety, setSafety] = useState(false);
+  const safetyAccess = useQuery({
+    queryKey: ["moderation-access", userId, "platform"],
+    queryFn: () => moderationService.access(),
+    enabled,
+    gcTime: 0,
+    retry: false,
+    refetchInterval: 30000,
+  });
   const page = useQuery({
     queryKey: ["community-directory", userId, debounced, cursor],
     queryFn: () => discoveryService.search(debounced, cursor),
@@ -89,6 +101,15 @@ export function CommunityDiscovery({
       setBusy(false);
     }
   }
+  if (safety)
+    return (
+      <section className="flex-1 overflow-y-auto p-5">
+        <Button variant="ghost" className="mb-4" onClick={() => setSafety(false)}>
+          Voltar para Explorar
+        </Button>
+        <CommunityModerationConsole key={userId} userId={userId} />
+      </section>
+    );
   if (selected) {
     if (detail.isError || detail.isPending || !detail.data)
       return (
@@ -110,6 +131,15 @@ export function CommunityDiscovery({
       );
     return (
       <CommunityPresentationView
+        reportAction={
+          detail.data.can_join ? (
+            <CommunityReportButton
+              serverId={detail.data.server_id}
+              kind="directory"
+              targetId={detail.data.server_id}
+            />
+          ) : undefined
+        }
         item={detail.data}
         busy={busy || detail.isFetching}
         error={actionError}
@@ -121,22 +151,31 @@ export function CommunityDiscovery({
     );
   }
   return (
-    <CommunityDiscoveryView
-      filters={filters}
-      onFilters={change}
-      page={page.data}
-      featured={highlighted.isError ? [] : (highlighted.data?.items ?? [])}
-      recent={recentQueries.flatMap((q) => (q.isError || !q.data ? [] : [q.data]))}
-      loading={page.isFetching || filters !== debounced}
-      error={page.isError ? discoveryError(page.error) : null}
-      onRetry={() => void page.refetch()}
-      onOpen={open}
-      onFirst={() => setCursor(undefined)}
-      onNext={() => {
-        const last = page.data?.items.at(-1);
-        if (last?.published_at)
-          setCursor({ published_at: last.published_at, server_id: last.server_id });
-      }}
-    />
+    <>
+      {safetyAccess.data?.platform && !safetyAccess.isError && (
+        <div className="border-border border-b px-4 py-2">
+          <Button variant="outline" size="sm" onClick={() => setSafety(true)}>
+            Central de Segurança da Plataforma
+          </Button>
+        </div>
+      )}
+      <CommunityDiscoveryView
+        filters={filters}
+        onFilters={change}
+        page={page.data}
+        featured={highlighted.isError ? [] : (highlighted.data?.items ?? [])}
+        recent={recentQueries.flatMap((q) => (q.isError || !q.data ? [] : [q.data]))}
+        loading={page.isFetching || filters !== debounced}
+        error={page.isError ? discoveryError(page.error) : null}
+        onRetry={() => void page.refetch()}
+        onOpen={open}
+        onFirst={() => setCursor(undefined)}
+        onNext={() => {
+          const last = page.data?.items.at(-1);
+          if (last?.published_at)
+            setCursor({ published_at: last.published_at, server_id: last.server_id });
+        }}
+      />
+    </>
   );
 }

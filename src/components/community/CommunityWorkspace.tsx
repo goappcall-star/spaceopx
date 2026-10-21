@@ -1,4 +1,6 @@
 import { CommunityEvents } from "./CommunityEvents";
+import { CommunitySafetyTools } from "./CommunitySafetyTools";
+import { CommunityReportButton } from "./CommunityReportButton";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CommunityHome } from "./CommunityHome";
@@ -19,6 +21,7 @@ export function CommunityWorkspace({
   onChannel,
   onSettings,
   unavailable,
+  members,
 }: {
   server: Server;
   data: CommunityExperience;
@@ -28,6 +31,7 @@ export function CommunityWorkspace({
   onChannel: (id: string) => void;
   onSettings: () => void;
   unavailable: boolean;
+  members: MemberWithProfile[];
 }) {
   const { participantsByChannel } = useVoice(),
     client = useQueryClient();
@@ -38,8 +42,19 @@ export function CommunityWorkspace({
   const visible = hasPermission(me, "view_channel") ? channels : [];
   return (
     <>
+      <CommunitySafetyTools
+        serverId={server.id}
+        userId={userId}
+        people={members.map((m) => ({ id: m.user_id, name: m.profile?.display_name ?? "Membro" }))}
+        roles={roles
+          .filter((r) => !r.is_owner && !["OWNER", "MEMBER"].includes(r.name))
+          .map((r) => ({ id: r.id, name: r.name }))}
+      />
       {data.experience.home_enabled ? (
         <CommunityHome
+          reportNotice={(id) => (
+            <CommunityReportButton serverId={server.id} kind="notice" targetId={id} />
+          )}
           events={
             <CommunityEvents
               key={`${userId}:${server.id}`}

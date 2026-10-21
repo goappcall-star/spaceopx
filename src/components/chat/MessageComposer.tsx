@@ -1,6 +1,7 @@
 import { Paperclip, SendHorizonal, Smile, X } from "lucide-react";
 import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { moderationError } from "@/lib/community-moderation";
 import {
   completeMention,
   mentionOptions,
@@ -133,7 +134,11 @@ export function MessageComposer({
       setAttachments([]);
       onCancelReply();
     } catch (error) {
-      toast.error((error as Error).message ?? "Não foi possível enviar.");
+      toast.error(
+        /community_spam_/.test(String((error as Error)?.message))
+          ? moderationError(error)
+          : ((error as Error).message ?? "Não foi possível enviar."),
+      );
     } finally {
       setSending(false);
     }

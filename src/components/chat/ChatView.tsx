@@ -1,4 +1,5 @@
 import { measureOperation } from "@/services/performance/monitor";
+import { useCommunity } from "@/hooks/use-community";
 import { Hash, MessagesSquare } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -25,6 +26,7 @@ interface Props {
 const GROUP_WINDOW_MS = 5 * 60 * 1000;
 
 export function ChatView({ serverId, channel, members, userId, me, onRead }: Props) {
+  const reportCommunity = useCommunity(serverId, userId ?? "");
   const [replyTo, setReplyTo] = useState<MessageWithMeta | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -168,6 +170,7 @@ export function ChatView({ serverId, channel, members, userId, me, onRead }: Pro
             <MessageItem
               key={message.id}
               message={message}
+              reportServerId={reportCommunity.data?.settings?.enabled ? serverId : undefined}
               compact={compact}
               isOwn={message.author_id === userId}
               canDelete={message.author_id === userId || canModerate}

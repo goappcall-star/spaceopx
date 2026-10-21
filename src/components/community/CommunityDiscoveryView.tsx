@@ -1,4 +1,5 @@
 import { Compass, ArrowLeft, Search, ShieldCheck, Users, ArrowUpRight } from "lucide-react";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { COMMUNITY_CATEGORIES } from "@/lib/community-validation";
 import type {
@@ -241,6 +242,7 @@ function DiscoverySection({
   );
 }
 export function CommunityPresentationView({
+  reportAction,
   item,
   busy,
   error,
@@ -249,6 +251,7 @@ export function CommunityPresentationView({
   onWithdraw,
   onEnter,
 }: {
+  reportAction?: ReactNode;
   item: CommunityPresentation;
   busy: boolean;
   error: string | null;
@@ -290,6 +293,7 @@ export function CommunityPresentationView({
             />
             <h1 className="text-2xl font-bold">{item.name}</h1>
           </div>
+          {reportAction}
           <p className="text-muted-foreground text-sm whitespace-pre-wrap break-words">
             {item.description}
           </p>

@@ -11,6 +11,7 @@ import {
   AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
 import { CommunityEventList } from "./CommunityEventList";
+import { CommunityReportButton } from "./CommunityReportButton";
 import { CommunityEventEditor } from "./CommunityEventEditor";
 import { useCommunityEvents, useCommunityEventInbox } from "@/hooks/use-community-events";
 import { communityEventsService } from "@/services/community-events";
@@ -64,6 +65,9 @@ export function CommunityEvents({
   return (
     <>
       <CommunityEventList
+        reportEvent={(id) => (
+          <CommunityReportButton serverId={serverId} kind="event" targetId={id} />
+        )}
         page={query.data}
         mode={mode}
         busy={busy}

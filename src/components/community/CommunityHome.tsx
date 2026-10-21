@@ -22,8 +22,10 @@ export function CommunityHome({
   onOnboarding,
   onSettings,
   events,
+  reportNotice,
 }: {
   events?: ReactNode;
+  reportNotice?: ((id: string) => ReactNode) | undefined;
   server: Server;
   data: CommunityExperience;
   channels: Channel[];
@@ -143,6 +145,7 @@ export function CommunityHome({
                         className="rounded-xl border border-border bg-background/60 p-4"
                       >
                         <h3 className="break-words font-medium">{n.title}</h3>
+                        {reportNotice?.(n.id)}
                         <p className="mt-2 whitespace-pre-wrap break-words text-sm text-muted-foreground">
                           {n.body}
                         </p>

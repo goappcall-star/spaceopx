@@ -1,4 +1,7 @@
 import { FormattedMessage } from "@/components/chat/FormattedMessage";
+import { CommunityReportButton } from "@/components/community/CommunityReportButton";
+import { toast } from "sonner";
+import { moderationError } from "@/lib/community-moderation";
 import { Check, CornerUpLeft, Pencil, SmilePlus, Trash2, X } from "lucide-react";
 import { memo, useState } from "react";
 
@@ -32,6 +35,7 @@ interface Props {
   onEdit: (id: string, content: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onReact: (id: string, emoji: string) => void;
+  reportServerId?: string | undefined;
 }
 
 function time(iso: string) {
@@ -47,6 +51,7 @@ export const MessageItem = memo(function MessageItem({
   onEdit,
   onDelete,
   onReact,
+  reportServerId,
 }: Props) {
   const [reactionOpen, setReactionOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -121,8 +126,16 @@ export const MessageItem = memo(function MessageItem({
               <Button
                 size="sm"
                 onClick={async () => {
-                  if (draft.trim()) await onEdit(message.id, draft);
-                  setEditing(false);
+                  try {
+                    if (draft.trim()) await onEdit(message.id, draft);
+                    setEditing(false);
+                  } catch (error) {
+                    toast.error(
+                      /community_spam_/.test(String((error as Error)?.message))
+                        ? moderationError(error)
+                        : "Não foi possível salvar. Seu texto foi mantido.",
+                    );
+                  }
                 }}
               >
                 <Check className="mr-1 h-3.5 w-3.5" />
@@ -199,6 +212,14 @@ export const MessageItem = memo(function MessageItem({
             </div>
           </PopoverContent>
         </Popover>
+        {reportServerId && !isOwn && (
+          <CommunityReportButton
+            serverId={reportServerId}
+            kind="message"
+            targetId={message.id}
+            compact
+          />
+        )}
         <Button
           size="icon"
           variant="ghost"

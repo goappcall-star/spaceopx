@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { CalendarDays, Clock, Users, Plus, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatEventTime } from "@/lib/community-events";
@@ -10,6 +10,7 @@ import type {
 } from "@/types/community-events";
 import type { Channel } from "@/types";
 function EventCard({
+  reportAction,
   event,
   channel,
   manage,
@@ -20,6 +21,7 @@ function EventCard({
   onChannel,
 }: {
   event: CommunityEvent;
+  reportAction?: ReactNode;
   channel: Channel | undefined;
   manage: boolean;
   busy: boolean;
@@ -46,6 +48,7 @@ function EventCard({
       <div className="space-y-3 p-4">
         <div className="flex items-start justify-between gap-2">
           <h3 className="break-words font-semibold">{event.title}</h3>
+          {reportAction}
           {event.status === "cancelled" && (
             <span className="shrink-0 rounded-full bg-destructive/10 px-2 py-1 text-[10px] text-destructive">
               Cancelado
@@ -158,6 +161,7 @@ function EventCard({
   );
 }
 export function CommunityEventList({
+  reportEvent,
   page,
   mode,
   busy,
@@ -176,6 +180,7 @@ export function CommunityEventList({
   onChannel,
 }: {
   page: CommunityEventPage | undefined;
+  reportEvent?: ((id: string) => ReactNode) | undefined;
   mode: EventMode;
   busy: boolean;
   loading: boolean;
@@ -261,6 +266,7 @@ export function CommunityEventList({
         <EventCard
           key={`${event.id}:${event.revision}:${event.my_response}:${event.my_notify}`}
           event={event}
+          reportAction={reportEvent?.(event.id)}
           channel={channels.find((c) => c.id === event.channel_id)}
           manage={page.can_manage}
           busy={busy || !!error}

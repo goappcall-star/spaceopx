@@ -72,6 +72,7 @@ console.log(run("psql", [...args, "-f", "tests/community-experience.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-events.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-discovery.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-moderation.sql"]));
+console.log(run("psql", [...args, "-f", "tests/community-progression.sql"]));
 
 async function concurrent(sql) {
   return new Promise((resolve) => {
@@ -467,6 +468,71 @@ if (
 )
   throw Error("Spam exceeded configured burst");
 console.log("Two simultaneous message batches: configured burst enforced after advisory lock.");
+
+// 4A: distinct real PostgreSQL sessions; fixtures are trusted SQL, not HTTP auth.
+run("psql", [
+  ...args,
+  "-c",
+  `
+ UPDATE security_private.community_xp_policy SET enabled=true,activity_xp=100,daily_cap=250,weekly_cap=250;
+ INSERT INTO security_private.community_verified_activities(id,server_id,source,evidence_key,expires_at)
+ SELECT ('d4100000-0000-0000-0000-'||lpad(n::text,12,'0'))::uuid,community_test.id('a'),
+ 'backend_verified_activity',gen_random_uuid(),clock_timestamp()+interval '1 hour' FROM generate_series(1,6)n;`,
+]);
+const xpCall = (n) =>
+  `SELECT public.consume_verified_community_activity(community_test.id('a'),'d4100000-0000-0000-0000-${String(n).padStart(12, "0")}');`;
+const xpFirst = concurrent(
+  `BEGIN;SET LOCAL application_name='community_xp_duplicate';SELECT id FROM public.servers WHERE id=community_test.id('a') FOR UPDATE;SELECT pg_sleep(1.5);${xpCall(1)}COMMIT;`,
+);
+await waitForSleeper("community_xp_duplicate");
+const xpDuplicate = await Promise.all([xpFirst, concurrent(xpCall(1))]);
+if (xpDuplicate.some((r) => r.code !== 0) || !xpDuplicate[1].out.includes('"replayed": true'))
+  throw Error("XP replay race: " + JSON.stringify(xpDuplicate));
+const xpCap = await Promise.all([2, 3, 4].map((n) => concurrent(xpCall(n))));
+if (xpCap.some((r) => r.code !== 0)) throw Error("XP cap race: " + JSON.stringify(xpCap));
+if (
+  run("psql", [
+    ...args,
+    "-At",
+    "-c",
+    `SELECT (SELECT xp=250 FROM community_xp_accounts WHERE server_id=community_test.id('a')) AND count(*)=4 AND sum(awarded_xp)=250 FROM community_xp_ledger WHERE server_id=community_test.id('a');`,
+  ]).trim() !== "t"
+)
+  throw Error("Concurrent XP exceeded cap or duplicated ledger");
+console.log(
+  "XP duplicate and period cap races: one ledger per attestation; total exactly 250, never above limit.",
+);
+const xpDisable = concurrent(
+  actor +
+    `SET LOCAL application_name='community_xp_disable';SELECT disable_server_community(community_test.id('a'),(SELECT revision FROM server_community_settings WHERE server_id=community_test.id('a')));SELECT pg_sleep(1.5);COMMIT;`,
+);
+await waitForSleeper("community_xp_disable");
+const xpDisabledResults = await Promise.all([xpDisable, concurrent(xpCall(5))]);
+if (
+  xpDisabledResults[0].code !== 0 ||
+  xpDisabledResults[1].code === 0 ||
+  !xpDisabledResults[1].err.includes("community_progression_disabled")
+)
+  throw Error("XP disable race: " + JSON.stringify(xpDisabledResults));
+run("psql", [
+  ...args,
+  "-c",
+  actor +
+    `SELECT save_server_community(community_test.id('a'),community_test.payload('a'),(SELECT revision FROM server_community_settings WHERE server_id=community_test.id('a')));COMMIT;`,
+]);
+if (
+  run("psql", [
+    ...args,
+    "-At",
+    "-c",
+    `SELECT xp=250 FROM community_xp_accounts WHERE server_id=community_test.id('a');`,
+  ]).trim() !== "t"
+)
+  throw Error("XP lost on reactivation");
+console.log(
+  "XP disable race: pending new grant rejected after lock; reactivation retains permanent XP.",
+);
+run("psql", [...args, "-c", "UPDATE security_private.community_xp_policy SET enabled=false;"]);
 
 // Run prior DB security/notification suites against the complete schema as regressions.
 for (const file of [

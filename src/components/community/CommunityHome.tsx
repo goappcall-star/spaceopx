@@ -23,7 +23,9 @@ export function CommunityHome({
   onSettings,
   events,
   reportNotice,
+  progression,
 }: {
+  progression?: ReactNode;
   events?: ReactNode;
   reportNotice?: ((id: string) => ReactNode) | undefined;
   server: Server;
@@ -113,6 +115,7 @@ export function CommunityHome({
             <ArrowRight className="h-4 w-4" />
           </Button>
         </section>
+        {progression}
         <div className="grid gap-6 lg:grid-cols-2">
           {config.modules.map((module) => (
             <section

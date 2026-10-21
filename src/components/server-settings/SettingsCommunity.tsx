@@ -1,4 +1,5 @@
 import { CommunityCustomization } from "@/components/community/CommunityCustomization";
+import { CommunityDiscoverySettings } from "@/components/community/CommunityDiscoverySettings";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, LockKeyhole, RefreshCw, ShieldCheck, Users } from "lucide-react";
@@ -310,11 +311,19 @@ export function SettingsCommunity({
           )}
         </section>
       )}
+      {authorized && settings?.enabled && (
+        <CommunityDiscoverySettings
+          key={`${server.id}:${currentUserId}`}
+          serverId={server.id}
+          userId={currentUserId}
+          serverName={server.name}
+        />
+      )}
       <div className="border-border bg-surface flex gap-3 rounded-xl border p-4">
         <LockKeyhole className="text-primary h-5 w-5 shrink-0" />
         <p className="text-muted-foreground text-xs">
-          Descoberta pública, onboarding obrigatório, eventos e evolução coletiva pertencem às fases
-          seguintes. Nenhum desses recursos é habilitado por esta ativação.
+          Ativar a comunidade não publica o servidor. A descoberta exige escolha explícita do
+          proprietário. Evolução coletiva não está disponível nesta fase.
         </p>
       </div>
       {authorized && settings?.enabled && (

@@ -8,6 +8,43 @@ export type Database = {
   };
   public: {
     Tables: {
+      community_directory: {
+        Row: {
+          server_id: string;
+          status: string;
+          revision: number;
+          published_by: string | null;
+          name: string;
+          description: string;
+          icon_url: string | null;
+          banner_url: string | null;
+          category: string;
+          language: string;
+          interests: string[];
+          public_rules: string[];
+          admission: string;
+          published_at: string | null;
+          featured_at: string | null;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      community_join_requests: {
+        Row: {
+          server_id: string;
+          user_id: string;
+          status: string;
+          revision: number;
+          created_at: string;
+          updated_at: string;
+          reviewed_by: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       community_events: {
         Row: {
           id: string;
@@ -1149,6 +1186,48 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      community_is_discoverable: { Args: { _server_id: string }; Returns: boolean };
+      search_community_directory: {
+        Args: {
+          _search?: string;
+          _category?: string;
+          _language?: string;
+          _interest?: string;
+          _before_time?: string;
+          _before_id?: string;
+          _limit?: number;
+          _featured?: boolean;
+        };
+        Returns: Json;
+      };
+      get_public_community: { Args: { _server_id: string }; Returns: Json };
+      get_community_discovery_settings: { Args: { _server_id: string }; Returns: Json };
+      save_community_discovery: {
+        Args: {
+          _server_id: string;
+          _payload: Json;
+          _expected_revision: number;
+          _publish?: boolean;
+        };
+        Returns: Json;
+      };
+      join_discovered_community: {
+        Args: { _server_id: string; _expected_revision: number; _withdraw?: boolean };
+        Returns: Json;
+      };
+      list_community_join_requests: {
+        Args: { _server_id: string; _after_time?: string; _after_id?: string; _limit?: number };
+        Returns: Json;
+      };
+      review_community_join_request: {
+        Args: {
+          _server_id: string;
+          _user_id: string;
+          _expected_revision: number;
+          _approve: boolean;
+        };
+        Returns: undefined;
+      };
       list_community_events: {
         Args: {
           _server_id: string;

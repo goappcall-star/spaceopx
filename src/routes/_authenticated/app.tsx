@@ -1,4 +1,11 @@
 import { useCommunityEventNotifications } from "@/hooks/use-community-event-notifications";
+import { useQueryClient } from "@tanstack/react-query";
+import { COMMUNITY_V1_ENABLED } from "@/lib/community-feature";
+const CommunityDiscovery = lazy(() =>
+  import("@/components/community/CommunityDiscovery").then((m) => ({
+    default: m.CommunityDiscovery,
+  })),
+);
 import { measureOperation } from "@/services/performance/monitor";
 import { useSessionServer } from "@/components/call/SessionCommunications";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
@@ -73,6 +80,7 @@ export const Route = createFileRoute("/_authenticated/app")({
 });
 
 function AppPage() {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   useCommunityEventNotifications(user?.id);
@@ -425,6 +433,12 @@ function AppPage() {
                 conversations={conversations}
                 onOpenConversation={openConversation}
                 onCloseConversation={() => setActiveConversationId(null)}
+                onEnterCommunity={async (id) => {
+                  await queryClient.invalidateQueries({ queryKey: ["servers"] });
+                  setActiveServerId(id);
+                  setCommunityView(id);
+                  setView("servers");
+                }}
               />
             ) : activeServer && showCommunity && community.data && user ? (
               <Suspense
@@ -633,6 +647,7 @@ function SocialMain({
   conversations,
   onOpenConversation,
   onCloseConversation,
+  onEnterCommunity,
 }: {
   conversation: ConversationOverview | null;
   userId: string | undefined;
@@ -643,6 +658,7 @@ function SocialMain({
   conversations: ConversationOverview[];
   onOpenConversation: (id: string) => void;
   onCloseConversation: () => void;
+  onEnterCommunity: (id: string) => void;
 }) {
   const { openProfile } = useProfileDialog();
 
@@ -658,6 +674,19 @@ function SocialMain({
       />
     );
   }
+
+  if (tab === "explore" && userId && COMMUNITY_V1_ENABLED)
+    return (
+      <Suspense
+        fallback={
+          <p role="status" className="p-6">
+            Carregando Explorar…
+          </p>
+        }
+      >
+        <CommunityDiscovery key={userId} userId={userId} onEnter={onEnterCommunity} />
+      </Suspense>
+    );
 
   return (
     <SocialHome

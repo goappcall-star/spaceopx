@@ -126,6 +126,11 @@ export const serverAdminService = {
 };
 
 export const AUDIT_ACTION_LABELS: Record<string, string> = {
+  community_directory_published: "Comunidade publicada no diretório",
+  community_directory_unlisted: "Comunidade retirada do diretório",
+  community_directory_joined: "Ingresso pela descoberta",
+  community_request_approved: "Solicitação de entrada aprovada",
+  community_request_rejected: "Solicitação de entrada rejeitada",
   community_event_created: "Evento criado",
   community_event_updated: "Evento atualizado",
   community_event_cancelled: "Evento cancelado",

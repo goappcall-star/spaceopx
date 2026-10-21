@@ -1,7 +1,8 @@
 import { UnreadBadge } from "@/components/app/UnreadBadge";
 import { LiveGameActivity } from "@/components/gamer/LiveGameActivity";
 import { useGlobalPresence } from "@/hooks/use-global-presence";
-import { MessageSquare, UserPlus, Users, UsersRound } from "lucide-react";
+import { Compass, MessageSquare, UserPlus, Users, UsersRound } from "lucide-react";
+import { COMMUNITY_V1_ENABLED } from "@/lib/community-feature";
 
 import { StatusDot } from "@/components/app/StatusDot";
 import { UserBar } from "@/components/app/UserBar";
@@ -9,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { ConversationOverview, UserStatus } from "@/types";
 
-export type SocialTab = "friends" | "requests" | "messages" | "groups";
+export type SocialTab = "friends" | "requests" | "messages" | "groups" | "explore";
 
 interface Props {
   tab: SocialTab;
@@ -25,6 +26,7 @@ const NAV: { id: SocialTab; label: string; icon: typeof Users }[] = [
   { id: "requests", label: "Solicitações", icon: UserPlus },
   { id: "messages", label: "Mensagens", icon: MessageSquare },
   { id: "groups", label: "Grupos", icon: UsersRound },
+  { id: "explore", label: "Explorar", icon: Compass },
 ];
 
 export function shortTime(iso: string | null) {
@@ -62,7 +64,7 @@ export function SocialSidebar({
       </div>
 
       <nav className="flex flex-col gap-0.5 px-2 py-2.5">
-        {NAV.map((item) => {
+        {NAV.filter((item) => item.id !== "explore" || COMMUNITY_V1_ENABLED).map((item) => {
           const active = tab === item.id && !activeConversationId;
           const Icon = item.icon;
           return (

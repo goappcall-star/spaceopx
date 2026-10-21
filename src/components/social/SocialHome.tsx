@@ -36,6 +36,7 @@ const TAB_TITLE: Record<SocialTab, string> = {
   requests: "Solicitações",
   messages: "Mensagens",
   groups: "Grupos",
+  explore: "Explorar",
 };
 
 export function SocialHome({

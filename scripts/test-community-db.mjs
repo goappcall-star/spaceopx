@@ -70,6 +70,7 @@ console.log(run("psql", [...args, "-f", "tests/community-foundation.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-transactions.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-experience.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-events.sql"]));
+console.log(run("psql", [...args, "-f", "tests/community-discovery.sql"]));
 
 async function concurrent(sql) {
   return new Promise((resolve) => {
@@ -298,6 +299,82 @@ const delivered = run("psql", [
 ]).trim();
 if (delivered !== "t") throw Error("Concurrent workers duplicated event notification");
 console.log("Two event workers: exactly one durable notification for the opted-in member.");
+
+// Discovery races use the same isolated DB and actual independent PostgreSQL sessions.
+const directoryPayload = `jsonb_build_object('name','Concurrent squad','description','Synthetic concurrent discovery only.','icon_url',NULL,'banner_url',NULL,'category','gaming','language','pt-br','interests','[]'::jsonb,'public_rules','["Respect."]'::jsonb,'admission','approval','consent',true)`;
+run("psql", [
+  ...args,
+  "-c",
+  actor +
+    `SELECT public.save_community_discovery(community_test.id('a'),${directoryPayload},0,true);COMMIT;`,
+]);
+const requestSql = `BEGIN;SET LOCAL ROLE authenticated;SELECT community_test.actor(7);SELECT public.join_discovered_community(community_test.id('a'),1);`;
+const firstRequest = concurrent(
+  requestSql + `SET LOCAL application_name='directory_first_request';SELECT pg_sleep(1.5);COMMIT;`,
+);
+await waitForSleeper("directory_first_request");
+const requestRace = await Promise.all([firstRequest, concurrent(requestSql + "COMMIT;")]);
+if (requestRace.some((r) => r.code !== 0))
+  throw Error("Directory request race failed: " + JSON.stringify(requestRace));
+if (
+  run("psql", [
+    ...args,
+    "-At",
+    "-c",
+    `SELECT count(*)=1 FROM community_join_requests WHERE server_id=community_test.id('a') AND user_id=community_test.user_id(7) AND status='pending';`,
+  ]).trim() !== "t"
+)
+  throw Error("Duplicate directory requests");
+console.log("Two directory requests: exactly one pending request, idempotent retry.");
+const approveSql =
+  actor +
+  `SELECT public.review_community_join_request(community_test.id('a'),community_test.user_id(7),1,true);`;
+const approveFirst = concurrent(
+  approveSql + `SET LOCAL application_name='directory_first_review';SELECT pg_sleep(1.5);COMMIT;`,
+);
+await waitForSleeper("directory_first_review");
+const reviewRace = await Promise.all([approveFirst, concurrent(approveSql + "COMMIT;")]);
+if (
+  reviewRace[0].code !== 0 ||
+  reviewRace[1].code === 0 ||
+  !reviewRace[1].err.includes("directory_revision_conflict")
+)
+  throw Error("Directory review conflict failed: " + JSON.stringify(reviewRace));
+if (
+  run("psql", [
+    ...args,
+    "-At",
+    "-c",
+    `SELECT count(*)=1 FROM server_members WHERE server_id=community_test.id('a') AND user_id=community_test.user_id(7);`,
+  ]).trim() !== "t"
+)
+  throw Error("Duplicate admission membership");
+console.log("Two approvals: one membership, one explicit revision conflict.");
+// A direct join waits behind an already-started ban, then must recheck it.
+run("psql", [
+  ...args,
+  "-c",
+  actor +
+    `SELECT public.save_community_discovery(community_test.id('a'),jsonb_set(${directoryPayload},'{admission}','"direct"'),1,true);COMMIT;`,
+]);
+const banFirst = concurrent(
+  actor +
+    `INSERT INTO server_bans(server_id,user_id,banned_by) VALUES(community_test.id('a'),community_test.user_id(8),auth.uid());SET LOCAL application_name='directory_ban_first';SELECT pg_sleep(1.5);COMMIT;`,
+);
+await waitForSleeper("directory_ban_first");
+const bannedJoin = await Promise.all([
+  banFirst,
+  concurrent(
+    `BEGIN;SET LOCAL ROLE authenticated;SELECT community_test.actor(8);SELECT public.join_discovered_community(community_test.id('a'),2);COMMIT;`,
+  ),
+]);
+if (
+  bannedJoin[0].code !== 0 ||
+  bannedJoin[1].code === 0 ||
+  !bannedJoin[1].err.includes("directory_join_unavailable")
+)
+  throw Error("Concurrent ban bypassed: " + JSON.stringify(bannedJoin));
+console.log("Directory join waiting behind ban: rejected after current ban recheck.");
 
 // Run prior DB security/notification suites against the complete schema as regressions.
 for (const file of [

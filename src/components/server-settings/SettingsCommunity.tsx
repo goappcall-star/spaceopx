@@ -1,4 +1,5 @@
 import { CommunityCustomization } from "@/components/community/CommunityCustomization";
+import { CommunityEvolutionTools } from "@/components/community/CommunityEvolutionTools";
 import { CommunityDiscoverySettings } from "@/components/community/CommunityDiscoverySettings";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -139,6 +140,13 @@ export function SettingsCommunity({
 
   return (
     <div className="space-y-7">
+      {authorized && settings?.enabled && (
+        <CommunityEvolutionTools
+          key={`${currentUserId}:${server.id}`}
+          serverId={server.id}
+          userId={currentUserId}
+        />
+      )}
       <section className="border-primary/25 bg-primary/5 rounded-2xl border p-5">
         <div className="flex items-center gap-3">
           <Users className="text-primary h-6 w-6" />

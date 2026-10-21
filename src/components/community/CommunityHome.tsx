@@ -1,4 +1,7 @@
 import { useState, type ReactNode } from "react";
+import { CommunityBanner, CommunitySeal } from "./CommunityAppearance";
+import { appearanceStyle } from "@/lib/community-appearance";
+import type { Appearance } from "@/types/community-evolution";
 import {
   ArrowRight,
   CalendarDays,
@@ -24,7 +27,11 @@ export function CommunityHome({
   events,
   reportNotice,
   progression,
+  appearance = {},
+  evolutionTools,
 }: {
+  appearance?: Appearance;
+  evolutionTools?: ReactNode;
   progression?: ReactNode;
   events?: ReactNode;
   reportNotice?: ((id: string) => ReactNode) | undefined;
@@ -44,10 +51,19 @@ export function CommunityHome({
     (c) => c.type === "voice" && (participants[c.id]?.length ?? 0) > 0,
   );
   return (
-    <div className="scrollbar-slim bg-background flex-1 min-w-0 overflow-y-auto">
+    <div
+      style={appearanceStyle(appearance)}
+      className="scrollbar-slim bg-background flex-1 min-w-0 overflow-y-auto"
+    >
       <div className="mx-auto w-full max-w-6xl space-y-7 p-4 md:p-8">
-        <section className="relative isolate overflow-hidden rounded-3xl border border-primary/20 bg-surface">
-          {banner && failedBanner !== banner ? (
+        <section
+          className={
+            "relative isolate overflow-hidden rounded-3xl border bg-surface " +
+            (appearance.frame ? "border-primary" : "border-primary/20")
+          }
+        >
+          <CommunityBanner appearance={appearance} />
+          {!appearance.banner && banner && failedBanner !== banner ? (
             <img
               src={banner}
               alt=""
@@ -56,13 +72,16 @@ export function CommunityHome({
               className="absolute inset-0 -z-10 h-full w-full object-cover opacity-35"
             />
           ) : (
-            <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/20 via-background to-secondary/20" />
+            !appearance.banner && (
+              <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/20 via-background to-secondary/20" />
+            )
           )}
           <div className="bg-gradient-to-t from-background/95 to-transparent p-6 md:p-10">
-            <div className="mb-8 flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2 rounded-full border border-primary/30 bg-background/70 px-3 py-1 text-xs text-primary">
+            <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+              <span className="flex flex-wrap items-center gap-2 rounded-full border border-primary/30 bg-background/70 px-3 py-1 text-xs text-primary">
                 <Sparkles className="h-3.5 w-3.5" />
                 Comunidade LobbyX
+                <CommunitySeal appearance={appearance} />
               </span>
               {onSettings && (
                 <Button variant="outline" size="sm" onClick={onSettings}>
@@ -70,6 +89,7 @@ export function CommunityHome({
                 </Button>
               )}
             </div>
+            {evolutionTools && <div className="mb-5">{evolutionTools}</div>}
             <div className="flex items-center gap-4">
               {server.icon_url && (
                 <img src={server.icon_url} alt="" className="h-16 w-16 rounded-2xl object-cover" />
@@ -96,6 +116,9 @@ export function CommunityHome({
             </div>
           </div>
         </section>
+        {appearance.highlight && (
+          <div aria-hidden="true" className="h-1 w-20 rounded-full bg-secondary" />
+        )}
         <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-5">
           <div className="flex items-center gap-3">
             <ShieldCheck className="h-6 w-6 shrink-0 text-primary" />

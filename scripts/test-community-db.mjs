@@ -75,6 +75,7 @@ console.log(run("psql", [...args, "-f", "tests/community-moderation.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-progression.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-objectives.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-objectives-states.sql"]));
+console.log(run("psql", [...args, "-f", "tests/community-evolution.sql"]));
 
 async function concurrent(sql) {
   return new Promise((resolve) => {
@@ -125,9 +126,12 @@ for (const file of fs
   .sort()) {
   if (file === "20261021070000_community_missions_achievements.sql")
     run("psql", [...upgradeArgs, "-f", "tests/community-objectives-upgrade-fixture.sql"]);
+  if (file === "20261021080000_community_statistics_cosmetics.sql")
+    run("psql", [...upgradeArgs, "-f", "tests/community-evolution-upgrade-fixture.sql"]);
   run("psql", [...upgradeArgs, "-f", path.join("supabase/migrations", file)]);
 }
 console.log(run("psql", [...upgradeArgs, "-f", "tests/community-objectives-upgrade.sql"]));
+console.log(run("psql", [...upgradeArgs, "-f", "tests/community-evolution-upgrade.sql"]));
 console.log(
   `4B upgrade: existing activation/publication never backfilled; separate local database retained: ${upgradeDatabase}`,
 );
@@ -609,6 +613,92 @@ console.log(
 run("psql", [...args, "-c", "UPDATE security_private.community_xp_policy SET enabled=false;"]);
 
 // Run prior DB security/notification suites against the complete schema as regressions.
+const cosmeticFirst = concurrent(
+  actor +
+    `SET LOCAL application_name='community_cosmetic_edit';SELECT id FROM servers WHERE id=community_test.id('a') FOR UPDATE;SELECT pg_sleep(1.5);SELECT equip_community_cosmetic(community_test.id('a'),'seal','lx_foundation_seal',0);COMMIT;`,
+);
+await waitForSleeper("community_cosmetic_edit");
+const cosmeticEdits = await Promise.all([
+  cosmeticFirst,
+  concurrent(
+    actor +
+      `SELECT equip_community_cosmetic(community_test.id('a'),'highlight','lx_lime_highlight',0);COMMIT;`,
+  ),
+]);
+if (
+  cosmeticEdits[0].code !== 0 ||
+  cosmeticEdits[1].code === 0 ||
+  !cosmeticEdits[1].err.includes("community_cosmetic_revision_conflict")
+)
+  throw Error("Concurrent cosmetics lost update: " + JSON.stringify(cosmeticEdits));
+run("psql", [
+  ...args,
+  "-c",
+  actor +
+    `SELECT set_community_role_permission(community_test.id('a'),community_test.id('delegate-role'),true);COMMIT;`,
+]);
+const cosmeticRevoker = concurrent(
+  actor +
+    `SET LOCAL application_name='community_cosmetic_revoke';SELECT set_community_role_permission(community_test.id('a'),community_test.id('delegate-role'),false);SELECT pg_sleep(1.5);COMMIT;`,
+);
+await waitForSleeper("community_cosmetic_revoke");
+const cosmeticRevocation = await Promise.all([
+  cosmeticRevoker,
+  concurrent(
+    `BEGIN;SET LOCAL ROLE authenticated;SELECT community_test.actor(2);SELECT equip_community_cosmetic(community_test.id('a'),'seal',NULL,1);COMMIT;`,
+  ),
+]);
+if (
+  cosmeticRevocation[0].code !== 0 ||
+  cosmeticRevocation[1].code === 0 ||
+  !cosmeticRevocation[1].err.includes("community_cosmetic_forbidden")
+)
+  throw Error("Cosmetic role revocation bypass: " + JSON.stringify(cosmeticRevocation));
+run("psql", [
+  ...args,
+  "-c",
+  `UPDATE security_private.community_xp_policy SET enabled=true;UPDATE security_private.community_objective_verifiers SET enabled=true;
+ INSERT INTO security_private.community_verified_activities(id,server_id,source,evidence_key,expires_at)
+ SELECT ('d4c40000-0000-0000-0000-'||lpad(n::text,12,'0'))::uuid,community_test.id('a'),'backend_verified_activity',gen_random_uuid(),clock_timestamp()+interval '1 hour' FROM generate_series(1,7)n;
+ SELECT consume_verified_community_activity(community_test.id('a'),('d4c40000-0000-0000-0000-'||lpad(n::text,12,'0'))::uuid) FROM generate_series(1,7)n;`,
+]);
+run("psql", [
+  ...args,
+  "-c",
+  actor +
+    `SELECT equip_community_cosmetic(community_test.id('a'),'frame','lx_orbit_frame',1);COMMIT;`,
+]);
+const cosmeticPolicyOff = concurrent(
+  `BEGIN;SET LOCAL application_name='community_cosmetic_policy';UPDATE security_private.community_xp_policy SET enabled=false;SELECT pg_sleep(1.5);COMMIT;`,
+);
+await waitForSleeper("community_cosmetic_policy");
+const cosmeticPolicyRace = await Promise.all([
+  cosmeticPolicyOff,
+  concurrent(
+    actor +
+      `SELECT equip_community_cosmetic(community_test.id('a'),'frame','lx_orbit_frame',2);COMMIT;`,
+  ),
+]);
+if (
+  cosmeticPolicyRace[0].code !== 0 ||
+  cosmeticPolicyRace[1].code === 0 ||
+  !cosmeticPolicyRace[1].err.includes("community_cosmetic_locked")
+)
+  throw Error("Cosmetic unavailable mission bypass: " + JSON.stringify(cosmeticPolicyRace));
+run("psql", [
+  ...args,
+  "-c",
+  actor +
+    `SELECT community_test.assert(get_community_cosmetics(community_test.id('a'))#>>'{equipped,frame}' IS NULL,'paused mission cosmetic is not rendered');SELECT equip_community_cosmetic(community_test.id('a'),'frame',NULL,2);COMMIT;`,
+]);
+run("psql", [
+  ...args,
+  "-c",
+  "UPDATE security_private.community_objective_verifiers SET enabled=false;",
+]);
+console.log(
+  "4C races: revision conflict, role revocation and source pause rechecked after locks; paused frame suppressed and removable.",
+);
 console.log(run("psql", [...args, "-f", "tests/community-objectives-cascade.sql"]));
 for (const file of [
   "security-write-guards.sql",

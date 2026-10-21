@@ -30,7 +30,7 @@ SELECT community_test.actor(7);
 SELECT community_test.denied($q$SELECT public.get_community_objectives(community_test.id('a'))$q$,'42501');
 RESET ROLE;
 SELECT community_test.assert(NOT EXISTS(SELECT FROM public.community_xp_accounts),'administrative achievements give no XP');
-SELECT community_test.assert(NOT EXISTS(SELECT FROM public.community_reward_catalog),'no fictional usable cosmetic assets seeded');
+SELECT community_test.assert(NOT EXISTS(SELECT FROM public.community_reward_catalog r WHERE r.usable AND NOT EXISTS(SELECT FROM security_private.community_cosmetic_assets a WHERE a.reward_id=r.id)),'4C usable cosmetics have implemented render bindings, no fictional usable assets');
 UPDATE security_private.community_xp_policy SET enabled=true,daily_cap=450,weekly_cap=450;
 INSERT INTO security_private.community_verified_activities(id,server_id,source,evidence_key,expires_at)
 SELECT ('d4b10000-0000-0000-0000-'||lpad(n::text,12,'0'))::uuid,community_test.id('a'),'backend_verified_activity',gen_random_uuid(),clock_timestamp()+interval '1 hour' FROM generate_series(1,12)n;
@@ -55,14 +55,14 @@ CREATE TRIGGER fail_mission_reward BEFORE INSERT ON public.community_xp_ledger F
 SELECT community_test.denied($q$SELECT public.consume_verified_community_activity(community_test.id('a'),'d4b10000-0000-0000-0000-000000000004')$q$,'P0001','test_mission_reward_failure');
 SELECT community_test.assert((SELECT progress=2 AND completed_at IS NULL FROM public.community_mission_progress WHERE objective_id='verified_daily'),'reward failure rolls back mission completion');
 SELECT community_test.assert((SELECT xp=300 FROM public.community_xp_accounts),'reward failure rolls back original XP as well');
-SELECT community_test.assert(NOT EXISTS(SELECT FROM public.community_reward_unlocks),'reward failure rolls back cosmetic contract');
+SELECT community_test.assert(NOT EXISTS(SELECT FROM public.community_reward_unlocks WHERE reward_id='test_community_seal'),'reward failure rolls back synthetic cosmetic contract');
 ROLLBACK TO SAVEPOINT mission_atomicity;
 SET LOCAL ROLE service_role;
 SELECT public.consume_verified_community_activity(community_test.id('a'),'d4b10000-0000-0000-0000-000000000004');
 RESET ROLE;
 SELECT community_test.assert((SELECT progress=3 AND version=2 AND completed_at IS NOT NULL FROM public.community_mission_progress WHERE objective_id='verified_daily'),'trusted backend completes mission');
-SELECT community_test.assert((SELECT count(*)=1 FROM public.community_reward_unlocks),'one community cosmetic contract unlocked');
-SELECT community_test.assert((SELECT NOT usable FROM public.community_reward_catalog),'unlock is not advertised usable');
+SELECT community_test.assert((SELECT count(*)=1 FROM public.community_reward_unlocks WHERE reward_id='test_community_seal'),'one synthetic community cosmetic contract unlocked');
+SELECT community_test.assert((SELECT NOT usable FROM public.community_reward_catalog WHERE id='test_community_seal'),'synthetic unlock is not advertised usable');
 SELECT community_test.assert((SELECT xp=450 FROM public.community_xp_accounts),'same 4A wallet and cap, including mission reward');
 SELECT community_test.assert((SELECT l.requested_xp=150 AND l.awarded_xp=50 FROM public.community_mission_progress m JOIN public.community_xp_ledger l ON l.activity_id=m.reward_activity_id WHERE m.objective_id='verified_daily'),'mission reward is partially capped even with service role');
 SELECT community_test.assert((SELECT progress=3 FROM public.community_mission_progress WHERE objective_id='verified_weekly'),'reward event never recursively counts as activity');

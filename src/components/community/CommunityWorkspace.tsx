@@ -1,4 +1,6 @@
 import { CommunityEvents } from "./CommunityEvents";
+import { useCommunityCosmetics } from "@/hooks/use-community-cosmetics";
+import { CommunityEvolutionTools } from "./CommunityEvolutionTools";
 import { CommunityProgression } from "./CommunityProgression";
 import { CommunityObjectives } from "./CommunityObjectives";
 import { CommunitySafetyTools } from "./CommunitySafetyTools";
@@ -38,6 +40,7 @@ export function CommunityWorkspace({
   const { participantsByChannel } = useVoice(),
     client = useQueryClient();
   const { data: roles = [] } = useServerRoles(server.id);
+  const cosmetics = useCommunityCosmetics(server.id, userId);
   const [onboarding, setOnboarding] = useState<CommunityExperience | null>(() =>
     data.screened && !data.progress?.completed_revision ? data : null,
   );
@@ -54,6 +57,16 @@ export function CommunityWorkspace({
       />
       {data.experience.home_enabled ? (
         <CommunityHome
+          appearance={cosmetics.isError ? {} : (cosmetics.data?.equipped ?? {})}
+          evolutionTools={
+            data.can_manage ? (
+              <CommunityEvolutionTools
+                key={`evolution:${userId}:${server.id}`}
+                serverId={server.id}
+                userId={userId}
+              />
+            ) : undefined
+          }
           progression={
             <>
               <CommunityProgression

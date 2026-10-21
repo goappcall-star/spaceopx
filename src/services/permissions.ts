@@ -1,6 +1,7 @@
 import type { MemberWithProfile, RolePermissions } from "@/types";
 
 export type ServerPermission =
+  | "manage_community"
   | "administrator"
   | "manage_server"
   | "manage_channels"
@@ -115,10 +116,12 @@ export const PERMISSION_GROUPS = [
 ] as const;
 
 export function permissionLabel(key: string) {
+  if (key === "manage_community") return "Gerenciar comunidade (delegação do proprietário)";
   return PERMISSION_CATALOG.find((p) => p.key === key)?.label ?? key;
 }
 
 function roleGrants(permissions: RolePermissions, permission: ServerPermission) {
+  if (permission === "manage_community") return permissions[permission] === true;
   if (permissions["administrator"]) return true;
   return Boolean(permissions[permission]);
 }

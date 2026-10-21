@@ -30,6 +30,65 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      server_community_settings: {
+        Row: {
+          server_id: string;
+          enabled: boolean;
+          rules: Json;
+          rules_revision: number;
+          welcome_channel_id: string | null;
+          category_slug: string;
+          interests: string[];
+          revision: number;
+          activated_at: string | null;
+          activated_by: string | null;
+          disabled_at: string | null;
+          disabled_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          server_id: string;
+          enabled?: boolean;
+          rules: Json;
+          rules_revision?: number;
+          welcome_channel_id?: string | null;
+          category_slug: string;
+          interests?: string[];
+          revision?: number;
+          activated_at?: string | null;
+          activated_by?: string | null;
+          disabled_at?: string | null;
+          disabled_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          server_id?: string;
+          enabled?: boolean;
+          rules?: Json;
+          rules_revision?: number;
+          welcome_channel_id?: string | null;
+          category_slug?: string;
+          interests?: string[];
+          revision?: number;
+          activated_at?: string | null;
+          activated_by?: string | null;
+          disabled_at?: string | null;
+          disabled_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "server_community_settings_server_id_fkey";
+            columns: ["server_id"];
+            isOneToOne: true;
+            referencedRelation: "servers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       audit_logs: {
         Row: {
           action: string;
@@ -1018,6 +1077,20 @@ export type Database = {
         Returns: boolean;
       };
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean };
+      can_manage_community: { Args: { _server_id: string }; Returns: boolean };
+      get_server_community: { Args: { _server_id: string }; Returns: Json };
+      save_server_community: {
+        Args: { _server_id: string; _payload: Json; _expected_revision: number };
+        Returns: Json;
+      };
+      disable_server_community: {
+        Args: { _server_id: string; _expected_revision: number };
+        Returns: Json;
+      };
+      set_community_role_permission: {
+        Args: { _server_id: string; _role_id: string; _enabled: boolean };
+        Returns: undefined;
+      };
       award_xp: {
         Args: { _amount: number; _user_id: string };
         Returns: {

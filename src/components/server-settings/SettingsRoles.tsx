@@ -1,3 +1,4 @@
+import { COMMUNITY_V1_ENABLED } from "@/lib/community-feature";
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, Plus, Shield, Trash2 } from "lucide-react";
 
@@ -67,6 +68,12 @@ export function SettingsRoles({ server, readOnly }: { server: Server; readOnly: 
   return (
     <div className="grid min-w-0 gap-5 lg:grid-cols-[180px_minmax(0,1fr)]">
       <div className="space-y-2">
+        {COMMUNITY_V1_ENABLED && (
+          <p className="text-muted-foreground mb-3 text-xs">
+            A gestão da comunidade é delegada pelo proprietário na aba Comunidade. Administrador não
+            recebe essa autorização automaticamente.
+          </p>
+        )}
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold">Cargos</h3>
           {!readOnly && (

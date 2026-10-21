@@ -63,9 +63,13 @@ de remoção/saída de membros não podem ser bloqueadas por esse guard; revoga�
 e cascatas existentes serão testadas. Não fazer backfill de permissões ou
 associações, nem atribuir um cargo administrativo a ninguém.
 
-Antes de delegar a um cargo, mostrar o alcance da concessão e alertar para cargos
-amplos como MEMBER. A confirmação do proprietário não pode ocorrer por um
-checkbox previamente marcado ou pela simples ativação da comunidade.
+Antes de delegar a um cargo, mostrar o alcance da concessão. Refinamento da
+implementação local: MEMBER não é elegível, pois os convites atribuem esse cargo
+automaticamente; delegá-lo concederia administração a novos convidados ou
+bloquearia o ingresso. OWNER é autorizado pela propriedade real. A delegação
+usa RPC dedicada, autorizada pelo proprietário e serializada com associações
+a cargos. A confirmação nunca ocorre por checkbox previamente marcado ou
+pela simples ativação da comunidade.
 
 RPCs previstas, com contratos finais definidos junto aos testes SQL:
 

@@ -1,3 +1,4 @@
+import { COMMUNITY_V1_ENABLED } from "@/lib/community-feature";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -44,6 +45,7 @@ export function useServerAbilities(
     isOwner: Boolean(server && userId && server.owner_id === userId),
     can,
     canOpenSettings:
+      (COMMUNITY_V1_ENABLED && can("manage_community")) ||
       can("manage_server") ||
       can("manage_roles") ||
       can("manage_members") ||

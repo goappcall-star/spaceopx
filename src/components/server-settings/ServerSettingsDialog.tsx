@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Ban, Image as ImageIcon, Link2, ScrollText, Settings2, Shield, Users } from "lucide-react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { COMMUNITY_V1_ENABLED } from "@/lib/community-feature";
 import { cn } from "@/lib/utils";
 import { SettingsAccess } from "./SettingsAccess";
 import { SettingsAudit } from "./SettingsAudit";
@@ -14,7 +15,12 @@ import { DeleteServerButton } from "./DeleteServerButton";
 import { useServerAbilities } from "@/hooks/use-server-admin";
 import type { MemberWithProfile, Server } from "@/types";
 
-type SectionId = "profile" | "access" | "members" | "roles" | "invites" | "bans" | "audit";
+const SettingsCommunity = lazy(() =>
+  import("./SettingsCommunity").then((m) => ({ default: m.SettingsCommunity })),
+);
+
+type SectionId =
+  "community" | "profile" | "access" | "members" | "roles" | "invites" | "bans" | "audit";
 
 interface Props {
   server: Server;
@@ -37,6 +43,7 @@ export function ServerSettingsDialog({
   type SectionItem = { id: SectionId; label: string; icon: typeof Shield; group: string };
   const sections: SectionItem[] = (
     [
+      { id: "community", label: "Comunidade", icon: Users, group: "Geral" },
       { id: "profile", label: "Perfil do servidor", icon: ImageIcon, group: "Geral" },
       { id: "access", label: "Acesso e interações", icon: Settings2, group: "Geral" },
       { id: "members", label: "Membros", icon: Users, group: "Comunidade" },
@@ -46,6 +53,7 @@ export function ServerSettingsDialog({
       { id: "audit", label: "Registro de auditoria", icon: ScrollText, group: "Moderação" },
     ] as SectionItem[]
   ).filter((item) => {
+    if (item.id === "community") return COMMUNITY_V1_ENABLED;
     if (item.id === "bans") return can("ban_members");
     if (item.id === "audit") return can("view_audit_log");
     if (item.id === "invites") return can("create_invite") || can("manage_server");
@@ -108,6 +116,18 @@ export function ServerSettingsDialog({
                 {sections.find((s) => s.id === section)?.label}
               </h2>
             </header>
+            {section === "community" && open && COMMUNITY_V1_ENABLED && (
+              <Suspense fallback={<p role="status">Carregando comunidade…</p>}>
+                <SettingsCommunity
+                  key={`${server.id}:${currentUserId}`}
+                  server={server}
+                  members={members}
+                  currentUserId={currentUserId}
+                  canEditProfile={!readOnlyServer}
+                  onEditProfile={() => setSection("profile")}
+                />
+              </Suspense>
+            )}
             {section === "profile" && <SettingsProfile server={server} readOnly={readOnlyServer} />}
             {section === "access" && <SettingsAccess server={server} readOnly={readOnlyServer} />}
             {section === "members" && (
@@ -128,7 +148,7 @@ export function ServerSettingsDialog({
             )}
             {section === "bans" && <SettingsBans server={server} canUnban={can("ban_members")} />}
             {section === "audit" && <SettingsAudit server={server} />}
-            {isOwner && (
+            {isOwner && section !== "community" && (
               <div className="border-destructive/30 mt-8 space-y-3 border-t pt-5">
                 <h3 className="text-destructive font-semibold">Excluir servidor</h3>
                 <p className="text-muted-foreground text-sm">

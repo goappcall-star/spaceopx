@@ -80,9 +80,10 @@ export function SocialSidebar({
               <Icon className={cn("h-4 w-4", active && "text-foreground")} />
               <span className="flex-1 text-left">{item.label}</span>
               {item.id === "requests" && pendingRequests > 0 && (
-                <span className="bg-destructive text-white rounded-full px-1.5 py-0.5 text-[10px] font-semibold">
-                  {pendingRequests}
-                </span>
+                <UnreadBadge
+                  count={pendingRequests}
+                  title={`${pendingRequests} solicitações pendentes`}
+                />
               )}
             </button>
           );

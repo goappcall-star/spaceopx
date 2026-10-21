@@ -14,7 +14,7 @@ export function UnreadBadge({
       title={title ?? `${count} mensagens não lidas`}
       aria-label={title ?? `${count} mensagens não lidas`}
       className={cn(
-        "pointer-events-none inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] leading-none font-bold text-white ring-2 ring-surface",
+        "pointer-events-none inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-primary px-1 text-[10px] leading-none font-bold text-primary-foreground ring-2 ring-surface",
         className,
       )}
     >

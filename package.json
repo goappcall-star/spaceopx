@@ -19,6 +19,7 @@
     "desktop:start": "electron desktop",
     "desktop:dist": "npm ci --prefix desktop --omit=dev --ignore-scripts && npm run desktop:build && electron-builder --config electron-builder.json --win --publish never && node scripts/verify-desktop-release.mjs",
     "desktop:release": "node scripts/publish-desktop-release.mjs",
+    "test:community-http": "node scripts/test-community-http.mjs",
     "test:community-db": "node scripts/test-community-db.mjs"
   },
   "dependencies": {

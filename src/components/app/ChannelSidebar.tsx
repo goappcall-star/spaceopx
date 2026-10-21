@@ -2,7 +2,7 @@ import { VoiceIcon } from "@/components/voice/VoiceIcon";
 import { UnreadBadge } from "./UnreadBadge";
 import { VoiceStatusIcons } from "@/components/voice/VoiceStatusIcons";
 import { voiceChannelAction } from "@/lib/voice-channel-navigation";
-import { ChevronDown, Hash, Plus, Settings, UserPlus, Volume2 } from "lucide-react";
+import { ChevronDown, Home, Hash, Plus, Settings, UserPlus, Volume2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { memberHasPermission } from "@/services/permissions";
 import { useVoiceMemberDrag } from "@/hooks/use-voice-member-drag";
@@ -42,6 +42,10 @@ import {
 } from "@/components/ui/context-menu";
 
 interface Props {
+  communityHome?: boolean;
+  communityHomeLabel?: string;
+  communityHomeActive?: boolean;
+  onCommunityHome?: () => void;
   server: Server;
   channels: Channel[];
   activeChannelId: string | null;
@@ -110,6 +114,10 @@ function CategoryHeader({
 }
 
 export function ChannelSidebar({
+  communityHome = false,
+  communityHomeLabel = "Início da comunidade",
+  communityHomeActive = false,
+  onCommunityHome,
   server,
   channels,
   activeChannelId,
@@ -584,6 +592,21 @@ export function ChannelSidebar({
           className="scrollbar-slim flex-1 overflow-y-auto px-2 py-2"
           data-testid="channel-sidebar-space"
         >
+          {communityHome && (
+            <button
+              onClick={onCommunityHome}
+              aria-current={communityHomeActive ? "page" : undefined}
+              className={cn(
+                "mb-3 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm",
+                communityHomeActive
+                  ? "bg-primary/15 text-primary"
+                  : "text-muted-foreground hover:bg-surface-hover",
+              )}
+            >
+              <Home className="h-4 w-4" />
+              {communityHomeLabel}
+            </button>
+          )}
           {categoryError && canManage && (
             <p className="text-muted-foreground mb-2 px-2 text-xs">
               Categorias indisponíveis. A atualização do banco precisa ser aplicada.

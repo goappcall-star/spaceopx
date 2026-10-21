@@ -18,6 +18,7 @@ export function communityErrorMessage(error: unknown) {
     return "Escolha um cargo específico. OWNER e MEMBER não podem receber esta delegação.";
   if (/community_invalid_channel/.test(raw))
     return "O canal de boas-vindas não está mais disponível ou não pode ser usado. Escolha outro canal.";
+  if (/community_inactive/.test(raw)) return "A comunidade foi desativada. Atualize a tela.";
   if (/community_invalid/.test(raw))
     return "Confira as regras, o canal, a categoria e os interesses.";
   if (/Muitos envios/.test(raw))

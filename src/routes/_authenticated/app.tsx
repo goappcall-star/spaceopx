@@ -3,7 +3,7 @@ import { useSessionServer } from "@/components/call/SessionCommunications";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { z } from "zod";
 import { Sparkles, Menu, Users } from "lucide-react";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState, useRef } from "react";
 
 import { ChannelSidebar } from "@/components/app/ChannelSidebar";
 import { AppSidebarDrawer } from "@/components/app/AppSidebarDrawer";
@@ -44,6 +44,12 @@ import { ServerPersonalDialog } from "@/components/app/ServerPersonalDialog";
 import type { ServerMenuAction } from "@/components/app/ServerContextMenu";
 import type { Server } from "@/types";
 
+import { useCommunityExperience } from "@/hooks/use-community-experience";
+const CommunityWorkspace = lazy(() =>
+  import("@/components/community/CommunityWorkspace").then((m) => ({
+    default: m.CommunityWorkspace,
+  })),
+);
 export const Route = createFileRoute("/_authenticated/app")({
   validateSearch: z.object({ server: z.string().optional(), channel: z.string().optional() }),
   head: () => ({
@@ -76,6 +82,8 @@ function AppPage() {
     voiceReturn,
     setVoiceReturn,
   } = useSessionServer();
+  const [communityView, setCommunityView] = useState<string | null>(null);
+  const visitedCommunity = useRef<string | null>(null);
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
   const [mobileMembers, setMobileMembers] = useState(false);
@@ -128,6 +136,24 @@ function AppPage() {
       finishServerLoad.current = null;
     }
   }, [loadingChannels, loadingMembers, activeServer]);
+  const community = useCommunityExperience(
+    view === "servers" ? (activeServer?.id ?? null) : null,
+    user?.id,
+  );
+  useEffect(() => {
+    const key = `${user?.id}:${activeServer?.id}`;
+    if (!activeServer || !community.isSuccess || visitedCommunity.current === key) return;
+    visitedCommunity.current = key;
+    if (
+      (community.data?.experience.home_enabled ||
+        (community.data?.screened &&
+          community.data.progress?.accepted_revision !== community.data.rules_revision)) &&
+      !channelParam &&
+      !voiceReturn
+    )
+      setCommunityView(activeServer.id);
+  }, [user?.id, activeServer, community.isSuccess, community.data, channelParam, voiceReturn]);
+  const showCommunity = !!(activeServer && communityView === activeServer.id && community.data);
   const activePreferences = activeServer ? preferences.get(activeServer.id) : null;
 
   async function handleServerAction(action: ServerMenuAction, server: Server) {
@@ -187,6 +213,7 @@ function AppPage() {
 
   useEffect(() => {
     if (!voiceReturn) return;
+    setCommunityView(null);
     setView("servers");
     setActiveServerId(voiceReturn.serverId);
     if (
@@ -204,6 +231,7 @@ function AppPage() {
       activeServerId === serverParam &&
       channels.some((c) => c.id === channelParam)
     ) {
+      setCommunityView(null);
       setActiveChannelId(channelParam);
       setMobileNav(false);
       void navigate({ to: "/app", search: {}, replace: true });
@@ -332,8 +360,20 @@ function AppPage() {
                 }}
                 server={activeServer}
                 channels={channels}
-                activeChannelId={activeChannelId}
+                communityHome={Boolean(community.data)}
+                communityHomeLabel={
+                  community.data?.experience.home_enabled
+                    ? "Início da comunidade"
+                    : "Boas-vindas da comunidade"
+                }
+                communityHomeActive={showCommunity}
+                onCommunityHome={() => {
+                  setCommunityView(activeServer.id);
+                  setMobileNav(false);
+                }}
+                activeChannelId={showCommunity ? null : activeChannelId}
                 onSelectChannel={(id) => {
+                  setCommunityView(null);
                   setActiveChannelId(id);
                   setMobileNav(false);
                 }}
@@ -384,6 +424,29 @@ function AppPage() {
                 onOpenConversation={openConversation}
                 onCloseConversation={() => setActiveConversationId(null)}
               />
+            ) : activeServer && showCommunity && community.data && user ? (
+              <Suspense
+                fallback={
+                  <div role="status" className="p-6">
+                    Carregando comunidade…
+                  </div>
+                }
+              >
+                <CommunityWorkspace
+                  key={`${user.id}:${activeServer.id}`}
+                  server={activeServer}
+                  data={community.data}
+                  channels={channels}
+                  me={me}
+                  userId={user.id}
+                  unavailable={community.isError || community.isPaused}
+                  onChannel={(id) => {
+                    setCommunityView(null);
+                    setActiveChannelId(id);
+                  }}
+                  onSettings={() => setSettingsOpen(true)}
+                />
+              </Suspense>
             ) : activeServer && activeChannel ? (
               activeChannel.type === "voice" ? (
                 <VoiceRoom

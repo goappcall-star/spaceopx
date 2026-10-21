@@ -1,3 +1,4 @@
+import { CommunityCustomization } from "@/components/community/CommunityCustomization";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, LockKeyhole, RefreshCw, ShieldCheck, Users } from "lucide-react";
@@ -222,6 +223,15 @@ export function SettingsCommunity({
             ))}
           </ol>
         </section>
+      )}
+      {authorized && settings?.enabled && (
+        <CommunityCustomization
+          serverId={server.id}
+          userId={currentUserId}
+          channels={channels}
+          roles={roles}
+          canUpload={canEditProfile}
+        />
       )}
       {state?.is_owner && (
         <section className="space-y-3">

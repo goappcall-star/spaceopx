@@ -8,6 +8,42 @@ export type Database = {
   };
   public: {
     Tables: {
+      community_rule_revisions: {
+        Row: { server_id: string; revision: number; rules: Json; created_at: string };
+        Insert: { server_id: string; revision: number; rules: Json; created_at?: string };
+        Update: { server_id?: string; revision?: number; rules?: Json; created_at?: string };
+        Relationships: [];
+      };
+      community_member_onboarding: {
+        Row: {
+          member_id: string;
+          server_id: string;
+          accepted_revision: number | null;
+          interests: string[];
+          selected_roles: string[];
+          completed_revision: number | null;
+          updated_at: string;
+        };
+        Insert: {
+          member_id: string;
+          server_id: string;
+          accepted_revision?: number | null;
+          interests?: string[];
+          selected_roles?: string[];
+          completed_revision?: number | null;
+          updated_at?: string;
+        };
+        Update: {
+          member_id?: string;
+          server_id?: string;
+          accepted_revision?: number | null;
+          interests?: string[];
+          selected_roles?: string[];
+          completed_revision?: number | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       voice_restrictions: {
         Row: { server_id: string; user_id: string; muted: boolean; deafened: boolean };
         Insert: never;
@@ -32,6 +68,9 @@ export type Database = {
       };
       server_community_settings: {
         Row: {
+          experience: Json;
+          experience_revision: number;
+          screening_since: string | null;
           server_id: string;
           enabled: boolean;
           rules: Json;
@@ -48,6 +87,9 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          experience?: Json;
+          experience_revision?: number;
+          screening_since?: string | null;
           server_id: string;
           enabled?: boolean;
           rules: Json;
@@ -64,6 +106,9 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          experience?: Json;
+          experience_revision?: number;
+          screening_since?: string | null;
           server_id?: string;
           enabled?: boolean;
           rules?: Json;
@@ -1054,6 +1099,24 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      get_community_experience: { Args: { _server_id: string }; Returns: Json };
+      save_community_experience: {
+        Args: { _server_id: string; _payload: Json; _expected_revision: number };
+        Returns: number;
+      };
+      save_community_onboarding: {
+        Args: {
+          _server_id: string;
+          _experience_revision: number;
+          _rules_revision: number;
+          _accept_rules: boolean;
+          _interests: string[];
+          _role_ids: string[];
+          _complete: boolean;
+        };
+        Returns: undefined;
+      };
+      community_text_allowed: { Args: { _server_id: string }; Returns: boolean };
       set_voice_restriction: {
         Args: { _server: string; _user: string; _kind: string; _enabled: boolean };
         Returns: undefined;

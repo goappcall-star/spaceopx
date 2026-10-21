@@ -68,6 +68,7 @@ for (const file of fs
 run("psql", [...args, "-f", "tests/community-fixture.sql"]);
 console.log(run("psql", [...args, "-f", "tests/community-foundation.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-transactions.sql"]));
+console.log(run("psql", [...args, "-f", "tests/community-experience.sql"]));
 
 async function concurrent(sql) {
   return new Promise((resolve) => {
@@ -188,6 +189,33 @@ if (reverseOrder.some((r) => r.code !== 0))
   throw Error("Reverse lock order failed: " + JSON.stringify(reverseOrder));
 console.log(
   "Assignment before owner grant: serialized successfully without a lock-order deadlock.",
+);
+
+// Actual role escalation committed while onboarding waits on its role lock.
+run("psql", [
+  ...args,
+  "-c",
+  actor +
+    `INSERT INTO public.roles(id,server_id,name,permissions) VALUES ('c2000000-0000-0000-0000-000000000006',community_test.id('a'),'Onboarding race','{}');
+SELECT public.save_community_experience(community_test.id('a'),jsonb_set(jsonb_set(public.get_community_experience(community_test.id('a'))->'experience','{roles_enabled}','true'),'{role_ids}','["c2000000-0000-0000-0000-000000000006"]'),1); COMMIT;`,
+]);
+const changingRole = concurrent(
+  actor +
+    "SET LOCAL application_name='community_onboarding_role_change'; UPDATE public.roles SET permissions='{\"manage_voice\":true}' WHERE id='c2000000-0000-0000-0000-000000000006'; SELECT pg_sleep(1.5); COMMIT;",
+);
+await waitForSleeper("community_onboarding_role_change");
+const onboardWaiting = concurrent(
+  "BEGIN; SET LOCAL ROLE authenticated; SELECT community_test.actor(6); SELECT public.save_community_onboarding(community_test.id('a'),2,1,true,'{}',ARRAY['c2000000-0000-0000-0000-000000000006']::uuid[],true); COMMIT;",
+);
+const escalationResults = await Promise.all([changingRole, onboardWaiting]);
+if (
+  escalationResults[0].code !== 0 ||
+  escalationResults[1].code === 0 ||
+  !/community_role_ineligible/.test(escalationResults[1].err)
+)
+  throw Error("Onboarding role race failed: " + JSON.stringify(escalationResults));
+console.log(
+  "Concurrent role escalation: onboarding rechecks the locked role, rejects new privilege, no deadlock.",
 );
 
 // Run prior DB security/notification suites against the complete schema as regressions.

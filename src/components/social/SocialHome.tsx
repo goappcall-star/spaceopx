@@ -1,21 +1,15 @@
 import { UnreadBadge } from "@/components/app/UnreadBadge";
 import { useQueryClient } from "@tanstack/react-query";
-import { Ban, MessageSquare, MoreHorizontal, Search, UserMinus, UserPlus } from "lucide-react";
+import { MessageSquare, Search, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { STATUS_LABEL, StatusDot } from "@/components/app/StatusDot";
-import { GamePresenceLine } from "@/components/gamer/GamePresenceLine";
+import { SocialFriendsWorkspace } from "@/components/social/SocialFriendsWorkspace";
 import { QuickProfile } from "@/components/gamer/QuickProfile";
 import { shortTime, type SocialTab } from "@/components/social/SocialSidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { useGlobalPresence } from "@/hooks/use-global-presence";
 import { usePeopleSearch } from "@/hooks/use-social";
@@ -44,14 +38,6 @@ const TAB_TITLE: Record<SocialTab, string> = {
   groups: "Grupos",
 };
 
-type FriendCategory = "available" | "all" | "add";
-
-const CATEGORIES: { id: FriendCategory; label: string }[] = [
-  { id: "available", label: "Disponíveis" },
-  { id: "all", label: "Todos" },
-  { id: "add", label: "Adicionar amigo" },
-];
-
 export function SocialHome({
   userId,
   tab,
@@ -62,7 +48,6 @@ export function SocialHome({
 }: Props) {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<FriendCategory>("available");
   const { statusOf } = useGlobalPresence();
   const { data: results = [], isFetching } = usePeopleSearch(search);
 
@@ -99,7 +84,21 @@ export function SocialHome({
   const friendIds = new Set(friends.map((f) => f.profile.id));
   const requestIds = new Set(requests.map((r) => r.profile.id));
 
-  const available = friends.filter((f) => statusOf(f.profile.id) !== "offline");
+  if (tab === "friends")
+    return (
+      <SocialFriendsWorkspace
+        userId={userId}
+        friends={friends}
+        requests={requests}
+        conversations={conversations}
+        onMessage={openDirect}
+        onOpenConversation={onOpenConversation}
+        onRemove={(id) => void run(() => friendsService.respond(id, "remove"), "Amizade removida.")}
+        onBlock={(id) => void run(() => blocksService.block(id), "Usuário bloqueado.")}
+        onAccept={(id) => void run(() => friendsService.respond(id, "accept"), "Amizade aceita.")}
+        addFriendPanel={<AddFriendPanel onDone={refresh} />}
+      />
+    );
 
   return (
     <div className="bg-ambient relative flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -129,26 +128,6 @@ export function SocialHome({
             />
           </div>
         </div>
-
-        {tab === "friends" && search.trim().length < 2 && (
-          <nav className="mt-4 flex flex-wrap gap-1.5">
-            {CATEGORIES.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setCategory(item.id)}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide uppercase transition-colors",
-                  category === item.id
-                    ? "border-primary/60 bg-primary/15 text-foreground glow-soft"
-                    : "border-border text-muted-foreground hover:text-foreground hover:bg-surface-hover/60",
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
-        )}
       </header>
 
       <div className="scrollbar-slim relative min-h-0 flex-1 overflow-y-auto px-6 py-5">
@@ -200,31 +179,6 @@ export function SocialHome({
               </ul>
             )}
           </Section>
-        ) : tab === "friends" ? (
-          category === "add" ? (
-            <AddFriendPanel onDone={refresh} />
-          ) : (
-            <FriendList
-              entries={category === "available" ? available : friends}
-              emptyText={
-                category === "available"
-                  ? "Nenhum amigo disponível agora."
-                  : "Você ainda não tem amigos. Use Adicionar amigo."
-              }
-              title={
-                category === "available"
-                  ? `Disponíveis — ${available.length}`
-                  : `Todos — ${friends.length}`
-              }
-              statusOf={statusOf}
-              onMessage={openDirect}
-              onStartDirect={onOpenConversation}
-              onRemove={(id) =>
-                run(() => friendsService.respond(id, "remove"), "Amizade removida.")
-              }
-              onBlock={(id) => run(() => blocksService.block(id), "Usuário bloqueado.")}
-            />
-          )
         ) : tab === "requests" ? (
           <>
             <Section title={`Recebidas — ${incoming.length}`}>
@@ -377,80 +331,6 @@ export function SocialHome({
         )}
       </div>
     </div>
-  );
-}
-
-function FriendList({
-  entries,
-  title,
-  emptyText,
-  statusOf,
-  onMessage,
-  onRemove,
-  onBlock,
-  onStartDirect,
-}: {
-  entries: FriendEntry[];
-  title: string;
-  emptyText: string;
-  statusOf: (id: string) => UserStatus;
-  onMessage: (userId: string) => void;
-  onRemove: (friendshipId: string) => void;
-  onBlock: (userId: string) => void;
-  onStartDirect: (conversationId: string) => void;
-}) {
-  return (
-    <Section title={title}>
-      {entries.length === 0 ? (
-        <Empty text={emptyText} />
-      ) : (
-        <ul className="space-y-1.5">
-          {entries.map((friend) => (
-            <Row
-              key={friend.friendshipId}
-              userId={friend.profile.id}
-              avatarFrame={friend.profile.avatar_frame}
-              avatarUrl={friend.profile.avatar_url}
-              name={friend.profile.display_name}
-              username={friend.profile.username}
-              status={statusOf(friend.profile.id)}
-              presenceNode={
-                <GamePresenceLine userId={friend.profile.id} presence={friend.presence} withLabel />
-              }
-              onStartDirect={onStartDirect}
-              actions={
-                <>
-                  <Button size="sm" onClick={() => onMessage(friend.profile.id)}>
-                    <MessageSquare className="mr-1.5 h-3.5 w-3.5" />
-                    Mensagem
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button size="icon" variant="ghost" aria-label="Mais ações">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onSelect={() => onRemove(friend.friendshipId)}>
-                        <UserMinus className="mr-2 h-4 w-4" />
-                        Remover amigo
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onSelect={() => onBlock(friend.profile.id)}
-                      >
-                        <Ban className="mr-2 h-4 w-4" />
-                        Bloquear
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </>
-              }
-            />
-          ))}
-        </ul>
-      )}
-    </Section>
   );
 }
 

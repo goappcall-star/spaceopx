@@ -73,14 +73,14 @@ export function SocialSidebar({
               className={cn(
                 "group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors",
                 active
-                  ? "bg-surface-hover text-foreground"
+                  ? "social-nav-active text-foreground"
                   : "text-muted-foreground hover:bg-surface-hover/60 hover:text-foreground",
               )}
             >
-              <Icon className={cn("h-4 w-4", active && "text-primary")} />
+              <Icon className={cn("h-4 w-4", active && "text-foreground")} />
               <span className="flex-1 text-left">{item.label}</span>
               {item.id === "requests" && pendingRequests > 0 && (
-                <span className="bg-primary text-primary-foreground glow-soft rounded-full px-1.5 py-0.5 text-[10px] font-semibold">
+                <span className="bg-destructive text-white rounded-full px-1.5 py-0.5 text-[10px] font-semibold">
                   {pendingRequests}
                 </span>
               )}
@@ -108,7 +108,7 @@ export function SocialSidebar({
                     className={cn(
                       "flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors",
                       active
-                        ? "bg-surface-hover text-foreground"
+                        ? "social-nav-active text-foreground"
                         : "text-muted-foreground hover:bg-surface-hover/60 hover:text-foreground",
                     )}
                   >

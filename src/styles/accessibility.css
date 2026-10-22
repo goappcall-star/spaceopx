@@ -1,0 +1,103 @@
+/* All rules are opt-in. They change comfort policies, never media streams or audio processing. */
+:is(html, [data-a11y-scope])[data-a11y-text="compact"] {
+  font-size: 93.75%;
+}
+:is(html, [data-a11y-scope])[data-a11y-text="large"] {
+  font-size: 112.5%;
+}
+:is(html, [data-a11y-scope])[data-a11y-text="large"]
+  :where(p, li, dd, label, input, textarea, button) {
+  line-height: 1.65 !important;
+}
+:is(html, [data-a11y-scope])[data-a11y-text="compact"]
+  :where(p, li, dd, label, input, textarea, button) {
+  line-height: 1.4 !important;
+}
+:is(html, [data-a11y-scope])[data-a11y-text="large"] :where(p + p, li + li) {
+  margin-block-start: 0.5em;
+}
+:is(html, [data-a11y-scope])[data-a11y-text="compact"] :where(p + p, li + li) {
+  margin-block-start: 0.2em;
+}
+:is(html, [data-a11y-scope])[data-a11y-contrast="true"] {
+  --background: #03070d !important;
+  --surface: #0a1220 !important;
+  --surface-elevated: #152237 !important;
+  --surface-hover: #23354e !important;
+  --foreground: #ffffff !important;
+  --primary: #c8ff7d !important;
+  --primary-foreground: #101b05 !important;
+  --ring: #c8ff7d !important;
+  --muted-foreground: #dce5f4 !important;
+  --border: #8195ae !important;
+  --input: #8195ae !important;
+  --muted: #182b43 !important;
+  --card: #0a1220 !important;
+  --card-foreground: #fff !important;
+  --popover: #0a1220 !important;
+  --popover-foreground: #fff !important;
+  color: var(--foreground);
+  background-color: var(--background);
+}
+:is(html.light, [data-a11y-scope].light)[data-a11y-contrast="true"] {
+  --background: #ffffff !important;
+  --surface: #f5f7fc !important;
+  --surface-elevated: #e7ecf5 !important;
+  --surface-hover: #d3ddeb !important;
+  --foreground: #07101f !important;
+  --primary: #145124 !important;
+  --primary-foreground: #ffffff !important;
+  --ring: #145124 !important;
+  --muted-foreground: #263a54 !important;
+  --border: #526783 !important;
+  --input: #526783 !important;
+  --muted: #e1e8f2 !important;
+  --card: #f5f7fc !important;
+  --card-foreground: #07101f !important;
+  --popover: #ffffff !important;
+  --popover-foreground: #07101f !important;
+}
+:is(html, [data-a11y-scope])[data-a11y-focus="true"] :focus-visible {
+  outline: 3px solid var(--ring) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 2px var(--background) !important;
+}
+:is(html, [data-a11y-scope])[data-a11y-motion="true"] *,
+:is(html, [data-a11y-scope])[data-a11y-motion="true"] *::before,
+:is(html, [data-a11y-scope])[data-a11y-motion="true"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+:is(html, [data-a11y-scope])[data-a11y-transparency="true"] {
+  --glass-alpha: 1 !important;
+}
+:is(html, [data-a11y-scope])[data-a11y-transparency="true"]
+  :where(.glass-panel, [class*="backdrop-blur"]) {
+  backdrop-filter: none !important;
+  background-color: var(--surface) !important;
+}
+.a11y-skip-links {
+  position: fixed;
+  top: 38px;
+  left: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  z-index: 10000;
+  transform: translateY(-250%);
+  padding: 10px;
+  background: var(--surface);
+  border: 2px solid var(--ring);
+  border-radius: 10px;
+}
+.a11y-skip-links:focus-within {
+  transform: none;
+}
+.a11y-skip-links button {
+  padding: 8px 12px;
+  color: var(--foreground);
+  font-size: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}

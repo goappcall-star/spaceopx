@@ -24,7 +24,6 @@ import { CreateChannelDialog } from "@/components/app/CreateChannelDialog";
 import { CategoryManager } from "@/components/app/CategoryManager";
 import { useServerCategories } from "@/hooks/use-categories";
 import { useSidebarDrag } from "@/hooks/use-sidebar-drag";
-import { UserBar } from "@/components/app/UserBar";
 import { VoiceParticipantActions } from "@/components/voice/VoiceParticipantActions";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -788,7 +787,6 @@ export function ChannelSidebar({
           onClose={() => setConfirmation(null)}
         />
       )}
-      <UserBar />
     </aside>
   );
 }

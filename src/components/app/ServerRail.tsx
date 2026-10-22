@@ -52,7 +52,7 @@ export function ServerRail({
   return (
     <nav
       aria-label="Servidores"
-      className="bg-rail relative z-30 flex w-[76px] shrink-0 flex-col items-center gap-2 py-3 shadow-[1px_0_0_0_var(--color-border),8px_0_28px_-24px_rgba(0,0,0,0.9)]"
+      className="bg-rail relative z-30 flex min-h-0 w-[76px] shrink-0 flex-col items-center gap-2 py-3 shadow-[1px_0_0_0_var(--color-border),8px_0_28px_-24px_rgba(0,0,0,0.9)]"
     >
       <Tooltip>
         <TooltipTrigger asChild>
@@ -84,7 +84,7 @@ export function ServerRail({
               onUpdate={(patch) => onUpdatePreferences(server.id, patch)}
               onAction={onServerAction}
             >
-              <div>
+              <div className="shrink-0">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
@@ -141,6 +141,14 @@ export function ServerRail({
             </ServerContextMenu>
           );
         })}
+        {servers.length > 0 && (
+          <span
+            role="separator"
+            aria-label="Criar ou entrar em servidor"
+            data-server-add-separator
+            className="bg-border/80 h-px w-8 shrink-0 rounded-full"
+          />
+        )}
         <ServerAccessButton onClick={onAdd} />
       </div>
 

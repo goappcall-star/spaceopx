@@ -58,7 +58,7 @@ export const SETTINGS_SECTIONS = [
     label: "Acessibilidade",
     group: "Experiência",
     icon: Accessibility,
-    description: "Ajuste movimento e efeitos para seu conforto.",
+    description: "Ajuste leitura, navegação e movimento para seu conforto.",
   },
   {
     id: "system",

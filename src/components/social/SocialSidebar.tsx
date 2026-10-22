@@ -5,7 +5,6 @@ import { Compass, MessageSquare, UserPlus, Users, UsersRound } from "lucide-reac
 import { COMMUNITY_V1_ENABLED } from "@/lib/community-feature";
 
 import { StatusDot } from "@/components/app/StatusDot";
-import { UserBar } from "@/components/app/UserBar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { ConversationOverview, UserStatus } from "@/types";
@@ -147,8 +146,6 @@ export function SocialSidebar({
           </ul>
         )}
       </div>
-
-      <UserBar />
     </aside>
   );
 }

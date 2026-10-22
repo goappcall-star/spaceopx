@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/hooks/use-auth";
 import { AppearanceSync } from "@/hooks/use-appearance";
+import { AccessibilitySync } from "@/components/settings/AccessibilitySync";
 import { VisualQualitySync } from "@/hooks/use-visual-quality";
 import { VISUAL_QUALITY_BOOTSTRAP } from "@/lib/visual-quality";
 import { THEME_BOOTSTRAP } from "@/lib/theme";
@@ -150,6 +151,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AppearanceSync />
+        <AccessibilitySync />
         <DesktopTitleBar />
         <VisualQualitySync />
         <DesktopUpdates />

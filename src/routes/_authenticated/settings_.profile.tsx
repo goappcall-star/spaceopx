@@ -1,13 +1,6 @@
-import { VisualBanner } from "@/components/ui/static-image";
-import { normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
-import { PerformanceSettings } from "@/components/settings/PerformanceSettings";
-import { ThemeSelector } from "@/components/settings/ThemeSelector";
-import { ProfileCosmeticPicker } from "@/components/settings/ProfileCosmeticPicker";
-import { ProfileFrameDecoration } from "@/components/gamer/ProfileCosmetics";
-import { normalizeProfileCosmetic, type ProfileCosmeticId } from "@/lib/profile-cosmetics";
-import { ProfileStatusSelect } from "@/components/settings/ProfileStatusSelect";
-import { profileSaveErrorMessage } from "@/lib/profile-status";
-import { z } from "zod";
+import { AccessibilitySettings } from "@/components/settings/AccessibilitySettings";
+import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
+import { ProfileSettingsEditor } from "@/components/settings/ProfileSettingsEditor";
 import {
   SettingsShell,
   SETTINGS_SECTIONS,
@@ -17,17 +10,11 @@ import { AccountSettings } from "@/components/settings/AccountSettings";
 import { DesktopPermissions } from "@/components/gamer/DesktopPermissions";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, Gamepad2, Plus, Trash2, Upload } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowDown, ArrowUp, Gamepad2, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-
-import { STATUS_EMOJI, STATUS_LABEL, StatusDot } from "@/components/app/StatusDot";
-import { BadgeChips } from "@/components/gamer/BadgeChips";
-import { XpBar } from "@/components/gamer/XpBar";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -35,21 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
-import {
-  useFavoriteGames,
-  useGames,
-  useMyGamePresence,
-  usePreferences,
-  useUserBadges,
-  useUserXp,
-} from "@/hooks/use-gamer";
-import { profileImagesService, type ImageBucket } from "@/services/profile-images";
-import { favoriteGamesService, MAX_FAVORITE_GAMES, preferencesService } from "@/services/gamer";
-import { profilesService } from "@/services/profiles";
-import type { AccentColor, TransparencyLevel, UserStatus } from "@/types";
+import { useFavoriteGames, useGames } from "@/hooks/use-gamer";
+import { favoriteGamesService, MAX_FAVORITE_GAMES } from "@/services/gamer";
 
 export const Route = createFileRoute("/_authenticated/settings_/profile")({
   validateSearch: z.object({ section: z.string().optional() }),
@@ -59,7 +34,7 @@ export const Route = createFileRoute("/_authenticated/settings_/profile")({
       {
         name: "description",
         content:
-          "Personalize seu perfil gamer no LobbyX: avatar, banner, bio, status, jogos favoritos e tema neon.",
+          "Personalize seu perfil gamer no LobbyX: avatar, banner, bio, molduras e tema neon.",
       },
       { property: "og:title", content: "Seu perfil — LobbyX" },
       {
@@ -71,22 +46,6 @@ export const Route = createFileRoute("/_authenticated/settings_/profile")({
   component: ProfileSettingsPage,
 });
 
-const ACCENTS: { value: AccentColor; label: string }[] = [
-  { value: "neon_cyan", label: "Ciano" },
-  { value: "neon_blue", label: "Azul" },
-  { value: "neon_purple", label: "Roxo" },
-  { value: "neon_green", label: "Verde" },
-  { value: "neon_orange", label: "Laranja" },
-  { value: "neon_red", label: "Vermelho" },
-];
-const TRANSPARENCIES: TransparencyLevel[] = ["none", "low", "medium", "high"];
-const TRANSPARENCY_LABEL: Record<TransparencyLevel, string> = {
-  none: "Sem transparência",
-  low: "Baixa",
-  medium: "Média",
-  high: "Alta",
-};
-
 function ProfileSettingsPage() {
   const search = Route.useSearch();
   const section: SettingsSection = SETTINGS_SECTIONS.some(
@@ -94,91 +53,29 @@ function ProfileSettingsPage() {
   )
     ? (search.section as SettingsSection)
     : "profile";
-  const { profile, user, refreshProfile } = useAuth();
+  if (section === "profile") return <ProfileSettingsEditor />;
+  if (section === "accessibility")
+    return (
+      <SettingsShell active="accessibility">
+        <AccessibilitySettings />
+      </SettingsShell>
+    );
+  if (section === "appearance")
+    return (
+      <SettingsShell active="appearance">
+        <AppearanceSettings />
+      </SettingsShell>
+    );
+  return <OtherSettingsPage section={section} />;
+}
+
+function OtherSettingsPage({ section }: { section: SettingsSection }) {
+  const { user } = useAuth();
   const userId = user?.id;
   const queryClient = useQueryClient();
-
   const { data: games = [] } = useGames();
   const { data: favorites = [] } = useFavoriteGames(userId);
-  const { data: presence } = useMyGamePresence(userId);
-  const { data: xp } = useUserXp(userId);
-  const { data: badges = [] } = useUserBadges(userId);
-  const { data: prefs } = usePreferences(userId);
-
-  const avatarInput = useRef<HTMLInputElement>(null);
-  const bannerInput = useRef<HTMLInputElement>(null);
-
-  const [form, setForm] = useState({
-    display_name: "",
-    bio: "",
-    custom_status: "",
-    avatar_url: "",
-    avatar_frame: "default" as AvatarFrameId,
-    nameplate: "none" as ProfileCosmeticId,
-    profile_frame: "none" as ProfileCosmeticId,
-    banner_url: "",
-    status: "online" as UserStatus,
-  });
   const [gameToAdd, setGameToAdd] = useState<string>("");
-
-  useEffect(() => {
-    if (!profile) return;
-    setForm({
-      display_name: profile.display_name,
-      bio: profile.bio ?? "",
-      custom_status: profile.custom_status ?? "",
-      avatar_url: profile.avatar_url ?? "",
-      avatar_frame: normalizeAvatarFrame(profile.avatar_frame),
-      nameplate: normalizeProfileCosmetic(profile.nameplate),
-      profile_frame: normalizeProfileCosmetic(profile.profile_frame),
-      banner_url: profile.banner_url ?? "",
-      status: profile.status,
-    });
-  }, [profile]);
-
-  const saveProfile = useMutation({
-    mutationFn: () =>
-      profilesService.update(userId!, {
-        display_name: form.display_name,
-        bio: form.bio,
-        custom_status: form.custom_status,
-        avatar_url: form.avatar_url,
-        ...(form.avatar_frame !== normalizeAvatarFrame(profile?.avatar_frame)
-          ? { avatar_frame: form.avatar_frame }
-          : {}),
-        banner_url: form.banner_url,
-        ...(form.nameplate !== normalizeProfileCosmetic(profile?.nameplate)
-          ? { nameplate: form.nameplate }
-          : {}),
-        ...(form.profile_frame !== normalizeProfileCosmetic(profile?.profile_frame)
-          ? { profile_frame: form.profile_frame }
-          : {}),
-        status: form.status,
-      }),
-    onSuccess: async () => {
-      await refreshProfile();
-      await queryClient.invalidateQueries();
-      toast.success("Perfil atualizado.");
-    },
-    onError: (error) => {
-      toast.error(profileSaveErrorMessage(error));
-    },
-  });
-
-  const uploadImage = useMutation({
-    mutationFn: async ({ bucket, file }: { bucket: ImageBucket; file: File }) => ({
-      bucket,
-      url: await profileImagesService.upload(bucket, userId!, file),
-    }),
-    onSuccess: ({ bucket, url }) => {
-      setForm((f) =>
-        bucket === "avatars" ? { ...f, avatar_url: url } : { ...f, banner_url: url },
-      );
-      toast.success("Imagem enviada. Salve para aplicar.");
-    },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Falha no upload da imagem."),
-  });
 
   const favoritesMutation = useMutation({
     mutationFn: async (action: () => Promise<void>) => action(),
@@ -186,22 +83,6 @@ function ProfileSettingsPage() {
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Não foi possível atualizar os jogos."),
   });
-
-  const prefsMutation = useMutation({
-    mutationFn: (update: Parameters<typeof preferencesService.save>[1]) =>
-      preferencesService.save(userId!, { ...prefs, ...update }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["preferences", userId] }),
-    onError: () => toast.error("Não foi possível salvar a personalização."),
-  });
-
-  function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    if (!form.display_name.trim()) {
-      toast.error("Informe um nome de exibição.");
-      return;
-    }
-    saveProfile.mutate();
-  }
 
   function move(index: number, delta: number) {
     const next = [...favorites];
@@ -223,146 +104,9 @@ function ProfileSettingsPage() {
       {(["games", "privacy", "system"] as string[]).includes(section) && (
         <DesktopPermissions mode={section as "games" | "privacy" | "system"} />
       )}
-      <div className={section === "profile" ? "grid gap-6 xl:grid-cols-[1fr_280px]" : "max-w-3xl"}>
+      <div className="max-w-3xl">
         {/* ------------------------------------------------------- editor */}
         <div className="space-y-6">
-          {section === "profile" && (
-            <section className="glass-panel p-6">
-              <h2 className="mb-4 text-base font-semibold">Identidade</h2>
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="flex flex-wrap gap-3">
-                  <input
-                    ref={avatarInput}
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/gif"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) uploadImage.mutate({ bucket: "avatars", file });
-                      e.target.value = "";
-                    }}
-                  />
-                  <input
-                    ref={bannerInput}
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/gif"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) uploadImage.mutate({ bucket: "banners", file });
-                      e.target.value = "";
-                    }}
-                  />
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="display_name">Nome de exibição</Label>
-                    <Input
-                      id="display_name"
-                      value={form.display_name}
-                      onChange={(e) => setForm((f) => ({ ...f, display_name: e.target.value }))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Username</Label>
-                    <div className="border-border bg-surface-elevated flex h-9 items-center rounded-md border px-3">
-                      <p className="truncate  text-sm font-friend font-semibold tracking-normal">
-                        @{profile?.username}
-                      </p>
-                    </div>
-                    <p className="text-muted-foreground text-xs">Seu username é permanente.</p>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    rows={3}
-                    maxLength={300}
-                    value={form.bio}
-                    onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
-                    placeholder="Conte quem você é nas partidas..."
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="custom_status">Status personalizado</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="custom_status"
-                      maxLength={120}
-                      value={form.custom_status}
-                      onChange={(e) => setForm((f) => ({ ...f, custom_status: e.target.value }))}
-                      placeholder="Jogando com a tropa 🎮"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => setForm((f) => ({ ...f, custom_status: "" }))}
-                    >
-                      Limpar
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status online</Label>
-                  <ProfileStatusSelect
-                    value={form.status}
-                    onChange={(status) => setForm((f) => ({ ...f, status }))}
-                  />
-                </div>
-
-                <ProfileCosmeticPicker
-                  kind="avatar"
-                  value={form.avatar_frame}
-                  name={form.display_name}
-                  avatar={form.avatar_url}
-                  banner={form.banner_url}
-                  onChange={(avatar_frame) => setForm((current) => ({ ...current, avatar_frame }))}
-                />
-
-                <div className="space-y-3">
-                  <ToggleRow
-                    label="Animações das molduras"
-                    checked={prefs?.frame_animations_enabled ?? true}
-                    onChange={(frame_animations_enabled) =>
-                      prefsMutation.mutate({ frame_animations_enabled })
-                    }
-                  />
-                  <p className="text-muted-foreground text-xs">
-                    Controla as molduras que você vê. A preferência de movimento reduzido do sistema
-                    também é respeitada.
-                  </p>
-                  <ProfileCosmeticPicker
-                    kind="nameplate"
-                    value={form.nameplate}
-                    name={form.display_name}
-                    avatar={form.avatar_url}
-                    banner={form.banner_url}
-                    onChange={(nameplate) => setForm((current) => ({ ...current, nameplate }))}
-                  />
-                  <ProfileCosmeticPicker
-                    kind="frame"
-                    value={form.profile_frame}
-                    name={form.display_name}
-                    avatar={form.avatar_url}
-                    banner={form.banner_url}
-                    onChange={(profile_frame) =>
-                      setForm((current) => ({ ...current, profile_frame }))
-                    }
-                  />
-                </div>
-
-                <Button type="submit" disabled={saveProfile.isPending || uploadImage.isPending}>
-                  {saveProfile.isPending ? "Salvando..." : "Salvar perfil"}
-                </Button>
-              </form>
-            </section>
-          )}
-
           {/* ----------------------------------------------- favorite games */}
           {section === "favorites" && (
             <section className="glass-panel p-6">
@@ -444,185 +188,10 @@ function ProfileSettingsPage() {
               )}
             </section>
           )}
-
-          {/* ------------------------------------------------ personalization */}
-          {(section === "appearance" || section === "accessibility") && (
-            <section className="glass-panel p-6">
-              <h2 className="mb-4 text-base font-semibold">Personalização visual</h2>
-              <div className="space-y-5">
-                {section === "appearance" && (
-                  <>
-                    <ThemeSelector />
-                    <PerformanceSettings />
-                  </>
-                )}
-                {section === "appearance" && (
-                  <div className="space-y-2">
-                    <Label>Cor de destaque</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {ACCENTS.map((accent) => (
-                        <button
-                          key={accent.value}
-                          type="button"
-                          data-accent={accent.value}
-                          aria-label={accent.label}
-                          aria-pressed={prefs?.accent_color === accent.value}
-                          onClick={() => prefsMutation.mutate({ accent_color: accent.value })}
-                          className={`bg-brand-gradient h-9 w-9 rounded-lg transition-transform hover:scale-110 ${
-                            prefs?.accent_color === accent.value ? "ring-foreground ring-2" : ""
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <ToggleRow
-                  label="Glow neon"
-                  checked={prefs?.glow_enabled ?? true}
-                  onChange={(v) => prefsMutation.mutate({ glow_enabled: v })}
-                />
-                <ToggleRow
-                  label="Animações"
-                  checked={prefs?.animations_enabled ?? true}
-                  onChange={(v) => prefsMutation.mutate({ animations_enabled: v })}
-                />
-                <ToggleRow
-                  label="Animações das molduras"
-                  checked={prefs?.frame_animations_enabled ?? true}
-                  onChange={(frame_animations_enabled) =>
-                    prefsMutation.mutate({ frame_animations_enabled })
-                  }
-                />
-
-                {section === "appearance" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="transparency">Transparência</Label>
-                    <Select
-                      value={prefs?.transparency_level ?? "medium"}
-                      onValueChange={(value) =>
-                        prefsMutation.mutate({ transparency_level: value as TransparencyLevel })
-                      }
-                    >
-                      <SelectTrigger id="transparency" className="w-56">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {TRANSPARENCIES.map((level) => (
-                          <SelectItem key={level} value={level}>
-                            {TRANSPARENCY_LABEL[level]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
-            </section>
-          )}
         </div>
 
         {/* -------------------------------------------------------- preview */}
-        {section === "profile" && (
-          <aside className="xl:sticky xl:top-6 xl:self-start">
-            <div className="glass-panel relative overflow-visible">
-              <ProfileFrameDecoration value={form.profile_frame} />
-              <VisualBanner
-                src={form.banner_url}
-                className="bg-brand-gradient relative h-44 w-full rounded-t-2xl bg-cover bg-center sm:h-52"
-              >
-                <Button
-                  type="button"
-                  aria-label="Alterar banner"
-                  disabled={uploadImage.isPending}
-                  onClick={() => bannerInput.current?.click()}
-                  className="absolute top-3 right-3 h-9 w-9 rounded-full bg-black/60 text-white hover:bg-black/80"
-                  size="icon"
-                >
-                  <Upload className="h-4 w-4" />
-                </Button>
-              </VisualBanner>
-              <div className="p-5">
-                <div className="relative -mt-28 mb-8 w-fit">
-                  <button
-                    type="button"
-                    aria-label="Alterar avatar"
-                    disabled={uploadImage.isPending}
-                    onClick={() => avatarInput.current?.click()}
-                    className="group relative block rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-60"
-                  >
-                    <Avatar
-                      frame={form.avatar_frame}
-                      className="border-surface glow-ring h-20 w-20 border-4"
-                    >
-                      <AvatarImage src={form.avatar_url || undefined} alt="" />
-                      <AvatarFallback className="bg-secondary text-lg">
-                        {form.display_name.slice(0, 2).toUpperCase() || "??"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-                      <Upload className="h-5 w-5" />
-                    </span>
-                    <span className="absolute -top-1 -right-1 rounded-full bg-primary p-1 text-primary-foreground">
-                      <Upload className="h-3 w-3" />
-                    </span>
-                  </button>
-                  <StatusDot
-                    status={form.status}
-                    playing={presence?.status === "playing"}
-                    className="border-surface absolute right-1 bottom-1 h-4 w-4 border-2"
-                  />
-                </div>
-                <p className="mt-3 text-lg font-semibold">{form.display_name || "Seu nome"}</p>
-                <p className="text-muted-foreground  text-sm font-friend font-semibold tracking-normal">
-                  @{profile?.username ?? "username"}
-                </p>
-                {presence?.status === "playing" && presence.game ? (
-                  <p className="text-primary mt-2 flex items-center gap-1.5 text-xs">
-                    <Gamepad2 className="h-3.5 w-3.5" /> Jogando {presence.game.name}
-                  </p>
-                ) : (
-                  <p className="text-muted-foreground mt-2 text-xs">
-                    {STATUS_EMOJI[form.status]} {STATUS_LABEL[form.status]}
-                  </p>
-                )}
-                {form.custom_status && (
-                  <p className="text-surface-foreground mt-2 text-sm italic">
-                    “{form.custom_status}”
-                  </p>
-                )}
-                {form.bio && <p className="mt-3 text-sm whitespace-pre-wrap">{form.bio}</p>}
-
-                <div className="mt-5">
-                  <XpBar xp={xp?.xp ?? 0} level={xp?.level ?? 1} />
-                </div>
-
-                <h3 className="text-muted-foreground mt-5 mb-2 text-xs font-semibold tracking-wider uppercase">
-                  Badges
-                </h3>
-                <BadgeChips badges={badges} />
-              </div>
-            </div>
-          </aside>
-        )}
       </div>
     </SettingsShell>
-  );
-}
-
-function ToggleRow({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (value: boolean) => void;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <Label>{label}</Label>
-      <Switch aria-label={label} checked={checked} onCheckedChange={onChange} />
-    </div>
   );
 }

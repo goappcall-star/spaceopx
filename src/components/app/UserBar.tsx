@@ -38,7 +38,7 @@ const STATUS_OPTIONS: { value: SelectableStatus; label: string }[] = [
   { value: "dnd", label: "Não perturbar" },
 ];
 
-export function UserBar() {
+export function UserBar({ expanded = false }: { expanded?: boolean } = {}) {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -96,7 +96,13 @@ export function UserBar() {
       <div className="px-2.5 py-1">
         <DownloadWindows compact />
       </div>
-      <div className="border-border bg-rail flex items-center gap-1.5 border-t px-2 py-2.5">
+      <div
+        data-user-profile-bar
+        className={cn(
+          "border-border bg-rail flex items-center gap-1.5 border-t px-2 py-2.5",
+          expanded && "gap-2 px-3 py-3",
+        )}
+      >
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <button
@@ -117,10 +123,13 @@ export function UserBar() {
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">
+                <p className="truncate text-sm font-medium" title={profile?.display_name}>
                   {profile?.display_name ?? "Carregando..."}
                 </p>
-                <p className="text-muted-foreground truncate font-friend font-semibold tracking-normal text-[11px]">
+                <p
+                  className="text-muted-foreground truncate font-friend font-semibold tracking-normal text-[11px]"
+                  title={profile?.username ? `@${profile.username}` : undefined}
+                >
                   @{profile?.username ?? "..."}
                 </p>
               </div>

@@ -7,6 +7,20 @@ import { DEFAULT_EXPERIENCE } from "@/lib/community-experience";
 import type { CommunityExperience } from "@/types/community-experience";
 import type { Server, Channel, Role } from "@/types";
 import "./preview.css";
+const Accessibility = lazy(() =>
+  import("../accessibility-settings-preview/preview").then((m) => ({
+    default: m.AccessibilityPreview,
+  })),
+);
+const Appearance = lazy(() =>
+  import("../appearance-settings-preview/preview").then((m) => ({ default: m.AppearancePreview })),
+);
+const Account = lazy(() =>
+  import("../account-settings-preview/preview").then((m) => ({ default: m.AccountPreview })),
+);
+const Profile = lazy(() =>
+  import("../profile-settings-preview/preview").then((m) => ({ default: m.ProfilePreview })),
+);
 
 const Audio = lazy(() =>
   import("../audio-preview/preview").then((m) => ({ default: m.AudioPreview })),
@@ -39,6 +53,11 @@ const pages = [
   "Configurações",
   "Servidores",
   "Áudio",
+  "Perfil",
+  "Minha conta",
+  "Aparência",
+  "Acessibilidade",
+  "Barra lateral",
 ] as const;
 type Page = (typeof pages)[number];
 const sid = "c5000000-0000-0000-0000-000000000001",
@@ -142,6 +161,51 @@ function Session() {
         : page === "Evolução"
           ? "evolution"
           : "home";
+  if (page === "Perfil")
+    return (
+      <Suspense fallback={<p>Carregando perfil...</p>}>
+        <Profile onBack={() => navigate("Home")} />
+      </Suspense>
+    );
+  if (page === "Barra lateral")
+    return (
+      <div className="p-6">
+        <h1 className="text-xl font-semibold">Barra lateral e perfil</h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Prévia local isolada com componentes reais e dados fictícios, sem autenticação ou áudio
+          real.
+        </p>
+        <a
+          className="mt-4 inline-block text-primary underline"
+          href="http://127.0.0.1:5220/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Abrir prévia da barra lateral
+        </a>
+        <button className="ml-4 text-sm" onClick={() => navigate("Home")}>
+          Voltar
+        </button>
+      </div>
+    );
+  if (page === "Acessibilidade")
+    return (
+      <Suspense fallback={<p>Carregando acessibilidade...</p>}>
+        <Accessibility onBack={() => navigate("Home")} />
+      </Suspense>
+    );
+  if (page === "Aparência")
+    return (
+      <Suspense fallback={<p>Carregando aparência...</p>}>
+        <Appearance onBack={() => navigate("Home")} />
+      </Suspense>
+    );
+  if (page === "Minha conta")
+    return (
+      <Suspense fallback={<p>Carregando conta...</p>}>
+        <Account onBack={() => navigate("Home")} onProfile={() => navigate("Perfil")} />
+      </Suspense>
+    );
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="border-b border-border bg-surface px-4 py-3">
@@ -400,7 +464,7 @@ export function UnifiedPreview() {
     [revision, setRevision] = useState(0);
   return (
     <>
-      <header className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-2 border-b border-primary/30 bg-background p-3">
+      <header className="unified-preview-banner sticky top-0 z-40 flex flex-wrap items-center justify-between gap-2 border-b border-primary/30 bg-background p-3">
         <div>
           <p className="text-xs font-semibold text-primary">
             PRÉVIA LOCAL · DADOS FICTÍCIOS · SEM SUPABASE

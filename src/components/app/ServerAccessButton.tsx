@@ -1,4 +1,4 @@
-import { UsersRound, Link2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 export function ServerAccessButton({ onClick }: { onClick: () => void }) {
@@ -9,12 +9,9 @@ export function ServerAccessButton({ onClick }: { onClick: () => void }) {
           type="button"
           onClick={onClick}
           aria-label="Criar ou entrar em servidor"
-          className="group relative mt-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-lime-300/40 bg-lime-300/5 text-lime-300 transition-colors hover:border-lime-300 hover:bg-lime-300/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime-300"
+          className="border-border text-primary hover:border-primary/60 hover:bg-primary/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-dashed transition-all duration-200 hover:rounded-xl"
         >
-          <UsersRound className="h-5 w-5" />
-          <span className="absolute right-1 bottom-1 rounded-md bg-surface p-0.5 text-primary">
-            <Link2 className="h-3 w-3" />
-          </span>
+          <Plus className="h-5 w-5" />
         </button>
       </TooltipTrigger>
       <TooltipContent side="right" sideOffset={12} className="max-w-52 space-y-1 rounded-xl p-3">

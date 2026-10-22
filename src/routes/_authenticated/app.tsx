@@ -1,3 +1,4 @@
+import { AppNavigationLayout } from "@/components/app/AppNavigationLayout";
 import { useCommunityEventNotifications } from "@/hooks/use-community-event-notifications";
 import { useQueryClient } from "@tanstack/react-query";
 import { COMMUNITY_V1_ENABLED } from "@/lib/community-feature";
@@ -297,126 +298,128 @@ function AppPage() {
             />
           )}
           <AppSidebarDrawer open={mobileNav} side="left">
-            <ServerRail
-              serverBadges={serverCounts}
-              serverMentions={serverMentions}
-              getPreferences={preferences.get}
-              onUpdatePreferences={preferences.update}
-              onServerAction={(action, server) => {
-                void handleServerAction(action, server);
-              }}
-              servers={servers}
-              onHome={() => {
-                void navigate({ to: "/app", search: {}, replace: true });
-                setView("servers");
-                setActiveServerId(null);
-                setActiveChannelId(null);
-                setActiveConversationId(null);
-                setVoiceReturn(null);
-                setMobileNav(false);
-              }}
-              activeServerId={activeServerId}
-              onSelect={(id) => {
-                if (id !== activeServerId) finishServerLoad.current = measureOperation("ui.server");
-                setView("servers");
-                setActiveServerId(id);
-              }}
-              onAdd={() => setCreateOpen(true)}
-              socialActive={view === "social"}
-              onSelectSocial={() => {
-                setView("social");
-                setMobileNav(false);
-              }}
-              socialBadge={totalUnread + pendingRequests}
-            />
-
-            {view === "social" ? (
-              <SocialSidebar
-                tab={socialTab}
-                onTabChange={(tab) => {
-                  setSocialTab(tab);
+            <AppNavigationLayout profile={<UserBar expanded />}>
+              <ServerRail
+                serverBadges={serverCounts}
+                serverMentions={serverMentions}
+                getPreferences={preferences.get}
+                onUpdatePreferences={preferences.update}
+                onServerAction={(action, server) => {
+                  void handleServerAction(action, server);
+                }}
+                servers={servers}
+                onHome={() => {
+                  void navigate({ to: "/app", search: {}, replace: true });
+                  setView("servers");
+                  setActiveServerId(null);
+                  setActiveChannelId(null);
                   setActiveConversationId(null);
+                  setVoiceReturn(null);
                   setMobileNav(false);
                 }}
-                conversations={conversations}
-                activeConversationId={activeConversationId}
-                onSelectConversation={(id) => {
-                  openConversation(id);
+                activeServerId={activeServerId}
+                onSelect={(id) => {
+                  if (id !== activeServerId)
+                    finishServerLoad.current = measureOperation("ui.server");
+                  setView("servers");
+                  setActiveServerId(id);
+                }}
+                onAdd={() => setCreateOpen(true)}
+                socialActive={view === "social"}
+                onSelectSocial={() => {
+                  setView("social");
                   setMobileNav(false);
                 }}
-                pendingRequests={pendingRequests}
+                socialBadge={totalUnread + pendingRequests}
               />
-            ) : activeServer ? (
-              <ChannelSidebar
-                key={activeServer.id}
-                onUpdatePreferences={(patch) => preferences.update(activeServer.id, patch)}
-                onMarkRead={(ids) => {
-                  if (!user) return;
-                  void Promise.all(ids.map((id) => unreadService.markChannel(id, null)))
-                    .then(() => {
-                      refreshUnread();
-                    })
-                    .catch(() => toast.error("Não foi possível marcar como lido."));
-                }}
-                onStartDirect={openConversation}
-                preferences={preferences.get(activeServer.id)}
-                onToggleMuteChannel={(channelId) => {
-                  const current = preferences.get(activeServer.id);
-                  preferences.update(activeServer.id, {
-                    mutedChannels: current.mutedChannels.includes(channelId)
-                      ? current.mutedChannels.filter((id) => id !== channelId)
-                      : [...current.mutedChannels, channelId],
-                  });
-                }}
-                server={activeServer}
-                channels={channels}
-                communityHome={Boolean(community.data)}
-                communityHomeLabel={
-                  community.data?.experience.home_enabled
-                    ? "Início da comunidade"
-                    : "Boas-vindas da comunidade"
-                }
-                communityHomeActive={showCommunity}
-                onCommunityHome={() => {
-                  setCommunityView(activeServer.id);
-                  setMobileNav(false);
-                }}
-                activeChannelId={showCommunity ? null : activeChannelId}
-                onSelectChannel={(id) => {
-                  setCommunityView(null);
-                  setActiveChannelId(id);
-                  setMobileNav(false);
-                }}
-                members={members}
-                unreadChannelIds={unread}
-                unreadCounts={channelCounts}
-                mentionCounts={mentions}
-                canInvite={canManage || abilities.can("create_invite")}
-                canManage={abilities.can("manage_channels")}
-                canOpenSettings={abilities.canOpenSettings}
-                onOpenSettings={() => setSettingsOpen(true)}
-                onInvite={() => setInviteOpen(true)}
-                onCreateChannel={() => setChannelOpen(true)}
-              />
-            ) : (
-              <aside className="bg-surface border-border relative z-20 flex w-64 shrink-0 flex-col border-r">
-                <div className="border-border relative overflow-hidden border-b px-4 py-3.5">
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 opacity-70"
-                    style={{ backgroundImage: "var(--gradient-ambient)" }}
-                  />
-                  <h2 className="relative text-sm font-semibold tracking-tight">
-                    Nenhum servidor aberto
-                  </h2>
-                  <p className="text-muted-foreground relative mt-0.5 text-xs">
-                    Selecione um servidor à esquerda.
-                  </p>
-                </div>
-                <div className="flex-1" />
-                <UserBar />
-              </aside>
-            )}
+
+              {view === "social" ? (
+                <SocialSidebar
+                  tab={socialTab}
+                  onTabChange={(tab) => {
+                    setSocialTab(tab);
+                    setActiveConversationId(null);
+                    setMobileNav(false);
+                  }}
+                  conversations={conversations}
+                  activeConversationId={activeConversationId}
+                  onSelectConversation={(id) => {
+                    openConversation(id);
+                    setMobileNav(false);
+                  }}
+                  pendingRequests={pendingRequests}
+                />
+              ) : activeServer ? (
+                <ChannelSidebar
+                  key={activeServer.id}
+                  onUpdatePreferences={(patch) => preferences.update(activeServer.id, patch)}
+                  onMarkRead={(ids) => {
+                    if (!user) return;
+                    void Promise.all(ids.map((id) => unreadService.markChannel(id, null)))
+                      .then(() => {
+                        refreshUnread();
+                      })
+                      .catch(() => toast.error("Não foi possível marcar como lido."));
+                  }}
+                  onStartDirect={openConversation}
+                  preferences={preferences.get(activeServer.id)}
+                  onToggleMuteChannel={(channelId) => {
+                    const current = preferences.get(activeServer.id);
+                    preferences.update(activeServer.id, {
+                      mutedChannels: current.mutedChannels.includes(channelId)
+                        ? current.mutedChannels.filter((id) => id !== channelId)
+                        : [...current.mutedChannels, channelId],
+                    });
+                  }}
+                  server={activeServer}
+                  channels={channels}
+                  communityHome={Boolean(community.data)}
+                  communityHomeLabel={
+                    community.data?.experience.home_enabled
+                      ? "Início da comunidade"
+                      : "Boas-vindas da comunidade"
+                  }
+                  communityHomeActive={showCommunity}
+                  onCommunityHome={() => {
+                    setCommunityView(activeServer.id);
+                    setMobileNav(false);
+                  }}
+                  activeChannelId={showCommunity ? null : activeChannelId}
+                  onSelectChannel={(id) => {
+                    setCommunityView(null);
+                    setActiveChannelId(id);
+                    setMobileNav(false);
+                  }}
+                  members={members}
+                  unreadChannelIds={unread}
+                  unreadCounts={channelCounts}
+                  mentionCounts={mentions}
+                  canInvite={canManage || abilities.can("create_invite")}
+                  canManage={abilities.can("manage_channels")}
+                  canOpenSettings={abilities.canOpenSettings}
+                  onOpenSettings={() => setSettingsOpen(true)}
+                  onInvite={() => setInviteOpen(true)}
+                  onCreateChannel={() => setChannelOpen(true)}
+                />
+              ) : (
+                <aside className="bg-surface border-border relative z-20 flex w-64 shrink-0 flex-col border-r">
+                  <div className="border-border relative overflow-hidden border-b px-4 py-3.5">
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 opacity-70"
+                      style={{ backgroundImage: "var(--gradient-ambient)" }}
+                    />
+                    <h2 className="relative text-sm font-semibold tracking-tight">
+                      Nenhum servidor aberto
+                    </h2>
+                    <p className="text-muted-foreground relative mt-0.5 text-xs">
+                      Selecione um servidor à esquerda.
+                    </p>
+                  </div>
+                  <div className="flex-1" />
+                </aside>
+              )}
+            </AppNavigationLayout>
           </AppSidebarDrawer>
           <CallWorkspace
             onOpenConversation={openConversation}

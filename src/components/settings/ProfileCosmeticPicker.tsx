@@ -1,12 +1,13 @@
 import { isIllustratedFrame } from "@/lib/illustrated-frames";
 import { VisualBanner } from "@/components/ui/static-image";
 import { useState } from "react";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Sparkles, Crown } from "lucide-react";
 import { AVATAR_FRAMES, normalizeAvatarFrame, type AvatarFrameId } from "@/lib/avatar-frames";
 import {
   PROFILE_COSMETICS,
   NAMEPLATE_COSMETICS,
   normalizeProfileCosmetic,
+  profileCosmetic,
   type ProfileCosmeticId,
 } from "@/lib/profile-cosmetics";
 import { ProfileFrameDecoration } from "@/components/gamer/ProfileCosmetics";
@@ -17,6 +18,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 
 export function ProfileCosmeticPicker({
   kind,
+  compact = false,
   value,
   onChange,
   name,
@@ -24,6 +26,7 @@ export function ProfileCosmeticPicker({
   banner,
 }: {
   value: string;
+  compact?: boolean;
   name: string;
   avatar: string;
   banner: string;
@@ -59,11 +62,36 @@ export function ProfileCosmeticPicker({
   );
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4">
+      <div
+        className={
+          compact
+            ? "profile-cosmetic-control"
+            : "flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4"
+        }
+      >
         <div className="min-w-0">
           <p className="text-sm font-semibold">{label}</p>
           <p className="text-muted-foreground text-xs mt-1">{currentChoice.name}</p>
         </div>
+        {compact && (
+          <span className="profile-cosmetic-swatch" aria-hidden="true">
+            {kind === "avatar" ? (
+              <Avatar frame={normalizeAvatarFrame(value)} className="h-8 w-8">
+                <AvatarFallback />
+              </Avatar>
+            ) : kind === "frame" ? (
+              <ProfileFrameDecoration value={value} animated={false} />
+            ) : (
+              <Crown
+                size={27}
+                style={{
+                  color:
+                    value === "none" ? "var(--muted-foreground)" : profileCosmetic(value).color,
+                }}
+              />
+            )}
+          </span>
+        )}
         <Button
           type="button"
           variant="secondary"

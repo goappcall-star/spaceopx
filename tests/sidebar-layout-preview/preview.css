@@ -1,0 +1,13 @@
+@import "../../src/styles.css";
+@source "./";
+.sidebar-preview-window {
+  height: calc(100dvh - 100px);
+  min-height: 300px;
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.sidebar-preview-window > nav,
+.sidebar-preview-window > aside {
+  height: 100%;
+}

@@ -1,4 +1,5 @@
 import { useEffect, useSyncExternalStore } from "react";
+import { useAccessibilityReducedMotion } from "@/hooks/use-accessibility";
 import { resolveVisualQuality, VISUAL_QUALITY_KEY, type VisualQuality } from "@/lib/visual-quality";
 let value: VisualQuality = "normal";
 let pageHidden = false;
@@ -45,11 +46,13 @@ export function useVisualQuality() {
   );
 }
 export function useMediaAnimations() {
-  return useSyncExternalStore(
+  const reduced = useAccessibilityReducedMotion();
+  const animate = useSyncExternalStore(
     subscribe,
     () => value === "normal" && !pageHidden,
     () => true,
   );
+  return animate && !reduced;
 }
 export function VisualQualitySync() {
   useEffect(() => {

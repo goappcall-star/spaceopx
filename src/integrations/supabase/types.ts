@@ -1041,6 +1041,7 @@ export type Database = {
           owner_id: string;
           updated_at: string;
           visibility: string;
+          theme: string;
         };
         Insert: {
           banner_url?: string | null;
@@ -1053,6 +1054,7 @@ export type Database = {
           owner_id: string;
           updated_at?: string;
           visibility?: string;
+          theme?: string;
         };
         Update: {
           banner_url?: string | null;
@@ -1065,6 +1067,7 @@ export type Database = {
           owner_id?: string;
           updated_at?: string;
           visibility?: string;
+          theme?: string;
         };
         Relationships: [];
       };
@@ -1520,6 +1523,16 @@ export type Database = {
       };
       create_server: {
         Args: { _description?: string; _icon_url?: string; _name: string };
+        Returns: string;
+      };
+      create_server_with_options: {
+        Args: {
+          _name: string;
+          _description?: string;
+          _icon_url?: string;
+          _visibility?: string;
+          _theme?: string;
+        };
         Returns: string;
       };
       create_server_invite: {

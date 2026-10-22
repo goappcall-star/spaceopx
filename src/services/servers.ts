@@ -1,11 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Server, ServerInteractions, ServerVisibility } from "@/types";
 import { boundedText, safeImageUrl } from "@/lib/input-validation.mjs";
+import { SERVER_THEMES, type ServerTheme } from "@/lib/server-access";
 
 export interface CreateServerInput {
   name: string;
   description?: string;
   iconUrl?: string;
+  theme?: ServerTheme;
+  visibility?: ServerVisibility;
 }
 
 export const DEFAULT_INTERACTIONS: ServerInteractions = {
@@ -48,13 +51,33 @@ export const serversService = {
   },
 
   /** Transactional: server + OWNER/ADMIN/MEMBER roles + membership + #geral. */
-  async create({ name, description, iconUrl }: CreateServerInput): Promise<string> {
+  async create({
+    name,
+    description,
+    iconUrl,
+    theme,
+    visibility,
+  }: CreateServerInput): Promise<string> {
     const args: { _name: string; _description?: string; _icon_url?: string } = {
       _name: boundedText(name, "Nome do servidor", 60, 2),
     };
     if (description?.trim()) args._description = boundedText(description, "Descrição", 1000);
     const icon = safeImageUrl(iconUrl);
     if (icon) args._icon_url = icon;
+    if (theme !== undefined || visibility !== undefined) {
+      if (
+        !SERVER_THEMES.includes(theme ?? "other") ||
+        !["public", "private"].includes(visibility ?? "private")
+      )
+        throw Error("Opções do servidor inválidas.");
+      const { data, error } = await supabase.rpc("create_server_with_options", {
+        ...args,
+        _theme: theme ?? "other",
+        _visibility: visibility ?? "private",
+      });
+      if (error) throw error;
+      return data as string;
+    }
     const { data, error } = await supabase.rpc("create_server", args);
     if (error) throw error;
     return data as string;

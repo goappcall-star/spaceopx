@@ -1,0 +1,381 @@
+.server-access-dialog {
+  max-height: 92dvh;
+  height: min(760px, 92dvh);
+  grid-template-rows: minmax(0, 1fr);
+}
+.server-access-layout {
+  display: grid;
+  grid-template-columns: 245px minmax(0, 1fr);
+  min-height: 0;
+  overflow: hidden;
+  height: 100%;
+  grid-template-rows: minmax(0, 1fr);
+}
+.server-access-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 1.7rem;
+  padding: 2rem 1.5rem;
+  background: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--primary) 7%, var(--background)),
+    var(--background)
+  );
+  border-right: 1px solid var(--border);
+}
+.server-access-benefits {
+  display: grid;
+  gap: 1rem;
+  margin-top: auto;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+.server-access-benefits li {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+}
+.server-access-benefits svg {
+  color: var(--primary);
+}
+.server-access-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 130px;
+}
+.server-access-emblem {
+  position: relative;
+  padding: 1.5rem;
+  border: 1px solid color-mix(in oklab, var(--primary) 45%, var(--border));
+  border-radius: 1.5rem;
+  background: var(--surface);
+  color: var(--primary);
+  transform: rotate(-9deg);
+}
+.server-access-emblem > span {
+  position: absolute;
+  right: -12px;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  background: var(--community-action);
+  border: 4px solid var(--background);
+  border-radius: 50%;
+  color: var(--community-action-foreground);
+}
+.server-access-orbit {
+  position: absolute;
+  border: 1px solid color-mix(in oklab, var(--primary) 40%, var(--border));
+  width: 185px;
+  height: 60px;
+  border-radius: 50%;
+  transform: rotate(25deg);
+}
+.server-access-main {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  background: var(--surface);
+  padding: 1.5rem 1.5rem 0;
+}
+.server-access-modes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0.5rem 0 1.25rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.server-access-mode {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--background);
+  padding: 1rem 0.8rem;
+  text-align: left;
+}
+.server-access-mode:hover {
+  border-color: var(--primary);
+}
+.server-access-mode[aria-pressed="true"] {
+  border-color: var(--community-action);
+  background: color-mix(in oklab, var(--community-action) 4%, var(--background));
+}
+.server-access-mode-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  padding: 0.65rem;
+  background: var(--surface-elevated);
+  border-radius: 0.9rem;
+  color: var(--primary);
+}
+.server-access-mode[aria-pressed="true"] .server-access-mode-icon {
+  color: var(--community-action);
+}
+.server-access-mode strong {
+  display: block;
+  font-size: 0.85rem;
+}
+.server-access-mode small {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+.server-access-check {
+  position: absolute;
+  right: 9px;
+  top: 9px;
+  display: grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+.server-access-mode[aria-pressed="true"] .server-access-check {
+  background: var(--community-action);
+  color: var(--community-action-foreground);
+  border-color: transparent;
+}
+.server-access-form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+.server-access-scroll {
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.1rem 0.2rem 1.25rem;
+  flex: 1;
+}
+.server-access-identity {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 1.5rem;
+}
+.server-access-icon-picker {
+  position: relative;
+  display: flex;
+  min-height: 120px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border: 1px dashed var(--primary);
+  border-radius: 1rem;
+  overflow: hidden;
+  color: var(--primary);
+  font-size: 0.7rem;
+  cursor: pointer;
+  background: var(--background);
+}
+.server-access-icon-picker img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+.server-access-icon-picker input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.server-access-icon-picker:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.server-access-themes {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.server-access-theme {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  padding: 0.7rem 0.3rem;
+  font-size: 0.7rem;
+  background: var(--background);
+  cursor: pointer;
+}
+.server-access-theme input {
+  position: absolute;
+  opacity: 0;
+}
+.server-access-theme:has(input:checked),
+.server-access-visibility-choice:has(input:checked) {
+  border-color: var(--community-action);
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--community-action) 5%, var(--background));
+}
+.server-access-theme:has(input:checked) svg {
+  color: var(--community-action);
+}
+.server-access-visibility {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.server-access-visibility-choice {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  padding: 0.85rem;
+  background: var(--background);
+  cursor: pointer;
+}
+.server-access-visibility-choice input {
+  accent-color: var(--community-action);
+}
+.server-access-visibility-choice svg {
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+}
+.server-access-visibility-choice strong {
+  display: block;
+  font-size: 0.8rem;
+}
+.server-access-visibility-choice small {
+  display: block;
+  font-size: 0.65rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  margin-top: 0.2rem;
+}
+.server-access-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-top: 1px solid var(--border);
+  padding: 1rem 0;
+  flex-shrink: 0;
+}
+.server-access-invite-art,
+.server-access-invite-preview {
+  display: flex;
+  align-items: start;
+  gap: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  background: var(--background);
+}
+.server-access-invite-art > svg,
+.server-access-invite-preview > svg {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+.server-access-invite-art p,
+.server-access-invite-preview p,
+.server-access-invite-preview small {
+  display: block;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+  margin-top: 0.3rem;
+  overflow-wrap: anywhere;
+}
+.server-access-dialog :is(button, input, textarea):focus-visible,
+.server-access-theme:focus-within,
+.server-access-visibility-choice:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.server-access-dialog button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+@media (max-width: 900px) {
+  .server-access-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .server-access-intro {
+    display: block;
+    padding: 1rem 1.25rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .server-access-intro > div:first-child {
+    display: none;
+  }
+  .server-access-intro h2 {
+    font-size: 1.15rem;
+  }
+  .server-access-intro p,
+  .server-access-art,
+  .server-access-benefits {
+    display: none;
+  }
+  .server-access-main {
+    padding: 1rem 1rem 0;
+  }
+}
+@media (max-width: 550px) {
+  .server-access-mode {
+    padding: 0.85rem 0.65rem;
+    gap: 0.5rem;
+    align-items: start;
+  }
+  .server-access-mode-icon {
+    padding: 0.4rem;
+  }
+  .server-access-mode small {
+    display: none;
+  }
+  .server-access-mode strong {
+    font-size: 0.75rem;
+  }
+  .server-access-check {
+    display: none;
+  }
+  .server-access-identity {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .server-access-identity > div:first-child {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .server-access-icon-picker {
+    grid-column: 1;
+    grid-row: 1/4;
+    min-height: 100px;
+  }
+  .server-access-identity > div:first-child > label:first-child {
+    grid-column: 2;
+  }
+  .server-access-icon-picker img {
+    height: 100px;
+  }
+  .server-access-themes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .server-access-visibility {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .server-access-actions button {
+    flex: 1;
+  }
+}

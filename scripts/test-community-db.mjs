@@ -76,6 +76,7 @@ console.log(run("psql", [...args, "-f", "tests/community-progression.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-objectives.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-objectives-states.sql"]));
 console.log(run("psql", [...args, "-f", "tests/community-evolution.sql"]));
+console.log(run("psql", [...args, "-f", "tests/server-access.sql"]));
 
 async function concurrent(sql) {
   return new Promise((resolve) => {

@@ -575,7 +575,11 @@ function AppPage() {
         <CreateServerDialog
           open={createOpen}
           onOpenChange={setCreateOpen}
-          onCreated={(serverId) => setActiveServerId(serverId)}
+          onCreated={(serverId) => {
+            setView("servers");
+            setActiveServerId(serverId);
+            setMobileNav(false);
+          }}
         />
         {menuInviteServer && (
           <InviteDialog
@@ -607,7 +611,11 @@ function AppPage() {
         <JoinServerDialog
           open={joinOpen}
           onOpenChange={setJoinOpen}
-          onJoined={(serverId) => setActiveServerId(serverId)}
+          onJoined={(serverId) => {
+            setView("servers");
+            setActiveServerId(serverId);
+            setMobileNav(false);
+          }}
         />
         {activeServer && (
           <>

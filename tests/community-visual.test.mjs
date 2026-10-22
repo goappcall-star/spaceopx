@@ -33,6 +33,7 @@ function harness(relative, name) {
       Date,
       Intl,
       URL,
+      Error,
       console,
       require: (spec) =>
         pure(path.resolve(path.dirname(file), spec.endsWith(".ts") ? spec : spec + ".ts")),
@@ -54,7 +55,11 @@ function harness(relative, name) {
         },
         useId: () => "test-action-group",
         useEffect: () => {},
-        useRef: () => ({ current: null }),
+        useRef: (initial) => {
+          const i = cursor++;
+          if (!(i in slots)) slots[i] = { current: initial };
+          return slots[i];
+        },
       };
     if (spec === "react/jsx-runtime") return { jsx, jsxs: jsx, Fragment: "fragment" };
     if (spec === "lucide-react") return new Proxy({}, { get: (_, key) => key });
@@ -73,6 +78,7 @@ function harness(relative, name) {
     Date,
     Intl,
     URL,
+    Error,
     console,
   });
   let props, tree;
@@ -135,6 +141,113 @@ function submit(h) {
     .find((n) => n.type === "form")
     .props.onSubmit({ preventDefault() {} });
 }
+
+test("server access mode switching preserves drafts and sends actual selected options", async () => {
+  const h = harness("src/components/app/ServerAccessDialogView.tsx", "ServerAccessDialogView");
+  const created = [];
+  h.render({
+    open: true,
+    onOpenChange() {},
+    onCreate: async (draft) => created.push(draft),
+    onJoin: async () => {},
+    onPreview: async () => null,
+  });
+  change(h, "setup-name", "Meu squad");
+  change(h, "setup-description", "Uma descrição curta");
+  h.nodes()
+    .find((n) => n.type === "button" && h.text(n).startsWith("Entrar em servidor"))
+    .props.onClick();
+  h.render();
+  change(h, "setup-invite", "lobbyx-demo");
+  h.nodes()
+    .find((n) => n.type === "button" && h.text(n).startsWith("Criar servidor"))
+    .props.onClick();
+  h.render();
+  assert.equal(h.byId("setup-name").props.value, "Meu squad");
+  h.nodes()
+    .find((n) => n.props.name === "server-theme" && n.props.value === "art")
+    .props.onChange();
+  h.render();
+  submit(h);
+  await new Promise((r) => setImmediate(r));
+  assert.equal(created.length, 1);
+  assert.equal(created[0].theme, "art");
+  assert.equal(created[0].visibility, "private");
+});
+
+test("server creation ignores repeated submits while pending and keeps the draft after failure", async () => {
+  const h = harness("src/components/app/ServerAccessDialogView.tsx", "ServerAccessDialogView");
+  let count = 0,
+    reject;
+  h.render({
+    open: true,
+    onOpenChange() {},
+    onCreate: () => {
+      count++;
+      return new Promise((_, r) => {
+        reject = r;
+      });
+    },
+    onJoin: async () => {},
+    onPreview: async () => null,
+  });
+  change(h, "setup-name", "Squad persistente");
+  submit(h);
+  h.render();
+  submit(h);
+  assert.equal(count, 1);
+  reject(Error("Sem conexão"));
+  await new Promise((r) => setImmediate(r));
+  h.render();
+  assert.equal(h.byId("setup-name").props.value, "Squad persistente");
+  assert.ok(h.nodes().some((n) => n.type === "CommunityNotice" && h.text(n) === "Sem conexão"));
+});
+
+test("changing an invite discards a late preview response for the previous code", async () => {
+  const h = harness("src/components/app/ServerAccessDialogView.tsx", "ServerAccessDialogView");
+  let resolve;
+  h.render({
+    open: true,
+    initialMode: "join",
+    onOpenChange() {},
+    onCreate: async () => {},
+    onJoin: async () => {},
+    onPreview: () =>
+      new Promise((r) => {
+        resolve = r;
+      }),
+  });
+  change(h, "setup-invite", "old-code");
+  h.button("Ver convite").props.onClick();
+  h.render();
+  change(h, "setup-invite", "new-code");
+  resolve({ valid: true, server_name: "STALE SERVER" });
+  await new Promise((r) => setImmediate(r));
+  h.render();
+  assert.ok(!h.nodes().some((n) => h.text(n).includes("STALE SERVER")));
+});
+
+test("server rail appends its access action inside the scrolling list for empty and large lists", () => {
+  for (const count of [0, 1, 20]) {
+    const h = harness("src/components/app/ServerRail.tsx", "ServerRail");
+    h.render({
+      servers: Array.from({ length: count }, (_, i) => ({ id: String(i), name: `Server ${i}` })),
+      activeServerId: null,
+      onSelect() {},
+      onHome() {},
+      onAdd() {},
+      socialActive: false,
+      onSelectSocial() {},
+      getPreferences: () => ({}),
+      onUpdatePreferences() {},
+      onServerAction() {},
+    });
+    const list = h.nodes().find((n) => n.props["data-server-list"]);
+    assert.equal(list.props.children[0].length, count);
+    assert.equal(list.props.children.at(-1).type, "ServerAccessButton");
+    assert.ok(list.props.className.includes("overflow-y-auto"));
+  }
+});
 
 test("event file picker uploads on save and reuses a successful upload after an RPC failure", async () => {
   const h = harness("src/components/community/CommunityEventEditor.tsx", "CommunityEventEditor");

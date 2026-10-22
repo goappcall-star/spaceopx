@@ -1,4 +1,5 @@
-import { Plus, Users } from "lucide-react";
+import { Users } from "lucide-react";
+import { ServerAccessButton } from "./ServerAccessButton";
 
 import { Logo } from "@/components/brand/Logo";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -69,7 +70,10 @@ export function ServerRail({
 
       <span className="bg-border/80 mb-1 h-px w-8 rounded-full" />
 
-      <div className="scrollbar-slim flex w-full flex-1 flex-col items-center gap-2 overflow-y-auto px-3 py-0.5">
+      <div
+        data-server-list
+        className="scrollbar-slim flex min-h-0 w-full flex-1 flex-col items-center gap-2 overflow-y-auto px-3 py-0.5"
+      >
         {servers.map((server) => {
           const active = server.id === activeServerId;
           return (
@@ -137,23 +141,8 @@ export function ServerRail({
             </ServerContextMenu>
           );
         })}
+        <ServerAccessButton onClick={onAdd} />
       </div>
-
-      <span className="bg-border/80 mt-1 h-px w-8 rounded-full" />
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            onClick={onAdd}
-            aria-label="Criar ou entrar em servidor"
-            className="border-border text-primary hover:border-primary/60 hover:bg-primary/10 flex h-12 w-12 items-center justify-center rounded-2xl border border-dashed transition-all duration-200 hover:rounded-xl"
-          >
-            <Plus className="h-5 w-5" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="right">Criar ou entrar em servidor</TooltipContent>
-      </Tooltip>
 
       <span className="bg-border/80 mt-1 h-px w-8 rounded-full" />
 

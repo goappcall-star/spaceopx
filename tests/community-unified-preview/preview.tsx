@@ -11,6 +11,9 @@ import "./preview.css";
 const Evolution = lazy(() =>
   import("../community-evolution-preview/preview").then((m) => ({ default: m.Preview })),
 );
+const ServerAccess = lazy(() =>
+  import("../server-access-preview/preview").then((m) => ({ default: m.ServerAccessPreview })),
+);
 const Events = lazy(() =>
   import("../community-events-preview/preview").then((m) => ({
     default: m.CommunityEventsPreview,
@@ -31,6 +34,7 @@ const pages = [
   "Estatísticas",
   "Personalização",
   "Configurações",
+  "Servidores",
 ] as const;
 type Page = (typeof pages)[number];
 const sid = "c5000000-0000-0000-0000-000000000001",
@@ -198,7 +202,7 @@ function Session() {
               {notice}
             </p>
           )}
-          {!enabled && page !== "Configurações" && page !== "Explorar" && (
+          {!enabled && page !== "Configurações" && page !== "Explorar" && page !== "Servidores" && (
             <section className="space-y-4 p-6">
               <h2 className="text-2xl font-semibold">Servidor comum</h2>
               <p className="text-sm text-muted-foreground">
@@ -208,7 +212,11 @@ function Session() {
               <Button onClick={() => navigate("Configurações")}>Avaliar ativação</Button>
             </section>
           )}
-          <div hidden={!enabled && page !== "Configurações" && page !== "Explorar"}>
+          <div
+            hidden={
+              !enabled && page !== "Configurações" && page !== "Explorar" && page !== "Servidores"
+            }
+          >
             <Suspense
               fallback={
                 <p role="status" className="p-6">
@@ -247,6 +255,11 @@ function Session() {
               {visited.includes("Eventos") && (
                 <div hidden={page !== "Eventos"}>
                   <Events embedded />
+                </div>
+              )}
+              {visited.includes("Servidores") && (
+                <div hidden={page !== "Servidores"}>
+                  <ServerAccess />
                 </div>
               )}
               {visited.includes("Explorar") && (

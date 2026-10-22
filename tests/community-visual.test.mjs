@@ -53,6 +53,8 @@ function harness(relative, name) {
           ];
         },
         useId: () => "test-action-group",
+        useEffect: () => {},
+        useRef: () => ({ current: null }),
       };
     if (spec === "react/jsx-runtime") return { jsx, jsxs: jsx, Fragment: "fragment" };
     if (spec === "lucide-react") return new Proxy({}, { get: (_, key) => key });
@@ -133,6 +135,54 @@ function submit(h) {
     .find((n) => n.type === "form")
     .props.onSubmit({ preventDefault() {} });
 }
+
+test("event file picker uploads on save and reuses a successful upload after an RPC failure", async () => {
+  const h = harness("src/components/community/CommunityEventEditor.tsx", "CommunityEventEditor");
+  const uploads = [],
+    saves = [];
+  const file = { size: 20, type: "image/png", name: "capa.png" };
+  h.render({
+    initial,
+    channels,
+    conflict: false,
+    onClose() {},
+    onUpload: async (f) => {
+      uploads.push(f);
+      return "https://assets.example.test/cover.png";
+    },
+    onSave: async (...args) => {
+      saves.push(args);
+      if (saves.length === 1) throw Error("Falha ao salvar");
+    },
+  });
+  assert.equal(h.byId("event-cover").props.type, "file");
+  h.byId("event-cover").props.onChange({ target: { files: [file], value: "capa.png" } });
+  h.render();
+  assert.equal(uploads.length, 0);
+  submit(h);
+  await new Promise((resolve) => setImmediate(resolve));
+  h.render();
+  assert.equal(saves[0][1].cover_url, "https://assets.example.test/cover.png");
+  assert.equal(saves[0][2], 7);
+  submit(h);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(uploads.length, 1);
+  assert.equal(saves.length, 2);
+});
+
+test("event file selection is local until save and cannot fake an upload in an offline preview", async () => {
+  const h = harness("src/components/community/CommunityEventEditor.tsx", "CommunityEventEditor");
+  let saves = 0;
+  h.render({ initial, channels, conflict: false, onClose() {}, onSave: async () => saves++ });
+  h.byId("event-cover").props.onChange({
+    target: { files: [{ size: 20, type: "image/jpeg", name: "capa.jpeg" }], value: "capa.jpeg" },
+  });
+  h.render();
+  assert.equal(h.button("Salvar alterações").props.disabled, true);
+  submit(h);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(saves, 0);
+});
 test("redesigned event editor preserves revision, IANA zone and exact unchanged ambiguous instant", async () => {
   const h = harness("src/components/community/CommunityEventEditor.tsx", "CommunityEventEditor"),
     saved = [];

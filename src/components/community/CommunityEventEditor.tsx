@@ -1,6 +1,7 @@
 import { CalendarDays, Clock3, Hash, Video, Globe2 } from "lucide-react";
 import { CommunitySection, CommunityCover, CommunityNotice } from "./CommunityUI";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { validateEventCover } from "@/lib/event-cover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,14 +20,28 @@ export function CommunityEventEditor({
   conflict,
   onSave,
   onClose,
+  onUpload,
 }: {
   initial: CommunityEvent | null;
   channels: Channel[];
   conflict: boolean;
   onSave: (id: string, payload: CommunityEventPayload, revision: number) => Promise<void>;
   onClose: () => void;
+  onUpload?: (file: File) => Promise<string>;
 }) {
   const [id] = useState(() => initial?.id ?? crypto.randomUUID());
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const coverInput = useRef<HTMLInputElement>(null);
+  const [localCover, setLocalCover] = useState("");
+  useEffect(() => {
+    if (!coverFile) {
+      setLocalCover("");
+      return;
+    }
+    const url = URL.createObjectURL(coverFile);
+    setLocalCover(url);
+    return () => URL.revokeObjectURL(url);
+  }, [coverFile]);
   const [title, setTitle] = useState(initial?.title ?? ""),
     [description, setDescription] = useState(initial?.description ?? ""),
     [cover, setCover] = useState(initial?.cover_url ?? ""),
@@ -90,19 +105,29 @@ export function CommunityEventEditor({
     try {
       if (!instant || (end && !finish))
         throw Error("Escolha um horário válido e, se houver ambiguidade, sua ocorrência.");
-      await onSave(
-        id,
-        validateEventPayload({
-          title,
-          description,
-          cover_url: cover || null,
-          channel_id: channel,
-          starts_at: instant,
-          ends_at: finish,
-          timezone: zone,
-        }),
-        initial?.revision ?? 0,
-      );
+      const payload = validateEventPayload({
+        title,
+        description,
+        cover_url: cover || null,
+        channel_id: channel,
+        starts_at: instant,
+        ends_at: finish,
+        timezone: zone,
+      });
+      if (coverFile) {
+        if (!onUpload)
+          throw Error(
+            "O envio de imagens requer uma sessão autenticada. Nesta prévia, a imagem fica apenas no seu dispositivo.",
+          );
+        payload.cover_url = await onUpload(coverFile);
+        validateEventPayload(payload);
+        // Retain a successful upload if saving the event fails, so retrying
+        // does not upload the same file again.
+        setCover(payload.cover_url ?? "");
+        setCoverFile(null);
+        if (coverInput.current) coverInput.current.value = "";
+      }
+      await onSave(id, payload, initial?.revision ?? 0);
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Falha ao salvar.");
@@ -298,24 +323,63 @@ export function CommunityEventEditor({
                   title="Uma capa para o encontro"
                   description="Opcional. A imagem ajuda a reconhecer o evento na comunidade."
                 >
-                  <Label htmlFor="event-cover">Capa opcional (HTTPS)</Label>
+                  <Label htmlFor="event-cover">Imagem de capa (opcional)</Label>
                   <Input
                     id="event-cover"
-                    value={cover}
-                    onChange={(e) => setCover(e.target.value)}
-                    placeholder="https://…"
+                    ref={coverInput}
+                    type="file"
+                    accept="image/png,image/jpeg,.png,.jpg,.jpeg"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const invalid = validateEventCover(file);
+                      if (invalid) {
+                        e.target.value = "";
+                        setError(invalid);
+                        return;
+                      }
+                      setError("");
+                      setCoverFile(file);
+                    }}
                     className="mt-2"
                   />
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Use um link de imagem HTTPS. O envio de arquivos ainda não está disponível para
-                    capas de eventos.
+                    PNG, JPG ou JPEG · até 4 MB. A imagem será enviada ao salvar o evento.
                   </p>
+                  {coverFile && (
+                    <p className="break-words text-xs">Selecionada: {coverFile.name}</p>
+                  )}
+                  {(coverFile || cover) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setCoverFile(null);
+                        setCover("");
+                        if (coverInput.current) coverInput.current.value = "";
+                      }}
+                    >
+                      Remover capa
+                    </Button>
+                  )}
+                  {!onUpload && (
+                    <p className="text-xs text-muted-foreground">
+                      Prévia local: seleção e visualização no dispositivo. O upload requer uma
+                      sessão autenticada e não é simulado aqui.
+                    </p>
+                  )}
                 </CommunitySection>
               </div>
               <aside className="community-editor-preview space-y-3" aria-label="Prévia do evento">
                 <p className="community-eyebrow">Assim aparece na comunidade</p>
                 <CommunityCover
                   src={cover}
+                  image={
+                    localCover ? (
+                      <img src={localCover} alt="Prévia da imagem selecionada" />
+                    ) : undefined
+                  }
                   title={title.trim() || "O próximo encontro começa aqui"}
                   description={description || "A descrição do evento aparecerá aqui."}
                 >
@@ -358,7 +422,9 @@ export function CommunityEventEditor({
             <Button type="button" variant="outline" disabled={busy} onClick={onClose}>
               Cancelar edição
             </Button>
-            <Button disabled={busy || conflict || !instant || !!timeError}>
+            <Button
+              disabled={busy || conflict || !instant || !!timeError || (!!coverFile && !onUpload)}
+            >
               <CalendarDays aria-hidden="true" className="h-4 w-4" />
               {busy ? "Salvando…" : initial ? "Salvar alterações" : "Criar evento"}
             </Button>

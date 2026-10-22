@@ -89,12 +89,14 @@ export function CommunityCover({
   description,
   children,
   compact = false,
+  image,
 }: {
   src?: string | null;
   title: string;
   description?: string;
   children?: ReactNode;
   compact?: boolean;
+  image?: ReactNode;
 }) {
   const [failed, setFailed] = useState<string | null>(null);
   let safe = false;
@@ -114,24 +116,25 @@ export function CommunityCover({
   return (
     <div className="community-cover">
       <div className={cn("community-cover-image", compact && "community-cover-compact")}>
-        {src && safe && failed !== src ? (
-          <img
-            src={src}
-            alt=""
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            onError={() => setFailed(src)}
-          />
-        ) : (
-          <div className="community-cover-placeholder">
-            <Image aria-hidden="true" className="h-7 w-7" />
-            <span>
-              {src && failed === src
-                ? "Não foi possível carregar a capa"
-                : "Identidade da comunidade"}
-            </span>
-          </div>
-        )}
+        {image ??
+          (src && safe && failed !== src ? (
+            <img
+              src={src}
+              alt=""
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              onError={() => setFailed(src)}
+            />
+          ) : (
+            <div className="community-cover-placeholder">
+              <Image aria-hidden="true" className="h-7 w-7" />
+              <span>
+                {src && failed === src
+                  ? "Não foi possível carregar a capa"
+                  : "Identidade da comunidade"}
+              </span>
+            </div>
+          ))}
       </div>
       <div className="space-y-2 p-4">
         <h3 className="break-words text-lg font-semibold tracking-tight">{title}</h3>

@@ -15,6 +15,7 @@ import { CommunityReportButton } from "./CommunityReportButton";
 import { CommunityEventEditor } from "./CommunityEventEditor";
 import { useCommunityEvents, useCommunityEventInbox } from "@/hooks/use-community-events";
 import { communityEventsService } from "@/services/community-events";
+import { eventCoverImagesService } from "@/services/event-cover-images";
 import { communityEventError } from "@/lib/community-events";
 import type { CommunityEvent, EventMode } from "@/types/community-events";
 import type { Channel } from "@/types";
@@ -135,6 +136,7 @@ export function CommunityEvents({
           channels={channels}
           conflict={changed || query.isError || query.isPaused || !query.data?.can_manage}
           onClose={() => setEditing(null)}
+          onUpload={(file) => eventCoverImagesService.upload(userId, file)}
           onSave={async (id, payload, revision) => {
             await run(() => communityEventsService.save(serverId, id, payload, revision));
             toast.success("Evento salvo.");

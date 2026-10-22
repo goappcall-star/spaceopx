@@ -79,6 +79,12 @@ A prévia monta a barra e o modal reais. Criar/entrar altera apenas uma lista fi
 
 ## Limitações e próxima avaliação
 
+### Ajuste da ilustração lateral — 22/10/2026
+
+Substituída a composição simples por SVG estático próprio, seguindo a referência: cartão inclinado com profundidade, grupo de pessoas preenchido, badge verde de adicionar, órbitas roxas, coroa, controle e estrela. Gradientes e brilho limitados à ilustração; sem animação, dependência ou mudança funcional. Componentes alterados: `ServerAccessIllustration.tsx`, `ServerAccessDialogView.tsx` e `server-access.css`.
+
+Validação desta revisão: TypeScript e ESLint aprovados; 18 testes existentes de consolidação/interface aprovados, sem ignorados. Conferência real no navegador local em 1366 × 768. [Captura atualizada](C:/Users/nicol/Documents/Codex/2026-10-03/vo/outputs/server-access-art-v2-desktop.png). Não foi repetida a integração SQL/HTTP/EXE para esta alteração exclusivamente decorativa.
+
 Testes SQL usam roles e `auth.uid()` sintéticos no PostgreSQL local; não equivalem a JWT/GoTrue/PostgREST autenticados. Upload e criação/entrada reais com contas WEB/EXE continuam pendentes de ambiente autorizado apropriado. O limite de 4 MB acompanha o Storage existente, em vez dos 5 MB ilustrativos do mockup. Imagens seguem o padrão atual de URL assinada, com validade de um ano; arquivos enviados antes de uma criação cancelada/falha podem permanecer como ativos sem referência, sem limpeza automática nesta entrega.
 
 Público não significa entrada irrestrita: convites, banimentos, regras e publicação no diretório mantêm seus mecanismos existentes. Não foram adicionadas estatísticas inventadas ou descoberta automática.

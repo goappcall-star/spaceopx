@@ -16,6 +16,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
+import { ServerAccessIllustration } from "./ServerAccessIllustration";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -161,13 +162,7 @@ export function ServerAccessDialogView({
               </DialogDescription>
             </div>
             <div className="server-access-art" aria-hidden="true">
-              <span className="server-access-orbit" />
-              <div className="server-access-emblem">
-                <UsersRound size={48} />
-                <span>
-                  <Gamepad2 size={22} />
-                </span>
-              </div>
+              <ServerAccessIllustration />
             </div>
             <ul className="server-access-benefits">
               {[

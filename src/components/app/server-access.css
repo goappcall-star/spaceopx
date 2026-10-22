@@ -42,37 +42,16 @@
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 130px;
+  flex-shrink: 0;
+  margin: -0.5rem -0.85rem;
+  isolation: isolate;
 }
-.server-access-emblem {
-  position: relative;
-  padding: 1.5rem;
-  border: 1px solid color-mix(in oklab, var(--primary) 45%, var(--border));
-  border-radius: 1.5rem;
-  background: var(--surface);
-  color: var(--primary);
-  transform: rotate(-9deg);
-}
-.server-access-emblem > span {
-  position: absolute;
-  right: -12px;
-  bottom: 0;
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  background: var(--community-action);
-  border: 4px solid var(--background);
-  border-radius: 50%;
-  color: var(--community-action-foreground);
-}
-.server-access-orbit {
-  position: absolute;
-  border: 1px solid color-mix(in oklab, var(--primary) 40%, var(--border));
-  width: 185px;
-  height: 60px;
-  border-radius: 50%;
-  transform: rotate(25deg);
+.server-access-art > svg {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  overflow: visible;
 }
 .server-access-main {
   display: flex;

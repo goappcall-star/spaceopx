@@ -1,3 +1,4 @@
+import "../../src/styles.css";
 import { createRoot } from "react-dom/client";
 import { CommunityEventsPreview } from "./preview";
 const root = createRoot(document.getElementById("root")!);

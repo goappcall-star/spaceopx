@@ -1,3 +1,4 @@
+import "./community-ui.css";
 import { Flag, LockKeyhole, Trophy, Check, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type {
@@ -27,7 +28,10 @@ function MissionCard({
   onDetails: (m: CommunityMission) => void;
 }) {
   return (
-    <article className="rounded-xl border border-border bg-background/50 p-4">
+    <article
+      data-state={m.status}
+      className="community-ui community-mission rounded-xl border border-border bg-background p-4"
+    >
       <div className="flex flex-wrap justify-between gap-2">
         <span className="flex items-center gap-2 text-xs text-muted-foreground">
           <CalendarDays className="h-3.5 w-3.5" />
@@ -74,9 +78,9 @@ export function AchievementCard({ achievement: a }: { achievement: CommunityAchi
     <article className="rounded-xl border border-border bg-background/50 p-4">
       <div className="flex items-center gap-2">
         {a.unlocked_at ? (
-          <Trophy className="h-4 w-4 shrink-0 text-lime-400" />
+          <Trophy className="h-9 w-9 shrink-0 rounded-lg border border-border p-2 text-lime-400" />
         ) : (
-          <LockKeyhole className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <LockKeyhole className="h-9 w-9 shrink-0 rounded-lg border border-border p-2 text-muted-foreground" />
         )}
         <h3 className="font-semibold">{a.name}</h3>
       </div>

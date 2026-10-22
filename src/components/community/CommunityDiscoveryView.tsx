@@ -1,3 +1,4 @@
+import "./community-ui.css";
 import { Compass, ArrowLeft, Search, ShieldCheck, Users, ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -92,7 +93,7 @@ export function CommunityDiscoveryView({
   onFirst: () => void;
 }) {
   return (
-    <section className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-7">
+    <section className="community-ui min-w-0 flex-1 overflow-y-auto p-4 sm:p-7">
       <header className="mb-7 flex items-start gap-3">
         <Compass className="text-primary mt-1 h-7 w-7" />
         <div>
@@ -261,7 +262,7 @@ export function CommunityPresentationView({
   onEnter: () => void;
 }) {
   return (
-    <section className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-7">
+    <section className="community-ui min-w-0 flex-1 overflow-y-auto p-4 sm:p-7">
       <Button variant="ghost" onClick={onBack}>
         <ArrowLeft className="h-4 w-4" />
         Explorar

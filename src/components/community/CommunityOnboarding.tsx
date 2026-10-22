@@ -1,3 +1,4 @@
+import { CommunityActions, CommunityNotice } from "./CommunityUI";
 import { useState } from "react";
 import { ArrowRight, Check, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -75,7 +76,7 @@ export function CommunityOnboarding({
         if (!open && !busy) onClose();
       }}
     >
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
+      <DialogContent className="community-ui max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
         <DialogTitle className="flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-primary" />
           {labels[current!]}
@@ -83,38 +84,51 @@ export function CommunityOnboarding({
         <DialogDescription>
           Boas-vindas · etapa {step + 1} de {steps.length}. Você pode salvar e continuar depois.
         </DialogDescription>
-        <div className="flex gap-1" aria-label="Progresso">
+        <ol className="grid grid-cols-2 gap-2 sm:grid-cols-3" aria-label="Progresso">
           {steps.map((s, i) => (
-            <span
-              key={s}
-              className={"h-1 flex-1 rounded-full " + (i <= step ? "bg-primary" : "bg-border")}
-            />
+            <li key={s} className="community-step" aria-current={i === step ? "step" : undefined}>
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-elevated text-xs">
+                {i < step ? <Check aria-hidden="true" className="h-3.5 w-3.5" /> : i + 1}
+              </span>
+              <span>
+                {
+                  {
+                    welcome: "Boas-vindas",
+                    rules: "Regras",
+                    interests: "Interesses",
+                    channels: "Canais",
+                    roles: "Cargos",
+                    review: "Concluir",
+                  }[s]
+                }
+              </span>
+            </li>
           ))}
-        </div>
+        </ol>
         {conflict && (
           <p role="alert" className="text-sm text-destructive">
             As configurações mudaram. Feche e reabra as boas-vindas para revisar a versão atual.
           </p>
         )}
         {current === "welcome" && (
-          <p className="whitespace-pre-wrap break-words rounded-xl border border-border bg-surface p-5 text-sm leading-relaxed">
-            {cfg.welcome_text || "Bem-vindo à comunidade!"}
-          </p>
+          <div className="community-section flex items-start gap-4">
+            <img src="/lobbyx-logo.png" alt="" className="h-12 w-12 shrink-0" />
+            <p className="whitespace-pre-wrap break-words text-base leading-relaxed">
+              {cfg.welcome_text || "Bem-vindo à comunidade!"}
+            </p>
+          </div>
         )}
         {current === "rules" && (
           <div className="space-y-4">
             <ol className="space-y-2">
               {data.rules.map((r, i) => (
-                <li
-                  key={r.id}
-                  className="whitespace-pre-wrap break-words rounded-xl border border-border p-3 text-sm"
-                >
+                <li key={r.id} className="community-choice whitespace-pre-wrap break-words text-sm">
                   <span className="mr-2 text-primary">{i + 1}.</span>
                   {r.text}
                 </li>
               ))}
             </ol>
-            <label className="flex items-start gap-3 text-sm">
+            <label className="community-choice text-sm">
               <input
                 type="checkbox"
                 checked={accept}
@@ -144,12 +158,7 @@ export function CommunityOnboarding({
                   key={i}
                   aria-pressed={interests.includes(i)}
                   onClick={() => setInterests(toggle(interests, i))}
-                  className={
-                    "rounded-full border px-4 py-2 text-sm " +
-                    (interests.includes(i)
-                      ? "border-primary bg-primary/15 text-primary"
-                      : "border-border")
-                  }
+                  className="community-choice text-sm"
                 >
                   {i}
                 </button>
@@ -184,10 +193,7 @@ export function CommunityOnboarding({
             {roles
               .filter((r) => cfg.role_ids.includes(r.id))
               .map((r) => (
-                <label
-                  key={r.id}
-                  className="flex gap-3 rounded-xl border border-border p-3 text-sm"
-                >
+                <label key={r.id} className="community-choice text-sm">
                   <input
                     type="checkbox"
                     checked={selected.includes(r.id)}
@@ -221,12 +227,8 @@ export function CommunityOnboarding({
             </p>
           </div>
         )}
-        {error && (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
-        <div className="flex flex-wrap gap-2 border-t border-border pt-4">
+        {error && <CommunityNotice tone="error">{error}</CommunityNotice>}
+        <CommunityActions>
           <Button
             variant="ghost"
             disabled={busy || conflict}
@@ -249,7 +251,7 @@ export function CommunityOnboarding({
             {busy ? "Salvando…" : last ? "Concluir" : "Continuar"}
             <ArrowRight className="h-4 w-4" />
           </Button>
-        </div>
+        </CommunityActions>
       </DialogContent>
     </Dialog>
   );

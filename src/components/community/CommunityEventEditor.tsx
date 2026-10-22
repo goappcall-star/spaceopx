@@ -1,3 +1,5 @@
+import { CalendarDays, Clock3, Hash, Video, Globe2 } from "lucide-react";
+import { CommunitySection, CommunityCover, CommunityNotice } from "./CommunityUI";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -108,6 +110,7 @@ export function CommunityEventEditor({
       setBusy(false);
     }
   }
+  const chosenChannel = channels.find((c) => c.id === channel);
   return (
     <Dialog
       open
@@ -115,182 +118,251 @@ export function CommunityEventEditor({
         if (!v && !busy) onClose();
       }}
     >
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
-        <DialogTitle>{initial ? "Editar evento" : "Reúna sua comunidade"}</DialogTitle>
-        <DialogDescription>
-          O evento fica visível apenas a membros com acesso ao canal associado.
-        </DialogDescription>
+      <DialogContent className="community-ui flex max-h-[90dvh] flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl">
+        <header className="border-b border-border px-5 py-5 sm:px-6">
+          <div className="flex items-center gap-3">
+            <span className="community-icon">
+              <CalendarDays aria-hidden="true" className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="community-eyebrow">Encontros da comunidade</p>
+              <DialogTitle>{initial ? "Editar evento" : "Crie um encontro memorável"}</DialogTitle>
+            </div>
+          </div>
+          <DialogDescription className="mt-3">
+            Combine o próximo encontro. Somente membros com acesso ao canal poderão vê-lo.
+          </DialogDescription>
+        </header>
         <form
-          className="space-y-4"
+          className="flex min-h-0 flex-col overflow-hidden"
           onSubmit={(e) => {
             e.preventDefault();
             void save();
           }}
         >
-          <fieldset className="space-y-4" disabled={busy}>
-            <div className="space-y-2">
-              <Label htmlFor="event-title">Título</Label>
-              <Input
-                id="event-title"
-                required
-                maxLength={120}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Qual é o próximo encontro do squad?"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="event-description">Descrição</Label>
-              <textarea
-                id="event-description"
-                maxLength={4000}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="min-h-24 w-full rounded-lg border border-border bg-background p-3 text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="event-cover">Capa opcional (HTTPS)</Label>
-              <Input
-                id="event-cover"
-                value={cover}
-                onChange={(e) => setCover(e.target.value)}
-                placeholder="https://…"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="event-channel">Canal do encontro</Label>
-              <select
-                id="event-channel"
-                required
-                value={channel}
-                onChange={(e) => setChannel(e.target.value)}
-                className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm"
-              >
-                <option value="">Escolha um canal</option>
-                {channels
-                  .filter((c) => ["text", "voice", "announcement"].includes(c.type))
-                  .map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.type === "voice" ? "Voz" : "Texto"} · {c.name}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="event-zone">Fuso horário (IANA)</Label>
-              <Input
-                id="event-zone"
-                required
-                value={zone}
-                onChange={(e) => {
-                  setZone(e.target.value);
-                  setStartChoice("");
-                  setEndChoice("");
-                }}
-                list="event-zones"
-              />
-              <datalist id="event-zones">
-                <option value="America/Sao_Paulo" />
-                <option value="UTC" />
-                <option value="America/New_York" />
-                <option value="Europe/Lisbon" />
-              </datalist>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="event-start">Início</Label>
-                <Input
-                  type="datetime-local"
-                  id="event-start"
-                  required
-                  value={start}
-                  onChange={(e) => {
-                    setStart(e.target.value);
-                    setStartChoice("");
-                  }}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="event-end">Fim opcional</Label>
-                <Input
-                  type="datetime-local"
-                  id="event-end"
-                  value={end}
-                  onChange={(e) => {
-                    setEnd(e.target.value);
-                    setEndChoice("");
-                  }}
-                />
-              </div>
-            </div>
-            {starts.length > 1 && (
-              <div className="space-y-2">
-                <Label htmlFor="event-start-occurrence">Horário repetido: escolha o início</Label>
-                <select
-                  id="event-start-occurrence"
-                  required
-                  value={instant}
-                  onChange={(e) => setStartChoice(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background p-2 text-sm"
+          <div className="overflow-y-auto px-5 py-5 sm:px-6">
+            <fieldset disabled={busy} className="community-editor-grid">
+              <div className="min-w-0 space-y-4">
+                <CommunitySection
+                  title="O que vai acontecer?"
+                  description="Dê um nome fácil de reconhecer e conte o que o squad pode esperar."
                 >
-                  <option value="">Selecione a ocorrência</option>
-                  {starts.map((t) => (
-                    <option key={t} value={t}>
-                      {new Date(t).toISOString()} · UTC
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            {ends.length > 1 && (
-              <div className="space-y-2">
-                <Label htmlFor="event-end-occurrence">Horário repetido: escolha o fim</Label>
-                <select
-                  id="event-end-occurrence"
-                  required
-                  value={finish ?? ""}
-                  onChange={(e) => setEndChoice(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background p-2 text-sm"
+                  <Label htmlFor="event-title">Título</Label>
+                  <Input
+                    id="event-title"
+                    required
+                    maxLength={120}
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Uma noite de jogos com o squad"
+                    className="mt-2 h-12 text-base font-semibold"
+                  />
+                  <Label htmlFor="event-description" className="mb-2 mt-4 block">
+                    Descrição
+                  </Label>
+                  <textarea
+                    id="event-description"
+                    maxLength={4000}
+                    rows={3}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="O plano, o jogo e o que cada pessoa precisa saber…"
+                    className="w-full resize-y rounded-lg border border-border bg-background p-3 text-sm"
+                  />
+                </CommunitySection>
+                <CommunitySection
+                  title="Quando e onde"
+                  description="Os horários abaixo usam o fuso selecionado."
                 >
-                  <option value="">Selecione a ocorrência</option>
-                  {ends.map((t) => (
-                    <option key={t} value={t}>
-                      {t} · UTC
-                    </option>
-                  ))}
-                </select>
+                  <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+                    <div className="min-w-0 space-y-2">
+                      <Label htmlFor="event-start">Início</Label>
+                      <Input
+                        type="datetime-local"
+                        id="event-start"
+                        required
+                        value={start}
+                        onChange={(e) => {
+                          setStart(e.target.value);
+                          setStartChoice("");
+                        }}
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="min-w-0 space-y-2">
+                      <Label htmlFor="event-end">Fim opcional</Label>
+                      <Input
+                        type="datetime-local"
+                        id="event-end"
+                        value={end}
+                        onChange={(e) => {
+                          setEnd(e.target.value);
+                          setEndChoice("");
+                        }}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                  <Label htmlFor="event-channel" className="mb-2 mt-4 flex items-center gap-2">
+                    <Hash aria-hidden="true" className="h-4 w-4 text-primary" />
+                    Canal do encontro
+                  </Label>
+                  <select
+                    id="event-channel"
+                    required
+                    value={channel}
+                    onChange={(e) => setChannel(e.target.value)}
+                    className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
+                  >
+                    <option value="">Escolha o ponto de encontro</option>
+                    {channels
+                      .filter((c) => ["text", "voice", "announcement"].includes(c.type))
+                      .map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.type === "voice" ? "Voz" : "Texto"} · {c.name}
+                        </option>
+                      ))}
+                  </select>
+                  <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                    <Globe2 aria-hidden="true" className="h-3.5 w-3.5" />
+                    {zone}
+                  </p>
+                  {starts.length > 1 && (
+                    <div className="mt-4 space-y-2">
+                      <Label htmlFor="event-start-occurrence">
+                        Horário repetido: escolha o início
+                      </Label>
+                      <select
+                        id="event-start-occurrence"
+                        required
+                        value={instant}
+                        onChange={(e) => setStartChoice(e.target.value)}
+                        className="w-full rounded-lg border border-border bg-background p-2 text-sm"
+                      >
+                        <option value="">Selecione a ocorrência</option>
+                        {starts.map((t) => (
+                          <option key={t} value={t}>
+                            {new Date(t).toISOString()} · UTC
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  {ends.length > 1 && (
+                    <div className="mt-4 space-y-2">
+                      <Label htmlFor="event-end-occurrence">Horário repetido: escolha o fim</Label>
+                      <select
+                        id="event-end-occurrence"
+                        required
+                        value={finish ?? ""}
+                        onChange={(e) => setEndChoice(e.target.value)}
+                        className="w-full rounded-lg border border-border bg-background p-2 text-sm"
+                      >
+                        <option value="">Selecione a ocorrência</option>
+                        {ends.map((t) => (
+                          <option key={t} value={t}>
+                            {t} · UTC
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  <details className="mt-3 border-t border-border">
+                    <summary>Fuso horário e opções avançadas</summary>
+                    <Label htmlFor="event-zone">Fuso horário (IANA)</Label>
+                    <Input
+                      id="event-zone"
+                      required
+                      value={zone}
+                      onChange={(e) => {
+                        setZone(e.target.value);
+                        setStartChoice("");
+                        setEndChoice("");
+                      }}
+                      list="event-zones"
+                      className="mt-2"
+                    />
+                    <datalist id="event-zones">
+                      <option value="America/Sao_Paulo" />
+                      <option value="UTC" />
+                      <option value="America/New_York" />
+                      <option value="Europe/Lisbon" />
+                    </datalist>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Horários inexistentes são recusados. Em horários repetidos, escolha a
+                      ocorrência acima.
+                    </p>
+                  </details>
+                </CommunitySection>
+                <CommunitySection
+                  title="Uma capa para o encontro"
+                  description="Opcional. A imagem ajuda a reconhecer o evento na comunidade."
+                >
+                  <Label htmlFor="event-cover">Capa opcional (HTTPS)</Label>
+                  <Input
+                    id="event-cover"
+                    value={cover}
+                    onChange={(e) => setCover(e.target.value)}
+                    placeholder="https://…"
+                    className="mt-2"
+                  />
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Use um link de imagem HTTPS. O envio de arquivos ainda não está disponível para
+                    capas de eventos.
+                  </p>
+                </CommunitySection>
               </div>
-            )}
-            {timeError && (
-              <p role="alert" className="text-sm text-destructive">
-                {timeError}
-              </p>
-            )}
-            {instant && (
-              <p className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs">
-                Início confirmado: {formatEventTime(instant, zone)}
-              </p>
-            )}
-          </fieldset>
-          {conflict && (
-            <p role="alert" className="text-sm text-destructive">
-              A lista mudou ou não pôde ser revalidada. Feche e reabra o evento antes de salvar.
-            </p>
-          )}
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {error}
-            </p>
-          )}
-          <div className="flex justify-end gap-2">
+              <aside className="community-editor-preview space-y-3" aria-label="Prévia do evento">
+                <p className="community-eyebrow">Assim aparece na comunidade</p>
+                <CommunityCover
+                  src={cover}
+                  title={title.trim() || "O próximo encontro começa aqui"}
+                  description={description || "A descrição do evento aparecerá aqui."}
+                >
+                  <div className="space-y-3 border-t border-border pt-3 text-xs">
+                    <p className="flex items-start gap-2 text-muted-foreground">
+                      <Clock3 aria-hidden="true" className="h-4 w-4 shrink-0" />
+                      {instant && !timeError
+                        ? formatEventTime(instant, zone)
+                        : "Escolha a data e o horário"}
+                    </p>
+                    <p className="flex items-center gap-2 text-muted-foreground">
+                      {chosenChannel?.type === "voice" ? (
+                        <Video aria-hidden="true" className="h-4 w-4" />
+                      ) : (
+                        <Hash aria-hidden="true" className="h-4 w-4" />
+                      )}
+                      {chosenChannel?.name ?? "Associe um canal"}
+                    </p>
+                    <span className="inline-flex rounded-md border border-border px-2 py-1 text-muted-foreground">
+                      {initial ? "Prévia das alterações" : "Prévia · ainda não publicado"}
+                    </span>
+                  </div>
+                </CommunityCover>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  A capa e a descrição não mudam quem tem acesso ao canal.
+                </p>
+              </aside>
+            </fieldset>
+            <div className="mt-4 space-y-2">
+              {timeError && <CommunityNotice tone="error">{timeError}</CommunityNotice>}
+              {conflict && (
+                <CommunityNotice tone="error">
+                  A lista mudou ou não pôde ser revalidada. Feche e reabra o evento antes de salvar.
+                </CommunityNotice>
+              )}
+              {error && <CommunityNotice tone="error">{error}</CommunityNotice>}
+            </div>
+          </div>
+          <footer className="flex shrink-0 flex-wrap items-center justify-end gap-3 border-t border-border bg-surface px-5 py-4 sm:px-6">
             <Button type="button" variant="outline" disabled={busy} onClick={onClose}>
               Cancelar edição
             </Button>
             <Button disabled={busy || conflict || !instant || !!timeError}>
+              <CalendarDays aria-hidden="true" className="h-4 w-4" />
               {busy ? "Salvando…" : initial ? "Salvar alterações" : "Criar evento"}
             </Button>
-          </div>
+          </footer>
         </form>
       </DialogContent>
     </Dialog>

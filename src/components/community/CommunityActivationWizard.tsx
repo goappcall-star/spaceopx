@@ -1,3 +1,4 @@
+import "./community-ui.css";
 import { useState, type FormEvent } from "react";
 import {
   ArrowLeft,
@@ -105,7 +106,11 @@ export function CommunityActivationWizard({
     }
   }
   return (
-    <form onSubmit={submit} className="space-y-6" aria-label="Assistente de comunidade">
+    <form
+      onSubmit={submit}
+      className="community-ui space-y-6"
+      aria-label="Assistente de comunidade"
+    >
       <div className="border-border bg-surface rounded-2xl border p-4 sm:p-5">
         <div className="flex items-center gap-3">
           <Logo compact />
@@ -132,7 +137,7 @@ export function CommunityActivationWizard({
               key={label}
               aria-current={step === i ? "step" : undefined}
               className={cn(
-                "border-border rounded-lg border p-2 text-center",
+                "community-step flex-col text-center",
                 i === step && "border-primary/60 bg-primary/10",
               )}
             >

@@ -1,3 +1,5 @@
+import { CommunityJoinRequestsView } from "@/components/community/CommunityJoinRequestsView";
+import type { JoinRequest } from "@/types/community-discovery";
 import { useState } from "react";
 import { Toaster } from "sonner";
 import {
@@ -12,7 +14,6 @@ import type {
   PublicCommunity,
   DiscoveryPayload,
 } from "@/types/community-discovery";
-import "../../src/styles.css";
 const stamp = "2026-10-21T12:00:00Z";
 const fixture: PublicCommunity = {
   server_id: "cd000000-0000-0000-0000-000000000001",
@@ -30,6 +31,7 @@ const fixture: PublicCommunity = {
   featured: false,
 };
 export function DiscoveryPreview({ embedded = false }: { embedded?: boolean } = {}) {
+  const [requests, setRequests] = useState<JoinRequest[]>([]);
   const [tab, setTab] = useState<"explore" | "settings">("explore"),
     [filters, setFilters] = useState(emptyDiscoveryFilters),
     [items, setItems] = useState<PublicCommunity[]>([]),
@@ -114,7 +116,7 @@ export function DiscoveryPreview({ embedded = false }: { embedded?: boolean } = 
         </button>
       </nav>
       {tab === "settings" ? (
-        <div className="mx-auto max-w-3xl p-6">
+        <div className="mx-auto max-w-6xl p-4 md:p-6">
           <DiscoverySettingsForm
             key={config.listing?.revision ?? 0}
             data={config}
@@ -123,6 +125,35 @@ export function DiscoveryPreview({ embedded = false }: { embedded?: boolean } = 
             error={null}
             onSave={save}
           />
+          <div className="mt-6 space-y-3">
+            <button
+              type="button"
+              className="rounded-lg border border-border px-3 py-2 text-xs"
+              onClick={() =>
+                setRequests([
+                  {
+                    user_id: "cd000000-0000-0000-0000-000000000009",
+                    display_name: "Pessoa de demonstração",
+                    avatar_url: null,
+                    revision: 1,
+                    created_at: new Date().toISOString(),
+                  },
+                ])
+              }
+            >
+              Carregar solicitação fictícia
+            </button>
+            <CommunityJoinRequestsView
+              items={requests}
+              loading={false}
+              busy={false}
+              error={null}
+              hasMore={false}
+              onReview={(r) => setRequests((rows) => rows.filter((x) => x.user_id !== r.user_id))}
+              onFirst={() => {}}
+              onNext={() => {}}
+            />
+          </div>
         </div>
       ) : selected ? (
         <CommunityPresentationView
@@ -157,4 +188,3 @@ export function DiscoveryPreview({ embedded = false }: { embedded?: boolean } = 
     </div>
   );
 }
-if (import.meta.hot) import.meta.hot.dispose(() => root.unmount());

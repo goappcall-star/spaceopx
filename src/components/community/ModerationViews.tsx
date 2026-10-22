@@ -1,4 +1,12 @@
-import { useState } from "react";
+import {
+  CommunityHeading,
+  CommunitySection,
+  CommunityNotice,
+  CommunityActions,
+  CommunityEmpty,
+} from "./CommunityUI";
+import { UserRound, ShieldAlert } from "lucide-react";
+import { useId, useState } from "react";
 import { ShieldCheck, Flag, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,12 +45,18 @@ export function ReportForm({
     [description, setDescription] = useState("");
   return (
     <form
-      className="space-y-4"
+      className="community-ui space-y-4"
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit(category, description);
       }}
     >
+      <CommunityHeading
+        icon={Flag}
+        eyebrow="Cuidado com a comunidade"
+        title="Conte o que aconteceu"
+        description="Escolha o motivo e acrescente apenas o contexto necessário para uma análise responsável."
+      />
       <p className="text-muted-foreground text-sm">
         Envie somente o necessário para análise. A identidade do denunciante não aparece na fila de
         moderação. Denúncias repetidas são agrupadas.
@@ -99,11 +113,13 @@ export function ReportQueueView({
   onDirectory?: ((id: string) => void) | undefined;
 }) {
   return (
-    <div className="space-y-3">
+    <div className="community-ui space-y-3">
       {!items.length && (
-        <p className="text-muted-foreground py-8 text-center text-sm">
-          Nenhuma denúncia nesta página.
-        </p>
+        <CommunityEmpty
+          icon={Flag}
+          title="Nenhuma denúncia nesta página"
+          description="Novas solicitações de análise aparecerão aqui, de acordo com seu acesso e os filtros escolhidos."
+        />
       )}
       {items.map((r) => (
         <ReportCard
@@ -133,7 +149,7 @@ function ReportCard({
 }) {
   const [reason, setReason] = useState("");
   return (
-    <article className="bg-surface border-border space-y-3 rounded-xl border p-4">
+    <article className="community-ui community-section space-y-4">
       <header className="flex flex-wrap justify-between gap-2">
         <h3 className="text-sm font-semibold">
           {reportCategories.find((c) => c.value === r.category)?.label} · {reportKindLabels[r.kind]}
@@ -146,11 +162,16 @@ function ReportCard({
               : "Sem procedência"}
         </span>
       </header>
-      <p className="text-muted-foreground break-all text-xs">
-        {r.id} · {new Date(r.created_at).toLocaleString("pt-BR")}
-      </p>
+      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+        <span>{new Date(r.created_at).toLocaleString("pt-BR")}</span>
+        <details>
+          <summary>Referência da denúncia</summary>
+          <p className="break-all">{r.id}</p>
+        </details>
+      </div>
       {r.description && <p className="text-sm whitespace-pre-wrap break-words">{r.description}</p>}
-      <blockquote className="border-primary/30 bg-primary/5 text-muted-foreground rounded-lg border p-3 text-sm whitespace-pre-wrap break-words">
+      <p className="community-eyebrow">Evidência disponível para análise</p>
+      <blockquote className="border-l-2 border-primary bg-background rounded-r-lg p-4 text-sm leading-relaxed whitespace-pre-wrap break-words">
         {r.evidence ?? "Evidência indisponível ou com prazo encerrado."}
       </blockquote>
       <p className="text-muted-foreground text-xs">
@@ -214,74 +235,131 @@ export function MemberActionForm({
   canSanction: boolean;
   onAction: (target: string, action: "warn" | "kick" | "ban", reason: string) => void;
 }) {
+  const actionGroup = useId();
   const [target, setTarget] = useState(""),
     [action, setAction] = useState<"warn" | "kick" | "ban">(canWarn ? "warn" : "kick"),
     [reason, setReason] = useState(""),
     [confirm, setConfirm] = useState(false);
   return (
     <form
-      className="border-border space-y-4 rounded-xl border p-4"
+      className="community-ui space-y-4"
       onSubmit={(e) => {
         e.preventDefault();
         onAction(target, action, reason);
       }}
     >
-      <h3 className="font-semibold">Advertências e ações</h3>
-      <label className="block text-sm">
-        Membro
-        <select
-          className={field}
-          value={target}
-          onChange={(e) => {
-            setTarget(e.target.value);
-            setConfirm(false);
-          }}
-        >
-          <option value="">Escolha um membro</option>
-          {members.map((m) => (
-            <option value={m.id} key={m.id}>
-              {m.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="block text-sm">
-        Ação
-        <select
-          className={field}
-          value={action}
-          onChange={(e) => {
-            setAction(e.target.value as typeof action);
-            setConfirm(false);
-          }}
-        >
-          {canWarn && <option value="warn">Advertir</option>}
-          {canSanction && (
-            <>
-              <option value="kick">Expulsar</option>
-              <option value="ban">Banir</option>
-            </>
-          )}
-        </select>
-      </label>
-      <label className="block text-sm">
-        Motivo obrigatório
-        <textarea
-          className={field}
-          maxLength={1000}
-          rows={3}
-          value={reason}
-          onChange={(e) => {
-            setReason(e.target.value);
-            setConfirm(false);
-          }}
-        />
-      </label>
-      <p className="text-muted-foreground text-xs">
-        Expulsão e banimento usam o sistema existente. A hierarquia e as permissões são verificadas
-        novamente no servidor.
-      </p>
-      <label className="flex items-start gap-2 text-sm">
+      <CommunityHeading
+        icon={ShieldAlert}
+        eyebrow="Moderação de membros"
+        title="Uma decisão clara, com contexto"
+        description="Confira a pessoa, escolha a ação e registre um motivo que explique a decisão."
+      />
+      <div className="community-editor-grid">
+        <div className="space-y-4">
+          <CommunitySection title="Quem será afetado">
+            <label className="block text-sm">
+              Membro
+              <select
+                className={field}
+                value={target}
+                onChange={(e) => {
+                  setTarget(e.target.value);
+                  setConfirm(false);
+                }}
+              >
+                <option value="">Escolha um membro</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </CommunitySection>
+          <CommunitySection title="Escolha a ação">
+            <fieldset disabled={busy} className="space-y-2">
+              <legend className="sr-only">Ação</legend>
+              {(
+                [...(canWarn ? ["warn"] : []), ...(canSanction ? ["kick", "ban"] : [])] as (
+                  "warn" | "kick" | "ban"
+                )[]
+              ).map((a) => (
+                <label key={a} className="community-choice cursor-pointer text-sm">
+                  <input
+                    type="radio"
+                    name={actionGroup}
+                    checked={action === a}
+                    onChange={() => {
+                      setAction(a);
+                      setConfirm(false);
+                    }}
+                    className="mt-1 accent-primary"
+                  />
+                  <span>
+                    <span
+                      className={a === "warn" ? "font-semibold" : "font-semibold text-destructive"}
+                    >
+                      {a === "warn" ? "Advertir" : a === "kick" ? "Expulsar" : "Banir"}
+                    </span>
+                    <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+                      {a === "warn"
+                        ? "Registra uma advertência para orientar o membro."
+                        : a === "kick"
+                          ? "Remove o membro; uma nova entrada ainda depende de convite e verificações."
+                          : "Remove o acesso e bloqueia novas entradas enquanto o banimento vigorar."}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+          </CommunitySection>
+          <CommunitySection title="Registre o contexto">
+            <label className="block text-sm">
+              Motivo obrigatório
+              <textarea
+                className={field}
+                maxLength={1000}
+                rows={3}
+                value={reason}
+                onChange={(e) => {
+                  setReason(e.target.value);
+                  setConfirm(false);
+                }}
+                placeholder="Descreva o ocorrido e por que esta ação é necessária."
+              />
+            </label>
+          </CommunitySection>
+        </div>
+        <aside className="community-editor-preview space-y-3">
+          <p className="community-eyebrow">Revise antes de confirmar</p>
+          <div className="community-section">
+            <UserRound aria-hidden="true" className="mb-3 h-6 w-6 text-primary" />
+            <p className="break-words font-semibold">
+              {members.find((m) => m.id === target)?.name ?? "Selecione um membro"}
+            </p>
+            <p
+              className={
+                "mt-2 text-sm font-semibold " +
+                (action === "warn" ? "text-primary" : "text-destructive")
+              }
+            >
+              {action === "warn"
+                ? "Advertência"
+                : action === "kick"
+                  ? "Expulsão do servidor"
+                  : "Banimento do servidor"}
+            </p>
+            <p className="mt-3 whitespace-pre-wrap break-words text-xs leading-relaxed text-muted-foreground">
+              {reason || "O motivo registrado aparecerá aqui."}
+            </p>
+          </div>
+          <CommunityNotice>
+            A hierarquia e as permissões são verificadas novamente no servidor. Confira o alvo: esta
+            ação altera o histórico ou o acesso do membro.
+          </CommunityNotice>
+        </aside>
+      </div>
+      <label className="community-choice text-sm">
         <input
           type="checkbox"
           className="mt-1 accent-primary"
@@ -290,13 +368,21 @@ export function MemberActionForm({
         />
         <span>Conferi o membro, a ação e o motivo.</span>
       </label>
-      <Button
-        type="submit"
-        variant={action === "warn" ? "default" : "destructive"}
-        disabled={busy || !target || reason.trim().length < 3 || !confirm}
-      >
-        Confirmar {action === "warn" ? "advertência" : action === "kick" ? "expulsão" : "banimento"}
-      </Button>
+      <CommunityActions>
+        <Button
+          type="submit"
+          variant={action === "warn" ? "default" : "destructive"}
+          disabled={busy || !target || reason.trim().length < 3 || !confirm}
+        >
+          {busy
+            ? "Aplicando…"
+            : action === "warn"
+              ? "Confirmar advertência"
+              : action === "kick"
+                ? "Confirmar expulsão"
+                : "Confirmar banimento"}
+        </Button>
+      </CommunityActions>
     </form>
   );
 }
@@ -404,7 +490,7 @@ export function ModerationHistoryView({ items }: { items: ModerationHistory[] })
       )}
       {items.map((d) => (
         <article key={d.id} className="border-border space-y-2 rounded-xl border p-3">
-          <h3 className="flex items-center gap-2 text-sm">
+          <h3 className="community-choice text-sm">
             <History className="text-primary h-4 w-4" />
             {moderationActionLabel(d.action)}
           </h3>
@@ -431,7 +517,7 @@ export function SecuritySettingsForm({
     [domains, setDomains] = useState(initial.blocked_domains.join("\n"));
   return (
     <form
-      className="border-border space-y-4 rounded-xl border p-4"
+      className="community-ui community-section space-y-5"
       onSubmit={(e) => {
         e.preventDefault();
         onSave({
@@ -443,10 +529,12 @@ export function SecuritySettingsForm({
         });
       }}
     >
-      <h3 className="flex items-center gap-2 font-semibold">
-        <ShieldCheck className="text-primary h-5 w-5" />
-        Filtros contra spam
-      </h3>
+      <CommunityHeading
+        icon={ShieldCheck}
+        eyebrow="Proteção da comunidade"
+        title="Filtros contra spam"
+        description="Defina limites claros para mensagens, repetições, menções e links. Nenhuma punição é aplicada automaticamente."
+      />
       <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"
@@ -468,7 +556,7 @@ export function SecuritySettingsForm({
             { key: "mentions_limit", label: "Menções por mensagem", min: 1, max: 30 },
           ] as const
         ).map((f) => (
-          <label className="text-sm" key={f.key}>
+          <label className="community-section text-sm" key={f.key}>
             {f.label}
             <input
               type="number"
@@ -516,13 +604,17 @@ export function ModeratorGrantForm({
     [confirm, setConfirm] = useState(false);
   return (
     <form
-      className="border-border space-y-3 rounded-xl border p-4"
+      className="community-ui community-section space-y-4"
       onSubmit={(e) => {
         e.preventDefault();
         onGrant(role, caps);
       }}
     >
-      <h3 className="font-semibold">Permissões específicas por cargo</h3>
+      <CommunityHeading
+        icon={ShieldCheck}
+        eyebrow="Delegação explícita"
+        title="Permissões específicas por cargo"
+      />
       <p className="text-muted-foreground text-xs">
         Somente o proprietário delega. A seleção substitui as permissões deste cargo; nenhuma
         marcada revoga a delegação. Cargos com delegação não podem ser escolhidos no onboarding ou
@@ -547,9 +639,9 @@ export function ModeratorGrantForm({
           ))}
         </select>
       </label>
-      <div className="flex flex-wrap gap-3">
+      <div className="grid gap-2 sm:grid-cols-2">
         {moderationCapabilities.map((c) => (
-          <label key={c} className="flex items-center gap-2 text-xs">
+          <label key={c} className="community-choice text-xs">
             <input
               className="accent-primary"
               type="checkbox"
@@ -598,7 +690,11 @@ export function PlatformReviewForm({
   const [reason, setReason] = useState(""),
     [confirm, setConfirm] = useState(false);
   return (
-    <section className="border-primary/30 space-y-3 rounded-xl border p-4">
+    <section className="community-ui community-section space-y-4">
+      <CommunityNotice>
+        Central de Segurança da Plataforma · atuação oficial sobre o diretório público. Gerir uma
+        comunidade não concede esta autoridade.
+      </CommunityNotice>
       <h3 className="font-semibold">
         Apresentação pública ·{" "}
         {{ listed: "Publicada", unlisted: "Não listada", suspended: "Suspensa" }[data.status]}

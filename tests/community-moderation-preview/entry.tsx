@@ -1,3 +1,4 @@
+import "../../src/styles.css";
 import { createRoot } from "react-dom/client";
 import { ModerationPreview } from "./preview";
 const root = createRoot(document.getElementById("root")!);

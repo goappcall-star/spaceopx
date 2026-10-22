@@ -21,7 +21,6 @@ import type {
 } from "@/types/community-evolution";
 import type { CommunityExperience } from "@/types/community-experience";
 import type { Server } from "@/types";
-import "../../src/styles.css";
 const sid = "d4c00000-0000-0000-0000-000000000001";
 const base: CommunityCosmetics = {
   server_id: sid,

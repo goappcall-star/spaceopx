@@ -7,7 +7,6 @@ import { DEFAULT_EXPERIENCE } from "@/lib/community-experience";
 import type { Server, Channel } from "@/types";
 import type { CommunityExperience } from "@/types/community-experience";
 import type { CommunityEvent, EventMode } from "@/types/community-events";
-import "../../src/styles.css";
 const sid = "ca000000-0000-0000-0000-000000000001",
   cid = "ca000000-0000-0000-0000-000000000002",
   stamp = "2026-10-21T00:00:00Z";

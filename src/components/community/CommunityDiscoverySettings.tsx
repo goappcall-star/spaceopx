@@ -1,3 +1,4 @@
+import { CommunityJoinRequestsView } from "./CommunityJoinRequestsView";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -71,75 +72,26 @@ export function CommunityDiscoverySettings({
         error={error}
         onSave={(p, r, publish) => void run(() => discoveryService.save(serverId, p, r, publish))}
       />
-      <section className="space-y-3">
-        <h3 className="font-semibold">Solicitações de entrada</h3>
-        <p className="text-muted-foreground text-xs">
-          Proprietário e gestores expressamente delegados podem aprovar. A aprovação mantém as
-          regras e boas-vindas obrigatórias.
-        </p>
-        {error && !config.data.is_owner && <p role="alert">{error}</p>}
-        {requests.isError ? (
-          <p role="alert">{discoveryError(requests.error)}</p>
-        ) : requests.isPending ? (
-          <p role="status">Carregando solicitações…</p>
-        ) : !requests.data.items.length ? (
-          <p className="text-muted-foreground text-sm">
-            Nenhuma solicitação pendente nesta página.
-          </p>
-        ) : (
-          requests.data.items.map((r) => (
-            <div
-              className="border-border flex flex-wrap items-center gap-2 rounded-xl border p-3"
-              key={r.user_id}
-            >
-              <span className="min-w-0 flex-1 truncate text-sm">{r.display_name}</span>
-              <Button
-                size="sm"
-                disabled={busy || requests.isFetching}
-                onClick={() =>
-                  void run(() => discoveryService.review(serverId, r.user_id, r.revision, true))
-                }
-              >
-                Aprovar
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={busy || requests.isFetching}
-                onClick={() =>
-                  void run(() => discoveryService.review(serverId, r.user_id, r.revision, false))
-                }
-              >
-                Rejeitar
-              </Button>
-            </div>
-          ))
-        )}
-        <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setCursor(undefined);
-              void requests.refetch();
-            }}
-          >
-            Atualizar início
-          </Button>
-          {requests.data?.has_more && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                const r = requests.data.items.at(-1);
-                if (r) setCursor({ created_at: r.created_at, user_id: r.user_id });
-              }}
-            >
-              Próximas solicitações
-            </Button>
-          )}
-        </div>
-      </section>
+      <CommunityJoinRequestsView
+        items={requests.data?.items ?? []}
+        loading={requests.isPending}
+        busy={busy || requests.isFetching}
+        error={
+          requests.isError ? discoveryError(requests.error) : !config.data.is_owner ? error : null
+        }
+        hasMore={!!requests.data?.has_more}
+        onReview={(r, approve) =>
+          void run(() => discoveryService.review(serverId, r.user_id, r.revision, approve))
+        }
+        onFirst={() => {
+          setCursor(undefined);
+          void requests.refetch();
+        }}
+        onNext={() => {
+          const r = requests.data?.items.at(-1);
+          if (r) setCursor({ created_at: r.created_at, user_id: r.user_id });
+        }}
+      />
     </div>
   );
 }

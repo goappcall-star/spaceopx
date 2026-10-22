@@ -1,3 +1,4 @@
+import "./community-ui.css";
 import { TrendingUp, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { communityProgressPercent } from "@/lib/community-progression";
@@ -14,7 +15,7 @@ export function CommunityProgressionView({
   return (
     <section
       aria-label="Evolução da comunidade"
-      className="rounded-2xl border border-primary/25 bg-surface p-5 md:p-6"
+      className="community-ui rounded-2xl border border-border bg-surface p-5 md:p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -27,6 +28,12 @@ export function CommunityProgressionView({
             </p>
             <h2 className="text-xl font-semibold">Nível {number(data.level)}</h2>
           </div>
+        </div>
+        <div className="ml-auto text-right">
+          <p className="text-2xl font-semibold tracking-tight">
+            {number(data.xp)} <span className="text-xs font-normal text-muted-foreground">XP</span>
+          </p>
+          <p className="text-xs text-muted-foreground">saldo coletivo permanente</p>
         </div>
         {onHistory && (
           <Button variant="outline" size="sm" onClick={onHistory}>

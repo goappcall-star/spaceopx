@@ -1,0 +1,199 @@
+.community-ui {
+  --community-action: oklch(0.88 0.22 124);
+  --community-action-foreground: oklch(0.15 0.015 260);
+  min-width: 0;
+}
+.community-ui button.bg-primary {
+  color: var(--community-action-foreground);
+  background: var(--community-action);
+  box-shadow: none;
+}
+.community-ui button.bg-primary:hover {
+  background: oklch(0.92 0.19 124);
+  box-shadow: none;
+}
+.community-ui button {
+  max-width: 100%;
+}
+.community-ui :is(input, select, textarea) {
+  min-width: 0;
+  max-width: 100%;
+}
+.community-ui :is(select, textarea, summary):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.community-ui
+  :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="file"]) {
+  background-color: var(--background);
+  border-color: var(--border);
+}
+.community-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.community-eyebrow {
+  color: var(--muted-foreground);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-bottom: 0.4rem;
+}
+.community-icon {
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.65rem;
+  background: var(--surface);
+  color: var(--primary);
+}
+.community-section {
+  min-width: 0;
+  padding: 1.15rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+}
+.community-notice {
+  display: flex;
+  gap: 0.65rem;
+  align-items: start;
+  padding: 0.8rem 1rem;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  color: var(--muted-foreground);
+}
+.community-notice-error {
+  color: var(--destructive);
+  border-color: color-mix(in oklab, var(--destructive) 40%, var(--border));
+}
+.community-notice-success {
+  color: var(--community-action);
+}
+.community-cover {
+  min-width: 0;
+  border: 1px solid var(--border);
+  background: var(--background);
+  overflow: hidden;
+  border-radius: 1rem;
+}
+.community-cover-image {
+  height: 10rem;
+  overflow: hidden;
+  background: var(--surface-elevated);
+}
+.community-cover-image img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+.community-cover-compact {
+  height: 7rem;
+}
+.community-cover-placeholder {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.6rem;
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+}
+.community-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.65rem;
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.community-empty {
+  padding: 1.5rem;
+  border: 1px dashed var(--border);
+  border-radius: 1rem;
+}
+.community-editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.65fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+.community-editor-preview {
+  position: sticky;
+  top: 0;
+  min-width: 0;
+}
+.community-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+.community-choice {
+  display: flex;
+  align-items: start;
+  gap: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  padding: 0.9rem;
+  background: var(--background);
+}
+.community-choice:has(input:checked),
+.community-choice[aria-pressed="true"] {
+  border-color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 8%, var(--background));
+}
+.community-step {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+.community-step[aria-current="step"] {
+  color: var(--foreground);
+  border-color: var(--primary);
+  background: var(--surface);
+}
+.community-ui details > summary {
+  cursor: pointer;
+  padding: 0.65rem 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.community-ui .community-metric-main {
+  border-color: color-mix(in oklab, var(--primary) 35%, var(--border));
+}
+@media (max-width: 850px) {
+  .community-editor-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .community-editor-preview {
+    position: static;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .community-ui * {
+    transition-duration: 0s !important;
+    animation: none !important;
+  }
+}
+
+.community-mission[data-state="completed"] {
+  border-color: var(--community-action);
+}

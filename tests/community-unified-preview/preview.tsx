@@ -104,7 +104,7 @@ const initial: CommunityExperience = {
     modules: ["notices", "channels", "interests", "events", "voice"],
     notices: [
       {
-        id: "welcome",
+        id: "c5000000-0000-0000-0000-000000000004",
         title: "Bem-vindo ao seu espaço",
         body: "Esta é uma prévia local com dados fictícios. Nenhuma ação altera servidores reais.",
       },

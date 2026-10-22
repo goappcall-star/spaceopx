@@ -17,7 +17,6 @@ import type {
   SecuritySettings,
   PlatformDirectoryReview,
 } from "@/types/community-moderation";
-import "../../src/styles.css";
 const sid = "cc000000-0000-0000-0000-000000000010",
   actor = "cc000000-0000-0000-0000-000000000011",
   target = "cc000000-0000-0000-0000-000000000012",

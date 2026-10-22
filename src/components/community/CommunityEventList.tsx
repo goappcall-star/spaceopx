@@ -1,3 +1,4 @@
+import "./community-ui.css";
 import { useState, type ReactNode } from "react";
 import { CalendarDays, Clock, Users, Plus, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -198,7 +199,7 @@ export function CommunityEventList({
   onChannel: (id: string) => void;
 }) {
   return (
-    <div className="space-y-4">
+    <div className="community-ui space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         {(
           [

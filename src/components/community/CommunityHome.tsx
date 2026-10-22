@@ -1,3 +1,4 @@
+import "./community-ui.css";
 import { useState, type ReactNode } from "react";
 import { CommunityBanner, CommunitySeal } from "./CommunityAppearance";
 import { appearanceStyle } from "@/lib/community-appearance";
@@ -53,7 +54,7 @@ export function CommunityHome({
   return (
     <div
       style={appearanceStyle(appearance)}
-      className="scrollbar-slim bg-background flex-1 min-w-0 overflow-y-auto"
+      className="community-ui scrollbar-slim bg-background flex-1 min-w-0 overflow-y-auto"
     >
       <div className="mx-auto w-full max-w-6xl space-y-7 p-4 md:p-8">
         <section
@@ -85,7 +86,7 @@ export function CommunityHome({
               </span>
               {onSettings && (
                 <Button variant="outline" size="sm" onClick={onSettings}>
-                  Personalizar
+                  Configurações
                 </Button>
               )}
             </div>

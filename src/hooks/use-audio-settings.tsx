@@ -1,56 +1,19 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { useAuth } from "@/hooks/use-auth";
 import { preferencesService } from "@/services/gamer";
 import { listMediaDevices, type MediaDeviceList } from "@/services/voice";
-import type { AudioInputMode } from "@/types";
-import type { NoiseProcessingStatus, NoiseSuppressionMode } from "@/services/audio-processing";
+import {
+  AudioSettingsContext,
+  DEFAULT_AUDIO_SETTINGS,
+  type AudioSettings,
+  type AudioSettingsContextValue,
+} from "./audio-settings-context";
+export { useAudioSettings, keyLabel, DEFAULT_AUDIO_SETTINGS } from "./audio-settings-context";
+import { clampGlobalVolume } from "@/lib/audio-volume";
+import type { NoiseProcessingStatus } from "@/services/audio-processing";
 import { readNoiseMode, saveNoiseMode } from "@/services/noise-preference";
 import { readCallSounds, saveCallSounds } from "@/services/call-sounds";
-
-export interface AudioSettings {
-  callSoundsEnabled: boolean;
-  inputDeviceId: string | null;
-  outputDeviceId: string | null;
-  inputVolume: number;
-  outputVolume: number;
-  inputMode: AudioInputMode;
-  pttKey: string;
-  noiseSuppression: NoiseSuppressionMode;
-}
-
-export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
-  callSoundsEnabled: true,
-  inputDeviceId: null,
-  outputDeviceId: null,
-  inputVolume: 100,
-  outputVolume: 100,
-  inputMode: "open",
-  pttKey: "KeyV",
-  noiseSuppression: "standard",
-};
-
-interface AudioSettingsContextValue {
-  settings: AudioSettings;
-  update: (patch: Partial<AudioSettings>) => void;
-  devices: MediaDeviceList;
-  refreshDevices: () => Promise<void>;
-  supportsOutputSelection: boolean;
-  loaded: boolean;
-  noiseProcessing: Record<string, NoiseProcessingStatus>;
-  reportNoiseProcessing: (session: string, status: NoiseProcessingStatus | null) => void;
-}
-
-const AudioSettingsContext = createContext<AudioSettingsContextValue | undefined>(undefined);
 
 /** Single persistent source of truth for audio hardware and voice input preferences. */
 export function AudioSettingsProvider({ children }: { children: ReactNode }) {
@@ -94,8 +57,8 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
           callSoundsEnabled: readCallSounds(userId),
           inputDeviceId: prefs.input_device_id ?? null,
           outputDeviceId: prefs.output_device_id ?? null,
-          inputVolume: prefs.input_volume ?? 100,
-          outputVolume: prefs.output_volume ?? 100,
+          inputVolume: clampGlobalVolume(prefs.input_volume),
+          outputVolume: clampGlobalVolume(prefs.output_volume),
           inputMode: prefs.input_mode ?? "open",
           pttKey: prefs.ptt_key ?? "KeyV",
           noiseSuppression: readNoiseMode(userId),
@@ -115,7 +78,12 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
   const update = useCallback(
     (patch: Partial<AudioSettings>) => {
       setSettings((prev) => {
-        const next = { ...prev, ...patch };
+        const next = {
+          ...prev,
+          ...patch,
+          inputVolume: clampGlobalVolume(patch.inputVolume ?? prev.inputVolume),
+          outputVolume: clampGlobalVolume(patch.outputVolume ?? prev.outputVolume),
+        };
         if (user) {
           if (patch.callSoundsEnabled !== undefined)
             saveCallSounds(user.id, next.callSoundsEnabled);
@@ -140,13 +108,42 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
     [user],
   );
 
+  const currentSettings = useRef(settings);
+  currentSettings.current = settings;
+  const previousDevices = useRef<MediaDeviceList | null>(null);
+  const deviceRequest = useRef(0);
   const refreshDevices = useCallback(async () => {
+    const version = ++deviceRequest.current;
     try {
-      setDevices(await listMediaDevices());
+      const next = await listMediaDevices();
+      if (version !== deviceRequest.current) return;
+      const previous = previousDevices.current;
+      previousDevices.current = next;
+      setDevices(next);
+      // An empty enumeration may mean no permission. A populated list also lets stale saved devices fall back safely.
+      const patch: Partial<AudioSettings> = {};
+      const current = currentSettings.current;
+      if (
+        current.inputDeviceId &&
+        current.inputDeviceId !== "default" &&
+        (next.microphones.length > 0 ||
+          previous?.microphones.some((d) => d.deviceId === current.inputDeviceId)) &&
+        !next.microphones.some((d) => d.deviceId === current.inputDeviceId)
+      )
+        patch.inputDeviceId = null;
+      if (
+        current.outputDeviceId &&
+        current.outputDeviceId !== "default" &&
+        (next.outputs.length > 0 ||
+          previous?.outputs.some((d) => d.deviceId === current.outputDeviceId)) &&
+        !next.outputs.some((d) => d.deviceId === current.outputDeviceId)
+      )
+        patch.outputDeviceId = null;
+      if (Object.keys(patch).length) update(patch);
     } catch {
-      /* enumeration unsupported */
+      /* Enumeration unsupported; keep existing selection visible instead of guessing. */
     }
-  }, []);
+  }, [update]);
 
   useEffect(() => {
     void refreshDevices();
@@ -155,12 +152,17 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
     return () => navigator.mediaDevices?.removeEventListener?.("devicechange", handler);
   }, [refreshDevices]);
 
+  useEffect(() => {
+    if (loaded) void refreshDevices();
+  }, [loaded, refreshDevices]);
+
   const supportsOutputSelection =
     typeof window !== "undefined" && "setSinkId" in HTMLMediaElement.prototype;
 
   const value = useMemo<AudioSettingsContextValue>(
     () => ({
       settings,
+      sessionKey: userId ?? null,
       update,
       devices,
       refreshDevices,
@@ -171,6 +173,7 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
     }),
     [
       settings,
+      userId,
       update,
       devices,
       refreshDevices,
@@ -182,17 +185,4 @@ export function AudioSettingsProvider({ children }: { children: ReactNode }) {
   );
 
   return <AudioSettingsContext.Provider value={value}>{children}</AudioSettingsContext.Provider>;
-}
-
-export function useAudioSettings() {
-  const ctx = useContext(AudioSettingsContext);
-  if (!ctx) throw new Error("useAudioSettings must be used inside <AudioSettingsProvider>");
-  return ctx;
-}
-
-export function keyLabel(code: string) {
-  if (code.startsWith("Key")) return code.slice(3);
-  if (code.startsWith("Digit")) return code.slice(5);
-  if (code === "Space") return "Espaço";
-  return code;
 }

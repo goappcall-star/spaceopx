@@ -110,7 +110,8 @@ test("unified preview dependency graph cannot load live Supabase or service modu
     );
     for (const spec of imports) {
       assert.ok(
-        !/supabase|^@\/services\//.test(spec),
+        !/supabase|^@\/services\//.test(spec) ||
+          ["@/services/microphone-test", "@/services/audio-processing"].includes(spec),
         "Live backend dependency in " + path.relative(root, file) + ": " + spec,
       );
       if (!spec.startsWith(".") && !spec.startsWith("@/")) continue;

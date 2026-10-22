@@ -64,6 +64,28 @@ function fixture(file, imports, globals = {}) {
       require: (name) => {
         if (name === "react") return react;
         if (name === "react/jsx-runtime") return { jsx: (_type, props) => props };
+        if (name === "./audio-settings-context" || name === "@/lib/audio-volume") {
+          const local = {
+            exports: {},
+            require: (id) => {
+              assert.equal(id, "react");
+              return react;
+            },
+          };
+          vm.runInNewContext(
+            ts.transpileModule(
+              fs.readFileSync(
+                name === "./audio-settings-context"
+                  ? "src/hooks/audio-settings-context.tsx"
+                  : "src/lib/audio-volume.ts",
+                "utf8",
+              ),
+              { compilerOptions: { module: ts.ModuleKind.CommonJS } },
+            ).outputText,
+            local,
+          );
+          return local.exports;
+        }
         assert.ok(name in imports, name);
         return imports[name];
       },
@@ -133,6 +155,7 @@ test("A failed initial session read clears the login loading state", async () =>
 });
 test("Audio preferences ignore old account responses and cancel queued saves on logout", async () => {
   let user = { id: "first" };
+  let hardware = { microphones: [], cameras: [], outputs: [] };
   const first = deferred(),
     second = deferred(),
     timers = new Map(),
@@ -148,7 +171,7 @@ test("Audio preferences ignore old account responses and cancel queued saves on 
         },
       },
       "@/services/voice": {
-        listMediaDevices: async () => ({ microphones: [], cameras: [], outputs: [] }),
+        listMediaDevices: async () => hardware,
       },
       "@/services/noise-preference": { readNoiseMode: () => "standard", saveNoiseMode() {} },
       "@/services/call-sounds": { readCallSounds: () => true, saveCallSounds() {} },
@@ -170,9 +193,47 @@ test("Audio preferences ignore old account responses and cancel queued saves on 
   first.resolve({ output_volume: 5 });
   await f.flush();
   assert.equal(f.render().loaded, false);
-  second.resolve({ output_volume: 80 });
+  second.resolve({
+    output_volume: 180,
+    input_volume: 200,
+    input_device_id: "saved-mic",
+    ptt_key: "KeyB",
+    input_mode: "ptt",
+  });
   await f.flush();
-  assert.equal(f.render().settings.outputVolume, 80);
+  assert.equal(f.render().settings.outputVolume, 100);
+  assert.equal(f.render().settings.inputVolume, 100);
+  assert.equal(f.render().settings.inputDeviceId, "saved-mic");
+  assert.equal(f.render().settings.pttKey, "KeyB");
+  assert.equal(f.render().settings.inputMode, "ptt");
+  hardware = {
+    microphones: [{ deviceId: "saved-mic", label: "Saved mic" }],
+    cameras: [],
+    outputs: [],
+  };
+  await f.render().refreshDevices();
+  await f.flush();
+  hardware = {
+    microphones: [{ deviceId: "replacement", label: "Replacement mic" }],
+    cameras: [],
+    outputs: [],
+  };
+  await f.render().refreshDevices();
+  await f.flush();
+  assert.equal(f.render().settings.inputDeviceId, null);
+  assert.equal(f.render().settings.pttKey, "KeyB");
+  for (const percent of [0, 50, 100, 999, -50, NaN]) {
+    f.render().update({ inputVolume: percent, outputVolume: percent });
+    const state = f.render().settings;
+    const expected = Number.isNaN(percent) ? 100 : Math.max(0, Math.min(100, percent));
+    assert.equal(state.inputVolume, expected);
+    assert.equal(state.outputVolume, expected);
+    assert.equal(state.pttKey, "KeyB");
+  }
+  for (const fn of timers.values()) fn();
+  assert.equal(saved.at(-1)[1].input_volume, 100);
+  assert.equal(saved.at(-1)[1].output_volume, 100);
+  saved.length = 0;
   f.render().update({ outputVolume: 30 });
   f.render();
   assert.equal(timers.size, 1);

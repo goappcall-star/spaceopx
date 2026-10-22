@@ -124,6 +124,9 @@ export function CallProviderRoot({
 
   const providerRef = useRef<VoiceProvider | null>(null);
   useEffect(() => {
+    providerRef.current?.setInputGain(audioSettings.inputVolume);
+  }, [audioSettings.inputVolume, status]);
+  useEffect(() => {
     if (!["active", "reconnecting"].includes(status)) return;
     void providerRef.current
       ?.setDevices({ microphoneId: audioSettings.inputDeviceId })

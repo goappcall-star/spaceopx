@@ -8,6 +8,9 @@ import type { CommunityExperience } from "@/types/community-experience";
 import type { Server, Channel, Role } from "@/types";
 import "./preview.css";
 
+const Audio = lazy(() =>
+  import("../audio-preview/preview").then((m) => ({ default: m.AudioPreview })),
+);
 const Evolution = lazy(() =>
   import("../community-evolution-preview/preview").then((m) => ({ default: m.Preview })),
 );
@@ -35,6 +38,7 @@ const pages = [
   "Personalização",
   "Configurações",
   "Servidores",
+  "Áudio",
 ] as const;
 type Page = (typeof pages)[number];
 const sid = "c5000000-0000-0000-0000-000000000001",
@@ -202,19 +206,27 @@ function Session() {
               {notice}
             </p>
           )}
-          {!enabled && page !== "Configurações" && page !== "Explorar" && page !== "Servidores" && (
-            <section className="space-y-4 p-6">
-              <h2 className="text-2xl font-semibold">Servidor comum</h2>
-              <p className="text-sm text-muted-foreground">
-                Os módulos exclusivos de comunidade estão ocultos. Canais e recursos normais
-                permanecem no aplicativo.
-              </p>
-              <Button onClick={() => navigate("Configurações")}>Avaliar ativação</Button>
-            </section>
-          )}
+          {!enabled &&
+            page !== "Configurações" &&
+            page !== "Explorar" &&
+            page !== "Servidores" &&
+            page !== "Áudio" && (
+              <section className="space-y-4 p-6">
+                <h2 className="text-2xl font-semibold">Servidor comum</h2>
+                <p className="text-sm text-muted-foreground">
+                  Os módulos exclusivos de comunidade estão ocultos. Canais e recursos normais
+                  permanecem no aplicativo.
+                </p>
+                <Button onClick={() => navigate("Configurações")}>Avaliar ativação</Button>
+              </section>
+            )}
           <div
             hidden={
-              !enabled && page !== "Configurações" && page !== "Explorar" && page !== "Servidores"
+              !enabled &&
+              page !== "Configurações" &&
+              page !== "Explorar" &&
+              page !== "Servidores" &&
+              page !== "Áudio"
             }
           >
             <Suspense
@@ -257,8 +269,9 @@ function Session() {
                   <Events embedded />
                 </div>
               )}
+              {page === "Áudio" && <Audio />}
               {visited.includes("Servidores") && (
-                <div hidden={page !== "Servidores"}>
+                <div hidden={page !== "Servidores" && page !== "Áudio"}>
                   <ServerAccess />
                 </div>
               )}

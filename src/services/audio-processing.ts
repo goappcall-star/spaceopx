@@ -1,3 +1,4 @@
+import { clampGlobalVolume } from "@/lib/audio-volume";
 import { RNNOISE_WORKLET_URL } from "@/generated/audio-worklet";
 
 export type NoiseSuppressionMode = "off" | "standard" | "advanced";
@@ -96,12 +97,26 @@ async function createDenoiser(context: AudioContext, signal: AbortSignal, onErro
   }
 }
 
+const callPipelines = new Set<MicrophoneAudioPipeline>();
+
+/** A read-only tap: callers must never stop or change these call-owned tracks. */
+export function borrowMicrophoneForTest(onInvalidated: () => void) {
+  return (
+    [...callPipelines]
+      .reverse()
+      .find((pipeline) => pipeline.hasLiveInput())
+      ?.monitorTap(onInvalidated) ?? null
+  );
+}
+
 /** One stable destination track for the whole call, including mode/device changes. */
 export class MicrophoneAudioPipeline {
   readonly context: AudioContext;
   readonly gain: GainNode;
   readonly analyser: AnalyserNode;
   readonly stream: MediaStream;
+  private monitors = new Set<() => void>();
+  private readonly inputEnded = () => this.invalidateMonitors();
   private source: MediaStreamAudioSourceNode | null = null;
   private input: MediaStream | null = null;
   private denoiser: AudioWorkletNode | null = null;
@@ -115,7 +130,10 @@ export class MicrophoneAudioPipeline {
   private microphoneChanged = true;
   private constraintsQueue = Promise.resolve();
 
-  constructor(private readonly report: (status: NoiseProcessingStatus) => void) {
+  constructor(
+    private readonly report: (status: NoiseProcessingStatus) => void,
+    private readonly purpose: "call" | "test" = "call",
+  ) {
     try {
       this.context = new AudioContext({ sampleRate: 48000, latencyHint: "interactive" });
     } catch {
@@ -133,15 +151,45 @@ export class MicrophoneAudioPipeline {
 
   attachMicrophone(stream: MediaStream) {
     if (this.closed) throw new DOMException("Pipeline closed", "AbortError");
+    this.invalidateMonitors();
+    this.input
+      ?.getAudioTracks()
+      .forEach((track) => track.removeEventListener?.("ended", this.inputEnded));
     this.source?.disconnect();
     this.input = stream;
+    stream
+      .getAudioTracks()
+      .forEach((track) => track.addEventListener?.("ended", this.inputEnded, { once: true }));
+    if (this.purpose === "call") callPipelines.add(this);
     this.microphoneChanged = true;
     this.source = this.context.createMediaStreamSource(stream);
     this.source.connect(this.denoiser ?? this.gain);
   }
 
+  hasLiveInput() {
+    return (
+      !this.closed && !!this.input?.getAudioTracks().some((track) => track.readyState === "live")
+    );
+  }
+
+  monitorTap(onInvalidated: () => void) {
+    this.monitors.add(onInvalidated);
+    return {
+      stream: this.stream,
+      analyser: this.analyser,
+      release: () => {
+        this.monitors.delete(onInvalidated);
+      },
+    };
+  }
+
+  private invalidateMonitors() {
+    for (const stop of [...this.monitors]) stop();
+    this.monitors.clear();
+  }
+
   setGain(percent: number) {
-    this.gain.gain.value = Math.max(0, Math.min(200, percent)) / 100;
+    this.gain.gain.value = clampGlobalVolume(percent) / 100;
   }
   setMuted(muted: boolean) {
     this.input?.getAudioTracks().forEach((track) => {
@@ -245,6 +293,11 @@ export class MicrophoneAudioPipeline {
   async dispose() {
     if (this.closed) return;
     this.closed = true;
+    callPipelines.delete(this);
+    this.invalidateMonitors();
+    this.input
+      ?.getAudioTracks()
+      .forEach((track) => track.removeEventListener?.("ended", this.inputEnded));
     this.generation++;
     this.pending?.abort();
     this.pending = null;

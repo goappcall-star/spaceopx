@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AudioQuickMenu } from "./AudioQuickMenu";
 import { VoiceIcon } from "./VoiceIcon";
 import { DeviceSettingsDialog } from "./DeviceSettingsDialog";
 import { cn } from "@/lib/utils";
@@ -60,29 +61,28 @@ function AudioDeviceControl({
         >
           <VoiceIcon kind={kind} off={off} className="h-[18px] w-[18px]" />
         </button>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label={settingsLabel}
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          title={settingsLabel}
-          className={cn(
-            "flex items-center justify-center rounded-md hover:bg-surface-hover hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary",
-            boxed ? "h-11" : "h-9",
-            compact ? "w-3.5" : "w-5",
-          )}
-        >
-          <svg viewBox="0 0 12 12" fill="none" className="h-3 w-3" aria-hidden="true">
-            <path
-              d="m2.5 4.5 3.5 3.5 3.5-3.5"
-              stroke="currentColor"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+        <AudioQuickMenu kind={kind === "mic" ? "input" : "output"} onSettings={() => setOpen(true)}>
+          <button
+            type="button"
+            aria-label={settingsLabel}
+            title={settingsLabel}
+            className={cn(
+              "flex items-center justify-center rounded-md hover:bg-surface-hover hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary data-[state=open]:bg-primary/10 data-[state=open]:text-primary [&[data-state=open]>svg]:rotate-180",
+              boxed ? "h-11" : "h-9",
+              compact ? "w-3.5" : "w-5",
+            )}
+          >
+            <svg viewBox="0 0 12 12" fill="none" className="h-3 w-3" aria-hidden="true">
+              <path
+                d="m2.5 4.5 3.5 3.5 3.5-3.5"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </AudioQuickMenu>
       </div>
       {open && <DeviceSettingsDialog open={open} onOpenChange={setOpen} />}
     </>

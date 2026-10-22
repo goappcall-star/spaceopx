@@ -3,6 +3,15 @@ import vm from "node:vm";
 import ts from "typescript";
 import assert from "node:assert/strict";
 
+const volume = { exports: {} };
+vm.runInNewContext(
+  ts.transpileModule(
+    fs.readFileSync(new URL("../../src/lib/audio-volume.ts", import.meta.url), "utf8"),
+    { compilerOptions: { module: ts.ModuleKind.CommonJS } },
+  ).outputText,
+  volume,
+);
+
 export function pipelineFixture({
   failModule = false,
   waitReady = false,
@@ -104,7 +113,8 @@ export function pipelineFixture({
   }
   const environment = {
     exports: {},
-    require: () => ({ RNNOISE_WORKLET_URL: "/audio/test.js" }),
+    require: (id) =>
+      id === "@/lib/audio-volume" ? volume.exports : { RNNOISE_WORKLET_URL: "/audio/test.js" },
     AudioContext: Context,
     AudioWorkletNode: Worklet,
     AbortController,
@@ -152,6 +162,7 @@ export function loadVoiceProvider(audioExports, additions = {}) {
           metrics: { enabled: false },
         };
       if (id === "./audio-processing") return audioExports;
+      if (id === "@/lib/audio-volume") return volume.exports;
       if (id === "@/integrations/supabase/client")
         return { supabase: { removeChannel: async () => undefined } };
       if (id === "./remote-track") {
@@ -181,8 +192,21 @@ export function loadVoiceProvider(audioExports, additions = {}) {
   const fallbackRequire = environment.require;
   environment.require = (id) => {
     if (id === "./screen-share") {
-      const moduleEnvironment = { exports: {}, DOMException, Date, document: environment.document, setTimeout: environment.setTimeout, clearTimeout: environment.clearTimeout };
-      vm.runInNewContext(ts.transpileModule(fs.readFileSync(new URL("../../src/services/screen-share.ts", import.meta.url), "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, moduleEnvironment);
+      const moduleEnvironment = {
+        exports: {},
+        DOMException,
+        Date,
+        document: environment.document,
+        setTimeout: environment.setTimeout,
+        clearTimeout: environment.clearTimeout,
+      };
+      vm.runInNewContext(
+        ts.transpileModule(
+          fs.readFileSync(new URL("../../src/services/screen-share.ts", import.meta.url), "utf8"),
+          { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } },
+        ).outputText,
+        moduleEnvironment,
+      );
       return moduleEnvironment.exports;
     }
     if (id === "./voice-diagnostics")

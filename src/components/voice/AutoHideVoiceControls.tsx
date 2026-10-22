@@ -18,7 +18,8 @@ export function AutoHideVoiceControls({
     timer.current = setTimeout(() => {
       if (
         window.matchMedia("(hover: none), (pointer: coarse)").matches ||
-        footer.current?.contains(document.activeElement)
+        footer.current?.contains(document.activeElement) ||
+        footer.current?.querySelector('[aria-expanded="true"]')
       )
         return;
       setVisible(false);

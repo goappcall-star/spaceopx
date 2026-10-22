@@ -1,179 +1,47 @@
-import { Mic, Volume2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-
+import { Mic, Volume2, AudioLines, Keyboard, Zap, Square, Play, Headphones } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { NoiseModeSelect, NoiseProcessingFeedback } from "@/components/voice/NoiseModeSelect";
-import { MicrophoneAudioPipeline } from "@/services/audio-processing";
-import { useAudioSettings, keyLabel } from "@/hooks/use-audio-settings";
+import { AudioDeviceSelect } from "@/components/voice/AudioDeviceSelect";
+import { GlobalVolumeSlider } from "@/components/voice/GlobalVolumeSlider";
+import { useAudioSettings, keyLabel } from "@/hooks/audio-settings-context";
+import { useMicrophoneTest } from "@/hooks/use-microphone-test";
 import { cn } from "@/lib/utils";
+import "./audio-settings.css";
 
-const DEFAULT_VALUE = "__default__";
-
-function LevelMeter({ level }: { level: number }) {
+function LevelMeter({ level, active }: { level: number; active: boolean }) {
+  const value = Math.max(0, Math.min(100, Math.round(level * 100)));
   return (
-    <div className="bg-surface-elevated h-2 w-full overflow-hidden rounded-full">
-      <div
-        className="bg-primary h-full rounded-full transition-[width] duration-75"
-        style={{ width: `${Math.min(100, Math.round(level * 100))}%` }}
-      />
+    <div
+      className="audio-level-meter"
+      role="meter"
+      aria-label="Nível do microfone"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={active ? value : 0}
+    >
+      {Array.from({ length: 48 }, (_, i) => (
+        <i key={i} data-lit={active && value > (i * 100) / 48} />
+      ))}
     </div>
   );
 }
 
-/** Input/output hardware, volumes and input mode — persisted in user preferences. */
+/** Shared by WEB, Desktop and the in-call dialog. All hardware preferences use one context. */
 export function AudioSettingsPanel({ compact = false }: { compact?: boolean }) {
-  const {
-    settings,
-    update,
-    devices,
-    refreshDevices,
-    supportsOutputSelection,
-    reportNoiseProcessing,
-  } = useAudioSettings();
-  const [testing, setTesting] = useState(false);
-  const [level, setLevel] = useState(0);
+  const { settings, update, devices, refreshDevices, supportsOutputSelection } = useAudioSettings();
+  const test = useMicrophoneTest();
   const [capturingKey, setCapturingKey] = useState(false);
-  const testRef = useRef<{ stop: () => void } | null>(null);
-  const testGeneration = useRef(0);
-
   useEffect(() => {
     void refreshDevices();
   }, [refreshDevices]);
-
-  useEffect(
-    () => () => {
-      testGeneration.current++;
-      testRef.current?.stop();
-      reportNoiseProcessing("test", null);
-    },
-    [reportNoiseProcessing],
-  );
-
-  const stopTest = useCallback(() => {
-    testGeneration.current++;
-    testRef.current?.stop();
-    testRef.current = null;
-    setTesting(false);
-    setLevel(0);
-  }, []);
-
-  const startTest = useCallback(async () => {
-    const generation = ++testGeneration.current;
-    setTesting(true);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: settings.noiseSuppression !== "off",
-          autoGainControl: true,
-          ...(settings.inputDeviceId ? { deviceId: { exact: settings.inputDeviceId } } : {}),
-        },
-      });
-      if (generation !== testGeneration.current) {
-        stream.getTracks().forEach((track) => track.stop());
-        return;
-      }
-      let pipeline: MicrophoneAudioPipeline;
-      try {
-        pipeline = new MicrophoneAudioPipeline((status) => reportNoiseProcessing("test", status));
-      } catch (error) {
-        stream.getTracks().forEach((track) => track.stop());
-        throw error;
-      }
-      pipeline.attachMicrophone(stream);
-      pipeline.setGain(settings.inputVolume);
-      const analyser = pipeline.analyser;
-      const buffer = new Uint8Array(analyser.frequencyBinCount);
-      let raf = 0;
-      const tick = () => {
-        analyser.getByteTimeDomainData(buffer);
-        let peak = 0;
-        for (const value of buffer) peak = Math.max(peak, Math.abs(value - 128));
-        setLevel(Math.min(1, peak / 60));
-        raf = requestAnimationFrame(tick);
-      };
-      testRef.current = {
-        stop: () => {
-          cancelAnimationFrame(raf);
-          stream.getTracks().forEach((track) => track.stop());
-          void pipeline.dispose();
-          reportNoiseProcessing("test", null);
-        },
-      };
-      await pipeline.setMode(settings.noiseSuppression);
-      if (generation !== testGeneration.current) return;
-      raf = requestAnimationFrame(tick);
-      void refreshDevices();
-    } catch {
-      if (generation !== testGeneration.current) return;
-      stopTest();
-      toast.error("Não foi possível acessar o microfone.");
-    }
-  }, [
-    settings.inputDeviceId,
-    settings.inputVolume,
-    settings.noiseSuppression,
-    refreshDevices,
-    reportNoiseProcessing,
-    stopTest,
-  ]);
-
-  useEffect(() => {
-    stopTest();
-  }, [settings.noiseSuppression, settings.inputDeviceId, stopTest]);
-
-  const testOutput = useCallback(async () => {
-    try {
-      const AudioCtx =
-        window.AudioContext ??
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const ctx = new AudioCtx();
-      const dest = ctx.createMediaStreamDestination();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.frequency.value = 440;
-      gain.gain.value = 0.15 * (settings.outputVolume / 100);
-      osc.connect(gain);
-      gain.connect(dest);
-      const el = document.createElement("audio") as HTMLAudioElement & {
-        setSinkId?: (id: string) => Promise<void>;
-      };
-      el.srcObject = dest.stream;
-      el.autoplay = true;
-      if (settings.outputDeviceId && typeof el.setSinkId === "function")
-        await el.setSinkId(settings.outputDeviceId).catch(() => undefined);
-      osc.start();
-      await el.play().catch(() => undefined);
-      setTimeout(() => {
-        osc.stop();
-        el.srcObject = null;
-        void ctx.close().catch(() => undefined);
-      }, 900);
-    } catch {
-      toast.error("Não foi possível reproduzir o som de teste.");
-    }
-  }, [settings.outputDeviceId, settings.outputVolume]);
-
   useEffect(() => {
     if (!capturingKey) return;
     const handler = (event: KeyboardEvent) => {
       event.preventDefault();
-      if (event.code === "Escape") {
-        setCapturingKey(false);
-        return;
-      }
-      update({ pttKey: event.code });
+      if (event.code !== "Escape") update({ pttKey: event.code });
       setCapturingKey(false);
     };
     window.addEventListener("keydown", handler);
@@ -181,91 +49,125 @@ export function AudioSettingsPanel({ compact = false }: { compact?: boolean }) {
   }, [capturingKey, update]);
 
   return (
-    <div className={cn("space-y-8", compact && "space-y-6")}>
-      <section className="space-y-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <Label htmlFor="noise-suppression">Supressão de ruído</Label>
-            <p className="text-muted-foreground text-xs">
-              Reduz ruídos de fundo nas chamadas de servidores e privadas.
-            </p>
+    <div className={cn("audio-settings-panel", compact && "audio-settings-compact")}>
+      <header className="audio-page-heading">
+        <span>Configurações</span>
+        <h2>Voz e áudio</h2>
+        <p>Seu microfone, sua saída de som e o jeito de conversar.</p>
+      </header>
+      <section className="audio-section">
+        <div className="audio-section-heading">
+          <div className="audio-section-icon">
+            <AudioLines size={24} />
           </div>
-          <div className="w-36 shrink-0">
+          <div>
+            <h3>Supressão de ruído</h3>
+            <p>Reduza ruídos de fundo nas chamadas de servidores e privadas.</p>
+          </div>
+          <div className="audio-heading-select">
             <NoiseModeSelect id="noise-suppression" />
           </div>
         </div>
-        <p className="text-muted-foreground text-xs">
-          Avançada processa sua voz neste dispositivo. Pode reduzir ruídos de fundo, mas outras
+        <p className="audio-section-note">
+          A avançada processa sua voz neste dispositivo. Pode reduzir ruídos de fundo, mas outras
           vozes ainda podem ser ouvidas.
         </p>
         <NoiseProcessingFeedback />
-        <div className="flex items-center gap-2">
-          <Mic className="text-primary h-4 w-4" />
-          <h3 className="text-sm font-semibold tracking-wide uppercase">Entrada</h3>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label>Microfone</Label>
-          <Select
-            value={settings.inputDeviceId ?? DEFAULT_VALUE}
-            onValueChange={(value) =>
-              update({ inputDeviceId: value === DEFAULT_VALUE ? null : value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Microfone padrão" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={DEFAULT_VALUE}>Microfone padrão</SelectItem>
-              {devices.microphones.map((device) => (
-                <SelectItem key={device.deviceId} value={device.deviceId}>
-                  {device.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {devices.microphones.length === 0 && (
-            <p className="text-muted-foreground text-[11px]">
-              Autorize o microfone (ou inicie um teste) para listar os dispositivos.
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label>Volume de entrada</Label>
-            <span className="text-muted-foreground font-mono text-xs">{settings.inputVolume}%</span>
-          </div>
-          <Slider
-            value={[settings.inputVolume]}
-            min={0}
-            max={200}
-            step={5}
-            onValueChange={([value]) => update({ inputVolume: value ?? 100 })}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => (testing ? stopTest() : void startTest())}
-            >
-              {testing ? "Parar teste" : "🎙️ Testar microfone"}
-            </Button>
-          </div>
-          <LevelMeter level={testing ? level : 0} />
-        </div>
       </section>
-
-      <section className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Volume2 className="text-primary h-4 w-4" />
-          <h3 className="text-sm font-semibold tracking-wide uppercase">Saída</h3>
+      <section className="audio-section audio-input-section">
+        <div className="audio-section-heading">
+          <div className="audio-section-icon audio-icon-lime">
+            <Mic size={24} />
+          </div>
+          <div>
+            <h3>Entrada de áudio</h3>
+            <p>Selecione e ajuste seu microfone.</p>
+          </div>
+          <div className="audio-heading-device">
+            <AudioDeviceSelect kind="input" />
+          </div>
         </div>
-        <div className="flex items-center justify-between gap-4">
+        {!devices.microphones.length && (
+          <p className="audio-hint">
+            Inicie o teste e autorize o microfone para identificar seus dispositivos.
+          </p>
+        )}
+        <GlobalVolumeSlider
+          label="Volume de entrada"
+          value={settings.inputVolume}
+          onChange={(inputVolume) => update({ inputVolume })}
+        />
+        <div className="audio-test-area" data-active={test.testing}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            aria-pressed={test.testing}
+            onClick={() => (test.testing ? test.stop() : void test.start())}
+          >
+            {test.testing ? <Square size={15} /> : <Mic size={15} />}
+            {test.testing ? "Parar teste" : "Testar microfone"}
+          </Button>
+          <div className="audio-test-meter">
+            <LevelMeter level={test.level} active={test.testing} />
+            <p role="status">
+              {test.starting
+                ? "Aguardando permissão ou preparando o dispositivo…"
+                : test.testing
+                  ? "Retorno ativo · sua voz está sendo reproduzida na saída selecionada."
+                  : "Teste desligado. Use fones para evitar eco e microfonia."}
+            </p>
+          </div>
+        </div>
+        {test.borrowed && (
+          <p className="audio-hint">
+            Usando o áudio da chamada. Mute e Push to Talk continuam valendo: ative o microfone ou
+            segure sua tecla para ouvir o retorno.
+          </p>
+        )}
+        {test.testing && (
+          <p className="audio-hint">
+            O volume de saída também controla o retorno. O teste para ao fechar esta tela ou trocar
+            dispositivos.
+          </p>
+        )}
+        {test.error && (
+          <p role="alert" className="audio-error">
+            {test.error}
+          </p>
+        )}
+      </section>
+      <section className="audio-section">
+        <div className="audio-section-heading">
+          <div className="audio-section-icon">
+            <Volume2 size={24} />
+          </div>
+          <div>
+            <h3>Saída de áudio</h3>
+            <p>Escolha onde você quer ouvir.</p>
+          </div>
+          <div className="audio-heading-device">
+            <AudioDeviceSelect kind="output" />
+          </div>
+        </div>
+        {!supportsOutputSelection && (
+          <p className="audio-hint">
+            Este navegador utiliza a saída definida no sistema operacional.
+          </p>
+        )}
+        <GlobalVolumeSlider
+          label="Volume de saída"
+          value={settings.outputVolume}
+          onChange={(outputVolume) => update({ outputVolume })}
+        />
+        <div className="audio-speaker-test">
+          <Button type="button" variant="outline" size="sm" onClick={() => void test.testOutput()}>
+            <Play size={14} />
+            Testar saída
+          </Button>
+          <span>Reproduz um som curto na saída selecionada.</span>
+        </div>
+        <div className="audio-call-sounds">
           <Label htmlFor="call-sounds">Efeitos sonoros de chamadas e controles de áudio</Label>
           <Switch
             id="call-sounds"
@@ -273,98 +175,68 @@ export function AudioSettingsPanel({ compact = false }: { compact?: boolean }) {
             onCheckedChange={(callSoundsEnabled) => update({ callSoundsEnabled })}
           />
         </div>
-
-        <div className="space-y-1.5">
-          <Label>Saída de áudio</Label>
-          <Select
-            disabled={!supportsOutputSelection}
-            value={settings.outputDeviceId ?? DEFAULT_VALUE}
-            onValueChange={(value) =>
-              update({ outputDeviceId: value === DEFAULT_VALUE ? null : value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Saída padrão" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={DEFAULT_VALUE}>Saída padrão</SelectItem>
-              {devices.outputs.map((device) => (
-                <SelectItem key={device.deviceId} value={device.deviceId}>
-                  {device.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {!supportsOutputSelection && (
-            <p className="text-muted-foreground text-[11px]">
-              Este navegador usa a saída definida pelo sistema operacional.
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label>Volume de saída</Label>
-            <span className="text-muted-foreground font-mono text-xs">
-              {settings.outputVolume}%
-            </span>
-          </div>
-          <Slider
-            value={[settings.outputVolume]}
-            min={0}
-            max={200}
-            step={5}
-            onValueChange={([value]) => update({ outputVolume: value ?? 100 })}
-          />
-        </div>
-
-        <Button type="button" variant="outline" size="sm" onClick={() => void testOutput()}>
-          🔊 Testar saída
-        </Button>
       </section>
-
-      <section className="space-y-4">
-        <h3 className="text-sm font-semibold tracking-wide uppercase">Modo de entrada</h3>
-        <div className="grid grid-cols-2 gap-2">
+      <section className="audio-section">
+        <div className="audio-section-heading">
+          <div className="audio-section-icon audio-icon-lime">
+            <Zap size={24} />
+          </div>
+          <div>
+            <h3>Modo de entrada</h3>
+            <p>Escolha como seu microfone será ativado nas chamadas.</p>
+          </div>
+        </div>
+        <div className="audio-input-modes" role="radiogroup" aria-label="Modo de entrada">
           {(
             [
-              { value: "open", label: "Microfone aberto" },
-              { value: "ptt", label: "Push to Talk" },
+              {
+                value: "open",
+                label: "Microfone aberto",
+                hint: "Seu microfone fica sempre ativo.",
+                icon: Mic,
+              },
+              {
+                value: "ptt",
+                label: "Push to Talk",
+                hint: "Aperte uma tecla para falar.",
+                icon: Keyboard,
+              },
             ] as const
-          ).map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => update({ inputMode: option.value })}
-              className={cn(
-                "rounded-xl border px-3 py-2 text-sm transition-all",
-                settings.inputMode === option.value
-                  ? "border-primary/50 bg-primary/15 text-primary glow-soft"
-                  : "border-border bg-surface-elevated text-surface-foreground hover:bg-surface-hover",
-              )}
+          ).map(({ value, label, hint, icon: Icon }) => (
+            <label
+              className="audio-input-mode"
+              key={value}
+              data-selected={settings.inputMode === value}
             >
-              {option.label}
-            </button>
+              <Icon size={22} />
+              <span>
+                <strong>{label}</strong>
+                <small>{hint}</small>
+              </span>
+              <input
+                type="radio"
+                name="voice-input-mode"
+                value={value}
+                checked={settings.inputMode === value}
+                onChange={() => update({ inputMode: value })}
+              />
+            </label>
           ))}
         </div>
-
         {settings.inputMode === "ptt" && (
-          <div className="space-y-1.5">
+          <div className="audio-ptt-key">
             <Label>Tecla de ativação</Label>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setCapturingKey(true)}
-              className="font-mono"
-            >
-              {capturingKey ? "Pressione uma tecla…" : keyLabel(settings.pttKey)}
+            <Button type="button" variant="outline" onClick={() => setCapturingKey(true)}>
+              {capturingKey ? "Pressione uma tecla… (Esc cancela)" : keyLabel(settings.pttKey)}
             </Button>
-            <p className="text-muted-foreground text-[11px]">
-              Mantenha a tecla pressionada para transmitir. Solte para silenciar.
-            </p>
+            <p>Mantenha pressionada para transmitir. Solte para silenciar.</p>
           </div>
         )}
       </section>
+      <p className="audio-footer">
+        <Headphones size={14} />
+        Volumes globais limitados a 100%, sem amplificação adicional.
+      </p>
     </div>
   );
 }

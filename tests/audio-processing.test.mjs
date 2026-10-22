@@ -98,7 +98,7 @@ test("Modes rewire the real pipeline before gain and keep the same WebRTC sender
   assert.equal(pipeline.source.connections[0], pipeline.denoiser);
   assert.equal(pipeline.denoiser.connections[0], pipeline.gain);
   provider.setInputGain(150);
-  assert.equal(pipeline.gain.gain.value, 1.5);
+  assert.equal(pipeline.gain.gain.value, 1);
   provider.setMuted(true);
   assert.equal(track.enabled, false);
   assert.equal(f.input.getAudioTracks()[0].enabled, false);

@@ -5,7 +5,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAudioSettings } from "@/hooks/use-audio-settings";
+import { useAudioSettings } from "@/hooks/audio-settings-context";
 import { NOISE_MODE_LABELS, type NoiseSuppressionMode } from "@/services/audio-processing";
 export function NoiseModeSelect({ id }: { id?: string }) {
   const { settings, update } = useAudioSettings();

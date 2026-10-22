@@ -1,3 +1,4 @@
+import { clampGlobalVolume } from "@/lib/audio-volume";
 /**
  * Voice / video abstraction layer.
  *
@@ -93,8 +94,8 @@ export interface VoiceProvider {
   readonly screenShare: ScreenShareController;
   startScreenShare(options?: ScreenShareOptions): Promise<void>;
   stopScreenShare(): void;
-  setDevices(devices: DeviceIds): Promise<void>;
-  /** Input gain in percent (0-200) applied to the outgoing microphone. */
+  setDevices(devices: DeviceIds, forceMicrophone?: boolean): Promise<void>;
+  /** Input gain in percent (0-100) applied to the outgoing microphone. */
   setInputGain(percent: number): void;
   setNoiseSuppression(mode: NoiseSuppressionMode): Promise<void>;
 }
@@ -270,6 +271,43 @@ class MeshVoiceProvider implements VoiceProvider {
   private cameraGeneration = 0;
   private screenGeneration = 0;
   private microphoneGeneration = 0;
+  private defaultMicrophoneSignature: string | null = null;
+  private defaultDeviceCheck = 0;
+  private async readDefaultMicrophoneSignature() {
+    const devices = await navigator.mediaDevices?.enumerateDevices?.().catch(() => []);
+    const device = devices?.find((d) => d.kind === "audioinput" && d.deviceId === "default");
+    return device ? `${device.groupId}:${device.label}` : null;
+  }
+  private readonly refreshDefaultMicrophone = () => {
+    if (
+      this.disposed ||
+      !this.micStream ||
+      (this.devices.microphoneId && this.devices.microphoneId !== "default")
+    )
+      return;
+    const check = ++this.defaultDeviceCheck;
+    void this.readDefaultMicrophoneSignature()
+      .then(async (signature) => {
+        if (
+          this.disposed ||
+          check !== this.defaultDeviceCheck ||
+          (this.devices.microphoneId && this.devices.microphoneId !== "default")
+        )
+          return;
+        const changed =
+          this.defaultMicrophoneSignature !== null &&
+          signature !== null &&
+          signature !== this.defaultMicrophoneSignature;
+        this.defaultMicrophoneSignature = signature;
+        if (
+          changed ||
+          this.micStream?.getAudioTracks().every((track) => track.readyState === "ended")
+        ) {
+          await this.setDevices({ microphoneId: this.devices.microphoneId ?? null }, true);
+        }
+      })
+      .catch((error: Error) => this.events.onError?.(error));
+  };
 
   /* ------------------------------------------------------------- lifecycle */
 
@@ -315,6 +353,9 @@ class MeshVoiceProvider implements VoiceProvider {
       throw error;
     }
 
+    this.defaultMicrophoneSignature = await this.readDefaultMicrophoneSignature();
+    if (this.disposed) throw new DOMException("Voice session ended", "AbortError");
+    navigator.mediaDevices?.addEventListener?.("devicechange", this.refreshDefaultMicrophone);
     this.applyMuteToTracks();
     const finishPipeline = voiceStage("audio-pipeline");
     await this.startSpeakingDetection();
@@ -400,6 +441,9 @@ class MeshVoiceProvider implements VoiceProvider {
       )
       .catch(() => undefined);
     this.disposed = true;
+    this.defaultDeviceCheck++;
+    if (typeof navigator !== "undefined")
+      navigator.mediaDevices?.removeEventListener?.("devicechange", this.refreshDefaultMicrophone);
     this.cancelMicrophoneRequest?.();
     this.cancelMicrophoneRequest = null;
     this.cameraGeneration += 1;
@@ -1045,7 +1089,7 @@ class MeshVoiceProvider implements VoiceProvider {
   }
 
   setInputGain(percent: number) {
-    this.inputGain = Math.max(0, Math.min(200, percent)) / 100;
+    this.inputGain = clampGlobalVolume(percent) / 100;
     if (this.gainNode) this.gainNode.gain.value = this.inputGain;
   }
 
@@ -1152,14 +1196,14 @@ class MeshVoiceProvider implements VoiceProvider {
     this.events.onLocalMedia?.({ camera: this.cameraStream, screen: null });
   }
 
-  async setDevices(devices: DeviceIds) {
+  async setDevices(devices: DeviceIds, forceMicrophone = false) {
     if (this.disposed) throw new DOMException("Voice session ended", "AbortError");
     const previous = this.devices;
     this.devices = { ...previous, ...devices };
 
     if (
       "microphoneId" in devices &&
-      (devices.microphoneId ?? null) !== (previous.microphoneId ?? null) &&
+      (forceMicrophone || (devices.microphoneId ?? null) !== (previous.microphoneId ?? null)) &&
       this.micStream
     ) {
       const generation = ++this.microphoneGeneration;

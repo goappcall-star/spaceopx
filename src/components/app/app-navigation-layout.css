@@ -6,6 +6,7 @@
   height: 100%;
   min-height: 0;
   flex-shrink: 0;
+  background: var(--surface);
 }
 .app-navigation-columns {
   display: flex;
@@ -22,13 +23,21 @@
   width: auto;
   min-width: 0;
   min-height: 0;
+  border-right: 0;
+  box-shadow: none;
 }
 .app-navigation-profile {
   flex-shrink: 0;
   min-width: 0;
-  background: var(--rail);
+  background: transparent;
   position: relative;
   z-index: 31;
+}
+.app-navigation-profile [data-user-profile-bar] {
+  margin: 6px 8px 8px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--surface-elevated);
 }
 @media (max-width: 1023px) {
   .app-navigation-layout {

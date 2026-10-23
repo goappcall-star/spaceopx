@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { PreviewProviders, usePreview, scenarios } from "./fixtures";
 import { SettingsShell } from "@/components/settings/SettingsShell";
 import { ProfilePreview } from "../profile-settings-preview/preview";
+import { MessageComposer } from "@/components/chat/MessageComposer";
+import "@/components/app/app-navigation-layout.css";
 import "@/styles.css";
 document.documentElement.classList.add("dark");
 document.documentElement.dataset.accent = "neon_green";
@@ -22,8 +24,13 @@ function Preview() {
             ) : (
               <main className="flex h-full min-h-0 bg-background text-foreground">
                 <aside
-                  style={{ width: 332, flexShrink: 0, flexDirection: "column" }}
-                  className="border-r border-border bg-rail p-4 hidden md:flex md:flex-col"
+                  style={{
+                    width: 332,
+                    flexShrink: 0,
+                    flexDirection: "column",
+                    background: "var(--surface)",
+                  }}
+                  className="p-4 hidden md:flex md:flex-col"
                 >
                   <h2 className="font-semibold">LobbyX · prévia local</h2>
                   <p className="my-4 text-xs text-primary">DADOS FICTÍCIOS · SEM WEBRTC</p>
@@ -38,7 +45,7 @@ function Preview() {
                       </button>
                     ),
                   )}
-                  <div className="mt-auto">
+                  <div className="app-navigation-profile mt-auto">
                     <IdleSessionProfile />
                   </div>
                 </aside>
@@ -79,14 +86,19 @@ function Preview() {
                       </p>
                     ))}
                   </section>
-                  <label className="text-xs">
-                    Mensagem de teste (não enviada)
-                    <textarea
-                      aria-label="Mensagem de teste"
-                      className="mt-2 block w-full h-20 rounded-xl border border-border bg-surface p-3"
-                      placeholder="Este campo deve ficar acima da hotbar."
-                    />
-                  </label>
+                  <MessageComposer
+                    serverId="fixture"
+                    channelId="fixture"
+                    channelName="✨Bem-Vindo✨"
+                    members={[]}
+                    disabled={false}
+                    replyTo={null}
+                    onCancelReply={() => {}}
+                    onTyping={() => {}}
+                    onSend={async () => {
+                      c.setEvents((e) => [...e, "Mensagem apenas na prévia; nenhum envio real."]);
+                    }}
+                  />
                 </div>
               </main>
             )}

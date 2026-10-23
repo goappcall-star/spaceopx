@@ -17,6 +17,8 @@ const mocked = [
   "@/services/audio-processing",
   "@/services/social",
   "@/services/auth",
+  "@/services/uploads",
+  "@/components/chat/MessageItem",
   "@/components/voice/DeviceSettingsDialog",
   "@/components/gamer/ProfileDialog",
   "@tanstack/react-router",

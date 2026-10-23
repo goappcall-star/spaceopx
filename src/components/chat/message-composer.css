@@ -1,0 +1,12 @@
+.message-composer {
+  background: transparent;
+  border: 0;
+}
+.message-composer-surface {
+  background: var(--surface-elevated);
+  border: 0;
+}
+.message-composer-surface:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}

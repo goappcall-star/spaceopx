@@ -230,6 +230,14 @@ export function useQueryClient() {
 }
 export const conversationsService = { openDirect: async () => "conversation-fixture" },
   authService = { signOut: async () => {} };
+export const QUICK_EMOJIS = ["👍", "❤️", "🎮", "🔥"];
+export const uploadsService = {
+  upload: async () => {
+    throw new Error("Prévia: upload desativado");
+  },
+};
+export const formatBytes = (size: number) => `${size} B`;
+export const validateFile = () => undefined;
 export const Link = forwardRef<HTMLAnchorElement, ComponentPropsWithoutRef<"a"> & { to?: string }>(
   ({ to, ...props }, ref) => {
     const c = usePreview();

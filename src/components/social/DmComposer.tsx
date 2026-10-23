@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Textarea } from "@/components/ui/textarea";
 import { dmUploadsService } from "@/services/social";
 import { formatBytes } from "@/services/uploads";
+import "@/components/chat/message-composer.css";
 import type { Attachment, DirectMessageWithMeta } from "@/types";
 
 interface Props {
@@ -72,7 +73,7 @@ export function DmComposer({
   }
 
   return (
-    <div className="border-border bg-background shrink-0 border-t px-4 pt-2 pb-4">
+    <div className="message-composer shrink-0 px-4 pt-2 pb-4">
       {replyTo && (
         <div className="border-border bg-surface-elevated text-muted-foreground mb-2 flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs">
           <span className="truncate">
@@ -114,7 +115,7 @@ export function DmComposer({
         </div>
       )}
 
-      <div className="border-border bg-surface-elevated focus-within:border-primary/60 focus-within:shadow-glow flex items-end gap-1 rounded-2xl border px-2 py-1.5 transition-all duration-200">
+      <div className="message-composer-surface flex items-end gap-1 rounded-2xl px-2 py-1.5">
         <input
           ref={fileRef}
           type="file"

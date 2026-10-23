@@ -61,6 +61,8 @@ export interface RemoteMedia {
 }
 
 export interface VoiceProviderEvents {
+  /** Actual remote start/stop signaling; repeated state announcements are ignored. */
+  onRemoteScreenShareChange?: (active: boolean) => void;
   onRemoteSpeakingChange?: (speaking: Record<string, boolean>) => void;
   onNoiseProcessingChange?: (status: NoiseProcessingStatus) => void;
   onSpeakingChange?: (speaking: boolean) => void;
@@ -954,13 +956,17 @@ class MeshVoiceProvider implements VoiceProvider {
     }
 
     if (payload.screenStopped) {
+      const wasSharing = this.remoteScreens.get(payload.from)?.active;
       this.remoteScreens.set(payload.from, { active: false, hasAudio: false });
+      if (wasSharing) this.events.onRemoteScreenShareChange?.(false);
       this.updateRemote(payload.from, "screen", null);
       this.updateRemote(payload.from, "screenAudio", null);
       return;
     }
     if (payload.screenStarted) {
+      const wasSharing = this.remoteScreens.get(payload.from)?.active;
       this.remoteScreens.set(payload.from, { active: true, hasAudio: !!payload.screenHasAudio });
+      if (!wasSharing) this.events.onRemoteScreenShareChange?.(true);
       const peer = this.peers.get(payload.from);
       if (peer) {
         for (const kind of ["screen", "screenAudio"] as const) {

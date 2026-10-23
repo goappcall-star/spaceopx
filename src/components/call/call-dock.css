@@ -1,0 +1,432 @@
+.session-communications-layout {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - var(--desktop-titlebar-height, 0px));
+  min-height: 0;
+  overflow: hidden;
+}
+.session-route-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  position: relative;
+}
+.session-route-content > .h-dvh,
+.session-route-content .h-dvh {
+  height: 100% !important;
+}
+.session-route-content .settings-layout {
+  height: 100% !important;
+  min-height: 100% !important;
+}
+
+/* Scoped to the fixed dock: navigation and the standalone profile keep their styles. */
+.session-call-dock {
+  --dock-positive: #63ed83;
+  --dock-share: #31d4bb;
+  --dock-watch: #b984ff;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 280px minmax(200px, 1fr) auto;
+  align-items: center;
+  min-height: 108px;
+  margin: 0 4px 6px;
+  border: 1px solid color-mix(in srgb, var(--border) 85%, #82909f);
+  border-radius: 22px;
+  background: linear-gradient(115deg, var(--rail), var(--surface));
+  z-index: 45;
+  position: relative;
+}
+.session-call-dock[data-call-active="false"] {
+  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+}
+.session-call-profile {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid var(--border);
+}
+.session-call-profile [data-user-profile-bar] {
+  border: 0;
+  background: transparent;
+  padding: 12px 22px;
+  gap: 14px;
+}
+.session-call-profile [aria-label="Abrir menu da conta"] {
+  gap: 16px;
+}
+.session-call-profile .user-bar-avatar > span:first-child {
+  width: 44px;
+  height: 44px;
+}
+.session-call-profile [aria-label="Abrir menu da conta"] p:first-child {
+  font-size: 16px;
+  font-weight: 600;
+}
+.session-call-profile [aria-label="Abrir menu da conta"] p:last-child {
+  font-size: 12px;
+}
+.session-call-info {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+}
+.session-call-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+  border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  border-radius: 17px;
+  padding: 10px;
+  background: color-mix(in srgb, var(--surface-elevated) 40%, transparent);
+}
+.session-call-symbol {
+  width: 54px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 1px solid color-mix(in srgb, var(--dock-positive) 45%, var(--border));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--dock-positive) 10%, var(--surface));
+  color: var(--dock-positive);
+}
+.session-call-symbol[data-ready="false"] {
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 35%, var(--border));
+  background: color-mix(in srgb, var(--warning) 8%, var(--surface));
+}
+.session-call-copy {
+  min-width: 0;
+  flex: 1;
+  line-height: 1.35;
+}
+.session-call-return {
+  display: block;
+  max-width: 100%;
+  text-align: left;
+  border-radius: 4px;
+}
+.session-call-return strong {
+  font-size: 14px;
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.session-call-copy p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  margin-top: 3px;
+}
+.session-call-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  margin-top: 5px;
+  padding: 3px 6px;
+  border: 1px solid color-mix(in srgb, currentColor 23%, transparent);
+  border-radius: 20px;
+  font-size: 10px;
+  color: var(--warning);
+  background: color-mix(in srgb, currentColor 6%, transparent);
+}
+.session-call-state i {
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: currentColor;
+}
+.session-call-state[data-ready="true"] {
+  color: var(--dock-positive);
+}
+.session-call-dock[data-transmitting="true"] .session-call-state[data-ready="true"] {
+  color: var(--dock-share);
+}
+.session-call-dock[data-watching="true"] .session-call-state[data-ready="true"] {
+  color: var(--dock-watch);
+}
+.session-call-people {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 9px;
+  border-radius: 12px;
+  padding: 8px 0 8px 10px;
+  border-left: 1px solid var(--border);
+}
+.session-call-avatars {
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+}
+.session-call-avatars > * {
+  margin-left: -8px;
+  border: 2px solid var(--surface);
+}
+.session-call-more {
+  display: none;
+}
+.session-call-count {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 46px;
+  padding: 9px;
+  border: 1px solid var(--border);
+  background: linear-gradient(var(--surface-elevated), var(--surface));
+  border-radius: 13px;
+  font-size: 12px;
+}
+.session-call-people:hover .session-call-count {
+  background: var(--surface-hover);
+}
+.session-call-controls {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  border-left: 1px solid var(--border);
+  padding: 12px;
+}
+.session-call-button,
+.session-call-noise > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 9px;
+  height: 54px;
+  min-width: 54px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: linear-gradient(var(--surface-elevated), var(--surface));
+  color: var(--foreground);
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--foreground) 3%, transparent);
+}
+.session-call-button:hover,
+.session-call-noise > button:hover {
+  background: var(--surface-hover);
+  border-color: color-mix(in srgb, var(--foreground) 30%, var(--border));
+}
+.session-call-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.session-call-button[data-active="true"] {
+  color: var(--dock-share);
+  border-color: color-mix(in srgb, var(--dock-share) 65%, var(--border));
+  background: color-mix(in srgb, var(--dock-share) 12%, var(--surface));
+}
+.session-call-button[data-danger="true"] {
+  color: var(--destructive);
+  border-color: color-mix(in srgb, var(--destructive) 65%, var(--border));
+  background: color-mix(in srgb, var(--destructive) 15%, var(--surface));
+}
+.session-call-button.session-call-stream-action {
+  color: var(--destructive-foreground);
+  background: linear-gradient(
+    color-mix(in srgb, var(--destructive) 72%, var(--surface)),
+    color-mix(in srgb, var(--destructive) 45%, var(--surface))
+  );
+  border-color: var(--destructive);
+  padding-inline: 16px;
+}
+.session-call-button[data-danger="true"]:hover {
+  background: color-mix(in srgb, var(--destructive) 80%, var(--surface));
+  color: var(--destructive-foreground);
+}
+.session-call-disconnect {
+  margin-left: 4px;
+}
+.session-call-dock[data-watching="true"] .session-call-button[aria-label="Compartilhar tela"] {
+  color: var(--dock-watch);
+  border-color: var(--dock-watch);
+  background: color-mix(in srgb, var(--dock-watch) 18%, var(--surface));
+}
+.session-call-audio > div:first-child {
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: linear-gradient(var(--surface-elevated), var(--surface));
+  padding: 0 5px;
+  height: 54px;
+}
+.session-call-audio > div:first-child > button {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  height: 100%;
+}
+.session-call-controls > button {
+  flex-shrink: 0;
+}
+.session-call-idle {
+  grid-column: 2/-1;
+  text-align: center;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  padding: 12px;
+}
+.session-call-dock button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+@media (max-width: 1580px) {
+  .session-call-dock {
+    grid-template-columns: 240px minmax(190px, 1fr) auto;
+  }
+  .session-call-avatars {
+    display: none;
+  }
+  .session-call-info {
+    gap: 8px;
+    padding-inline: 10px;
+  }
+  .session-call-profile [data-user-profile-bar] {
+    padding-inline: 18px;
+    gap: 8px;
+  }
+  .session-call-controls {
+    gap: 6px;
+    padding-inline: 10px;
+  }
+  .session-call-button,
+  .session-call-noise > button {
+    height: 50px;
+    min-width: 50px;
+    padding-inline: 12px;
+  }
+  .session-call-audio > div:first-child {
+    height: 50px;
+  }
+}
+@media (max-width: 1350px) {
+  .session-call-dock[data-call-active="true"] {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+  .session-call-dock[data-call-active="true"] .session-call-profile {
+    grid-row: 1/3;
+  }
+  .session-call-controls {
+    grid-column: 2;
+    justify-content: flex-start;
+    border-top: 1px solid var(--border);
+    padding-block: 8px;
+  }
+  .session-call-info {
+    padding-block: 8px;
+  }
+  .session-call-summary {
+    padding: 7px;
+  }
+  .session-call-symbol {
+    width: 44px;
+    height: 48px;
+  }
+  .session-call-avatars {
+    display: flex;
+  }
+}
+@media (max-width: 720px) {
+  .session-call-dock {
+    border-radius: 17px;
+    min-height: 80px;
+  }
+  .session-call-dock[data-call-active="false"] {
+    grid-template-columns: 1fr;
+  }
+  .session-call-dock[data-call-active="false"] .session-call-idle {
+    display: none;
+  }
+  .session-call-dock[data-call-active="true"] {
+    grid-template-columns: minmax(130px, 1fr) minmax(140px, 1.2fr);
+  }
+  .session-call-dock[data-call-active="true"] .session-call-profile {
+    grid-row: 1;
+  }
+  .session-call-info {
+    gap: 5px;
+    padding: 6px;
+  }
+  .session-call-summary {
+    padding: 6px;
+    border: 0;
+    background: transparent;
+  }
+  .session-call-symbol,
+  .session-call-avatars {
+    display: none;
+  }
+  .session-call-copy p {
+    font-size: 10px;
+  }
+  .session-call-return strong {
+    font-size: 12px;
+  }
+  .session-call-count {
+    min-height: 34px;
+    padding: 5px;
+    gap: 3px;
+    font-size: 10px;
+  }
+  .session-call-count svg {
+    width: 12px;
+  }
+  .session-call-people {
+    padding-left: 5px;
+  }
+  .session-call-controls {
+    grid-column: 1/-1;
+    justify-content: center;
+    padding: 8px;
+    gap: 6px;
+    border-left: 0;
+  }
+  .session-call-button,
+  .session-call-noise > button {
+    height: 42px;
+    min-width: 42px;
+    padding-inline: 10px;
+    border-radius: 12px;
+  }
+  .session-call-audio > div:first-child {
+    height: 42px;
+    border-radius: 12px;
+  }
+  .session-call-state {
+    font-size: 9px;
+    padding: 2px 5px;
+  }
+  .session-call-profile [data-user-profile-bar] {
+    padding: 10px;
+    gap: 4px;
+  }
+  .session-call-profile [aria-label="Abrir menu da conta"] {
+    gap: 8px;
+  }
+  .session-call-profile .user-bar-avatar > span:first-child {
+    width: 32px;
+    height: 32px;
+  }
+  .session-call-profile [aria-label="Abrir menu da conta"] p:first-child {
+    font-size: 13px;
+  }
+  .session-call-profile [aria-label="Abrir menu da conta"] p:last-child {
+    font-size: 10px;
+  }
+}

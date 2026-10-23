@@ -101,10 +101,16 @@ export function ServerSettingsDialog({
               ))}
             </select>
           </label>
-          <nav className="bg-surface border-border scrollbar-slim hidden w-56 shrink-0 overflow-y-auto border-r p-3 md:block">
-            <p className="text-caption truncate px-2 pt-1 pb-3">{server.name}</p>
+          <nav
+            aria-label="Configurações do servidor"
+            className={cn(
+              "bg-surface border-border scrollbar-slim w-full shrink-0 overflow-y-auto border-b p-3 md:w-56 md:border-r md:border-b-0 md:block",
+              !isOwner && "max-md:hidden",
+            )}
+          >
+            <p className="text-caption hidden truncate px-2 pt-1 pb-3 md:block">{server.name}</p>
             {groups.map((group) => (
-              <div key={group} className="mb-3">
+              <div key={group} className="mb-3 hidden md:block">
                 <p className="text-caption px-2 pb-1">{group}</p>
                 <ul className="space-y-0.5">
                   {sections
@@ -127,6 +133,16 @@ export function ServerSettingsDialog({
                 </ul>
               </div>
             ))}
+            {isOwner && (
+              <div className="border-border md:mt-3 md:border-t md:pt-3">
+                <DeleteServerButton
+                  key={server.id}
+                  server={server}
+                  className="w-full justify-start"
+                  onDeleted={() => onOpenChange(false)}
+                />
+              </div>
+            )}
           </nav>
 
           <div className="scrollbar-slim min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-6">
@@ -183,20 +199,6 @@ export function ServerSettingsDialog({
             )}
             {section === "bans" && <SettingsBans server={server} canUnban={can("ban_members")} />}
             {section === "audit" && <SettingsAudit server={server} />}
-            {isOwner && section !== "community" && (
-              <div className="border-destructive/30 mt-8 space-y-3 border-t pt-5">
-                <h3 className="text-destructive font-semibold">Excluir servidor</h3>
-                <p className="text-muted-foreground text-sm">
-                  Exclua permanentemente este servidor e seu histórico. Esta ação não pode ser
-                  desfeita.
-                </p>
-                <DeleteServerButton
-                  key={server.id}
-                  server={server}
-                  onDeleted={() => onOpenChange(false)}
-                />
-              </div>
-            )}
           </div>
         </div>
       </DialogContent>

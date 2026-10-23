@@ -4,7 +4,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
 
-function fixture(componentName, voice = {}, screenVolumes = {}) {
+function fixture(componentName, voice = {}, screenVolumes = {}, viewing = { voicePaused: false }) {
   let cursor = 0,
     pending = [];
   const slots = [],
@@ -54,6 +54,7 @@ function fixture(componentName, voice = {}, screenVolumes = {}) {
     return { type, props };
   };
   const imports = {
+    "@/components/call/ScreenViewingProvider": { useScreenViewing: () => viewing },
     react,
     "react/jsx-runtime": { jsx, jsxs: jsx, Fragment: "fragment" },
     "@/components/ui/button": { Button: "button" },
@@ -106,6 +107,24 @@ function fixture(componentName, voice = {}, screenVolumes = {}) {
   }
   return { render, element, sinks, dispose: () => slots.forEach((slot) => slot?.cleanup?.()) };
 }
+
+test("Leaving a screen detaches screen playback while keeping every microphone; returning restores it", () => {
+  const viewing = { voicePaused: false };
+  const voice = {
+    remoteMedia: { alice: { audio: {}, screenAudio: {} }, bob: { audio: {}, screenAudio: {} } },
+  };
+  const f = fixture("RemoteAudio", voice, {}, viewing);
+  const ids = () =>
+    f
+      .render()
+      .props.children[0].props.children.filter(Boolean)
+      .map((p) => p.props.sinkId);
+  assert.deepEqual(Array.from(ids()), ["alice:0", "alice:1", "bob:0", "bob:1"]);
+  viewing.voicePaused = true;
+  assert.deepEqual(Array.from(ids()), ["alice:0", "bob:0"]);
+  viewing.voicePaused = false;
+  assert.deepEqual(Array.from(ids()), ["alice:0", "alice:1", "bob:0", "bob:1"]);
+});
 test("Transmission volume changes only its audio sink and preserves other microphones and screens", () => {
   const screenVolumes = { alice: 35 };
   const voice = {

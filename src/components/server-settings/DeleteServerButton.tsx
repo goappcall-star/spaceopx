@@ -23,9 +23,11 @@ import type { Server } from "@/types";
 export function DeleteServerButton({
   server,
   onDeleted,
+  className,
 }: {
   server: Server;
   onDeleted: () => void;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -59,7 +61,7 @@ export function DeleteServerButton({
       }}
     >
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">
+        <Button variant="destructive" className={className}>
           <Trash2 className="mr-2 h-4 w-4" />
           Excluir servidor
         </Button>

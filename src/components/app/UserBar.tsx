@@ -2,7 +2,6 @@ import { VoiceIcon } from "@/components/voice/VoiceIcon";
 import { AudioInputControl, AudioOutputControl } from "@/components/voice/AudioOutputControl";
 import { useVoice } from "@/hooks/use-voice";
 import { useAudioSettings, keyLabel } from "@/hooks/use-audio-settings";
-import { ConnectedVoiceBar } from "@/components/voice/ConnectedVoiceBar";
 import { DownloadWindows } from "@/components/brand/DownloadWindows";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -38,7 +37,11 @@ const STATUS_OPTIONS: { value: SelectableStatus; label: string }[] = [
   { value: "dnd", label: "Não perturbar" },
 ];
 
-export function UserBar({ expanded = false }: { expanded?: boolean } = {}) {
+export function UserBar({
+  expanded = false,
+  hideAudio = false,
+  embedded = false,
+}: { expanded?: boolean; hideAudio?: boolean; embedded?: boolean } = {}) {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -92,10 +95,11 @@ export function UserBar({ expanded = false }: { expanded?: boolean } = {}) {
 
   return (
     <>
-      <ConnectedVoiceBar />
-      <div className="px-2.5 py-1">
-        <DownloadWindows compact />
-      </div>
+      {!embedded && (
+        <div className="px-2.5 py-1">
+          <DownloadWindows compact />
+        </div>
+      )}
       <div
         data-user-profile-bar
         className={cn(
@@ -110,7 +114,7 @@ export function UserBar({ expanded = false }: { expanded?: boolean } = {}) {
               className="hover:bg-surface-hover -mx-1 flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 text-left transition-colors"
               aria-label="Abrir menu da conta"
             >
-              <div className="relative shrink-0">
+              <div className="user-bar-avatar relative shrink-0">
                 <Avatar frame={profile?.avatar_frame} className="ring-border h-8 w-8 ring-1">
                   <AvatarImage src={profile?.avatar_url ?? undefined} alt="" />
                   <AvatarFallback className="bg-surface-elevated text-xs">
@@ -224,6 +228,7 @@ export function UserBar({ expanded = false }: { expanded?: boolean } = {}) {
             <div className="border-border/70 my-3 border-t" />
 
             <div className="space-y-0.5">
+              {embedded && <DownloadWindows compact />}
               <Link
                 to="/settings/profile"
                 onClick={() => setOpen(false)}
@@ -261,21 +266,25 @@ export function UserBar({ expanded = false }: { expanded?: boolean } = {}) {
         </Popover>
 
         <div className="flex shrink-0 items-center gap-0.5">
-          <AudioInputControl
-            compact
-            muted={muted}
-            off={muted || (pttMode && !pttActive)}
-            active={!muted && pttMode && pttActive}
-            onToggle={toggleMute}
-            label={
-              pttMode
-                ? `Push to talk — segure ${keyLabel(settings.pttKey)}`
-                : muted
-                  ? "Ativar microfone"
-                  : "Silenciar microfone"
-            }
-          />
-          <AudioOutputControl compact deafened={deafened} onToggle={toggleDeafen} />
+          {!hideAudio && (
+            <>
+              <AudioInputControl
+                compact
+                muted={muted}
+                off={muted || (pttMode && !pttActive)}
+                active={!muted && pttMode && pttActive}
+                onToggle={toggleMute}
+                label={
+                  pttMode
+                    ? `Push to talk — segure ${keyLabel(settings.pttKey)}`
+                    : muted
+                      ? "Ativar microfone"
+                      : "Silenciar microfone"
+                }
+              />
+              <AudioOutputControl compact deafened={deafened} onToggle={toggleDeafen} />
+            </>
+          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

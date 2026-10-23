@@ -5,6 +5,7 @@ for (const [name, notes] of [
   ["enter", [660, 880]],
   ["leave", [660, 440]],
   ["screen-start", [784, 1175]],
+  ["screen-stop", [1175, 784]],
   ["mic-mute", [720, 540]],
   ["mic-unmute", [540, 720]],
   ["deafen", [480, 320]],

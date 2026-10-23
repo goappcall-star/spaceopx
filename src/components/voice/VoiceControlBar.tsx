@@ -11,6 +11,8 @@ import { useAudioSettings, keyLabel } from "@/hooks/use-audio-settings";
 import { useVoice } from "@/hooks/use-voice";
 import { cn } from "@/lib/utils";
 import { supportsCamera, supportsScreenShare } from "@/services/voice";
+import { MonitorX, Square } from "lucide-react";
+import { useScreenViewing } from "@/components/call/ScreenViewingProvider";
 
 function ControlButton({
   label,
@@ -68,7 +70,10 @@ export function VoiceControlBar() {
     toggleScreenShare,
     pttActive,
     leave,
+    remoteMedia,
   } = useVoice();
+  const { voicePaused, setVoicePaused } = useScreenViewing();
+  const remoteSharing = Object.values(remoteMedia).some((media) => media.screen);
   const { settings } = useAudioSettings();
   const pttMode = settings.inputMode === "ptt";
   const [devicesOpen, setDevicesOpen] = useState(false);
@@ -118,6 +123,21 @@ export function VoiceControlBar() {
             onClick={() => openScreenSharePanel("voice")}
           >
             <VoiceIcon kind="screen" className="h-5 w-5" />
+          </ControlButton>
+        )}
+
+        {screenOn && (
+          <ControlButton label="Parar transmissão" danger onClick={() => void toggleScreenShare()}>
+            <Square className="h-5 w-5" />
+          </ControlButton>
+        )}
+        {remoteSharing && (
+          <ControlButton
+            label={voicePaused ? "Voltar à transmissão" : "Sair da transmissão"}
+            active={voicePaused}
+            onClick={() => setVoicePaused(!voicePaused)}
+          >
+            <MonitorX className="h-5 w-5" />
           </ControlButton>
         )}
 

@@ -25,6 +25,10 @@ export function VideoSurface({
     if (!el) return;
     if (el.srcObject !== stream) el.srcObject = stream;
     if (stream) void el.play().catch(() => undefined);
+    return () => {
+      el.pause();
+      el.srcObject = null;
+    };
   }, [stream]);
 
   return (

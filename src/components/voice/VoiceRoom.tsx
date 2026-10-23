@@ -1,15 +1,14 @@
 import { useMemo } from "react";
-import { AutoHideVoiceControls } from "./AutoHideVoiceControls";
 import { VoiceIcon } from "./VoiceIcon";
 import { AlertTriangle, Loader2, Video } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { VideoTile, type TileData } from "@/components/voice/VideoTile";
 import { SharedScreen } from "@/components/call/SharedScreen";
-import { VoiceControlBar } from "@/components/voice/VoiceControlBar";
 import { VoiceParticipantActions } from "@/components/voice/VoiceParticipantActions";
 import { useGamePresenceMap } from "@/hooks/use-gamer";
 import { useVoice } from "@/hooks/use-voice";
+import { useScreenViewing } from "@/components/call/ScreenViewingProvider";
 import { hasPermission } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import type { Channel, MemberWithProfile } from "@/types";
@@ -49,6 +48,7 @@ export function VoiceRoom({
   onInvite,
   onManageRoles,
 }: Props) {
+  const { voicePaused } = useScreenViewing();
   const {
     participantsByChannel,
     activeChannelId,
@@ -104,7 +104,8 @@ export function VoiceRoom({
       };
 
       cameras.push({ ...base, stream: cameraStream, kind: "camera" });
-      if (screenStream) screens.push({ ...base, stream: screenStream, kind: "screen" });
+      if (screenStream && (isSelf || !voicePaused))
+        screens.push({ ...base, stream: screenStream, kind: "screen" });
     }
     return { cameraTiles: cameras, screenTiles: screens };
   }, [
@@ -116,6 +117,7 @@ export function VoiceRoom({
     localScreen,
     presenceMap,
     hiddenVideos,
+    voicePaused,
   ]);
 
   const sharing = screenTiles[0];
@@ -165,7 +167,10 @@ export function VoiceRoom({
   }
 
   return (
-    <AutoHideVoiceControls controls={<VoiceControlBar />}>
+    <div
+      className="bg-hero-glow flex min-h-0 flex-1 flex-col overflow-hidden"
+      aria-label="Área da chamada"
+    >
       <header className="border-border flex flex-wrap items-center justify-between gap-3 border-b px-4 py-2.5">
         <div className="min-w-0">
           <h2 className="truncate text-sm font-semibold">🔊 {channel.name}</h2>
@@ -197,7 +202,7 @@ export function VoiceRoom({
         )}
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-4 pb-24">
+      <div className="min-h-0 flex-1 overflow-y-auto p-4">
         {connectionState === "error" && (
           <div className="border-destructive/40 bg-destructive/10 text-destructive mb-4 flex items-center gap-2 rounded-xl border p-3 text-sm">
             <AlertTriangle className="h-4 w-4" />
@@ -268,6 +273,6 @@ export function VoiceRoom({
           </ul>
         )}
       </div>
-    </AutoHideVoiceControls>
+    </div>
   );
 }

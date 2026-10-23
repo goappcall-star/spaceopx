@@ -7,12 +7,12 @@ export function AppNavigationLayout({
   profile,
 }: {
   children: ReactNode;
-  profile: ReactNode;
+  profile?: ReactNode;
 }) {
   return (
     <div className="app-navigation-layout">
       <div className="app-navigation-columns">{children}</div>
-      <div className="app-navigation-profile">{profile}</div>
+      {profile && <div className="app-navigation-profile">{profile}</div>}
     </div>
   );
 }

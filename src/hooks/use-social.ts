@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -7,37 +7,90 @@ import {
   conversationsService,
   friendsService,
   peopleService,
+  socialPresenceService,
 } from "@/services/social";
 
 /** Friends, pending requests and their game presence. */
 export function useFriends(userId: string | undefined) {
   const queryClient = useQueryClient();
+  const [subscription, setSubscription] = useState({ userId, ready: false });
+  const realtimeReady = subscription.userId === userId && subscription.ready;
 
   const query = useQuery({
     queryKey: ["friends", userId],
-    queryFn: () => friendsService.load(userId!),
+    queryFn: () => friendsService.load(userId!, false),
     enabled: Boolean(userId),
+    // Reconcile missed events and unavailable sockets only while the app is visible.
+    refetchInterval: realtimeReady ? 15_000 : 5_000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: "always",
+    refetchOnReconnect: "always",
+    retry: 1,
+  });
+  const friendIds = (query.data?.friends ?? []).map((friend) => friend.profile.id).sort();
+  const friendIdsKey = friendIds.join(",");
+  const friendIdsRef = useRef(friendIds);
+  friendIdsRef.current = friendIds;
+  const presence = useQuery({
+    queryKey: ["friend-game-presence", userId, friendIdsKey],
+    queryFn: () => socialPresenceService.listByUsers(friendIdsKey.split(",").filter(Boolean)),
+    enabled: Boolean(userId && friendIdsKey),
   });
 
   useEffect(() => {
     if (!userId) return;
+    let alive = true;
+    const refresh = () => {
+      if (!alive) return;
+      void queryClient.invalidateQueries({ queryKey: ["friends", userId] });
+      void queryClient.invalidateQueries({ queryKey: ["relationship"] });
+    };
     const channel = supabase
       .channel(`social:friendships:${userId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "friendships" }, () => {
-        void queryClient.invalidateQueries({ queryKey: ["friends", userId] });
-        void queryClient.invalidateQueries({ queryKey: ["relationship"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "user_game_presence" }, () => {
-        void queryClient.invalidateQueries({ queryKey: ["friends", userId] });
-      })
-      .subscribe();
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "friendships", filter: `requester_id=eq.${userId}` },
+        refresh,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "friendships", filter: `addressee_id=eq.${userId}` },
+        refresh,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user_game_presence" },
+        (payload) => {
+          if (!alive) return;
+          const id =
+            (payload.new as { user_id?: string }).user_id ??
+            (payload.old as { user_id?: string }).user_id;
+          if (id && friendIdsRef.current.includes(id))
+            void queryClient.invalidateQueries({ queryKey: ["friend-game-presence", userId] });
+        },
+      )
+      .subscribe((status) => {
+        if (!alive) return;
+        setSubscription({ userId, ready: status === "SUBSCRIBED" });
+        // Close the gap between the initial HTTP read and subscribing (also on reconnect).
+        if (status === "SUBSCRIBED") refresh();
+      });
     return () => {
+      alive = false;
       void supabase.removeChannel(channel);
     };
   }, [userId, queryClient]);
 
+  const friends = useMemo(
+    () =>
+      (query.data?.friends ?? []).map((friend) => ({
+        ...friend,
+        presence: presence.data?.[friend.profile.id] ?? null,
+      })),
+    [query.data?.friends, presence.data],
+  );
   return {
-    friends: query.data?.friends ?? [],
+    friends,
     requests: query.data?.requests ?? [],
     isLoading: query.isLoading,
   };

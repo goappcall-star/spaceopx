@@ -6,6 +6,7 @@ import { useVoice } from "@/hooks/use-voice";
 import { receivedAudioVolume } from "@/lib/audio-volume";
 import { useScreenVolumes } from "@/hooks/use-screen-volume";
 import { voiceDiagnostic, voiceErrorName } from "@/services/voice-diagnostics";
+import { useScreenViewing } from "@/components/call/ScreenViewingProvider";
 
 function AudioSink({
   sinkId,
@@ -75,6 +76,7 @@ function AudioSink({
 
 /** Plays every remote participant's audio, honouring deafen and per-user volume. */
 export function RemoteAudio() {
+  const { voicePaused } = useScreenViewing();
   const { remoteMedia, volumes, deafened, restrictions, activeServerId } = useVoice();
   const { settings } = useAudioSettings();
   const screenVolumes = useScreenVolumes();
@@ -92,7 +94,7 @@ export function RemoteAudio() {
       <div className="sr-only" aria-hidden>
         {Object.entries(remoteMedia).flatMap(([userId, media]) =>
           [media.audio, media.screenAudio].map((stream, index) =>
-            stream ? (
+            stream && !(index === 1 && voicePaused) ? (
               <AudioSink
                 key={`${userId}:${index}`}
                 sinkId={`${userId}:${index}`}

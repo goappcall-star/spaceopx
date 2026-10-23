@@ -48,7 +48,10 @@ export const friendsService = {
   },
 
   /** Friends + pending requests + game presence, resolved in 3 queries total. */
-  async load(userId: string): Promise<{
+  async load(
+    userId: string,
+    includePresence = true,
+  ): Promise<{
     friends: FriendEntry[];
     requests: FriendRequestEntry[];
   }> {
@@ -63,7 +66,9 @@ export const friendsService = {
 
     const [profiles, presenceMap] = await Promise.all([
       profilesService.listByIds(ids),
-      socialPresenceService.listByUsers(ids),
+      includePresence
+        ? socialPresenceService.listByUsers(accepted.map(otherId))
+        : Promise.resolve({} as Record<string, GamePresence>),
     ]);
     const byId = new Map(profiles.map((p) => [p.id, p]));
 

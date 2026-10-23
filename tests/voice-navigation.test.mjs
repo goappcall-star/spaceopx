@@ -224,6 +224,7 @@ function fixture({ cacheTopics = false, delayedRemoval = false } = {}) {
   vm.runInNewContext(code, {
     exports,
     require: (name) => {
+      if (name === "@/services/call-sounds") return { notifyRemoteScreenSound: () => {} };
       if (name === "@/services/voice-diagnostics")
         return { voiceDiagnostic: () => {}, voiceStage: () => () => {} };
       assert.ok(name in imports, `Unexpected dependency ${name}`);

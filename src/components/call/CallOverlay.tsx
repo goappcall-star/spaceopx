@@ -1,16 +1,14 @@
-import { openScreenSharePanel } from "@/services/screen-share-panel";
-import { VoiceIcon } from "@/components/voice/VoiceIcon";
-import { Mic, MicOff, Phone, PhoneOff, Video } from "lucide-react";
+import { MicOff } from "lucide-react";
+import { useScreenViewing } from "./ScreenViewingProvider";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { VideoTile, type TileData } from "@/components/voice/VideoTile";
-import { NoiseSuppressionToggle } from "@/components/voice/NoiseSuppressionToggle";
 import { useAuth } from "@/hooks/use-auth";
 import { useAudioSettings } from "@/hooks/use-audio-settings";
 import { useCall } from "@/hooks/use-call";
+import { useVoice } from "@/hooks/use-voice";
 import { cn } from "@/lib/utils";
 import { conversationsService } from "@/services/social";
 import { toast } from "sonner";
@@ -38,6 +36,7 @@ function useElapsed(active: boolean) {
 /** Plays the peer's microphone audio, independently of the local mic state. */
 function CallAudio({ stream, volume = 100 }: { stream: MediaStream | null; volume?: number }) {
   const ref = useRef<HTMLAudioElement>(null);
+  const { deafened } = useVoice();
   const { settings } = useAudioSettings();
   const [blocked, setBlocked] = useState(false);
 
@@ -65,8 +64,8 @@ function CallAudio({ stream, volume = 100 }: { stream: MediaStream | null; volum
     const el = ref.current;
     if (!el) return;
     const outputVolume = Number.isFinite(settings.outputVolume) ? settings.outputVolume : 100;
-    el.volume = receivedAudioVolume(volume, outputVolume, false);
-  }, [volume, settings.outputVolume, stream]);
+    el.volume = receivedAudioVolume(volume, outputVolume, deafened);
+  }, [volume, settings.outputVolume, stream, deafened]);
 
   useEffect(() => {
     const el = ref.current as
@@ -92,12 +91,13 @@ function CallAudio({ stream, volume = 100 }: { stream: MediaStream | null; volum
 
 export function CallAudioPlayback() {
   const call = useCall();
+  const { callPaused } = useScreenViewing();
   const screenVolumes = useScreenVolumes();
   return (
     <>
       <CallAudio stream={call.remote?.audio ?? null} />
       <CallAudio
-        stream={call.remote?.screenAudio ?? null}
+        stream={callPaused ? null : (call.remote?.screenAudio ?? null)}
         volume={call.peer ? (screenVolumes[call.peer.id] ?? 100) : 100}
       />
       {Object.entries(call.groupMedia).map(([id, media]) => (
@@ -106,7 +106,7 @@ export function CallAudioPlayback() {
       {Object.entries(call.groupMedia).map(([id, media]) => (
         <CallAudio
           key={`${id}:screen`}
-          stream={media.screenAudio}
+          stream={callPaused ? null : media.screenAudio}
           volume={screenVolumes[id] ?? 100}
         />
       ))}
@@ -115,10 +115,10 @@ export function CallAudioPlayback() {
 }
 
 export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
+  const { callPaused } = useScreenViewing();
   const { profile } = useAuth();
   const call = useCall();
-  const { status, endReason, peer, muted, cameraOn, screenOn, localCamera, localScreen, remote } =
-    call;
+  const { status, endReason, peer, muted, screenOn, localCamera, localScreen, remote } = call;
 
   const visible = status !== "idle";
   const connected = status === "active" || status === "reconnecting" || status === "waiting";
@@ -193,9 +193,9 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
   ]);
 
   const screenTile = useMemo<TileData | null>(() => {
-    const sharing = call.participants.find(
-      (participant) => call.groupMedia[participant.id]?.screen,
-    );
+    const sharing =
+      !callPaused &&
+      call.participants.find((participant) => call.groupMedia[participant.id]?.screen);
     if (sharing)
       return {
         userId: sharing.id,
@@ -209,7 +209,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
         muted: false,
         screenSharing: true,
       };
-    if (remote?.screen && peer)
+    if (!callPaused && remote?.screen && peer)
       return {
         userId: peer.id,
         name: peer.display_name,
@@ -236,7 +236,7 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
         screenSharing: true,
       };
     return null;
-  }, [remote, localScreen, peer, profile, muted, call.participants, call.groupMedia]);
+  }, [remote, localScreen, peer, profile, muted, call.participants, call.groupMedia, callPaused]);
 
   useEffect(() => {
     if (status !== "ended") return;
@@ -370,104 +370,16 @@ export function CallOverlay({ showPanel = true }: { showPanel?: boolean }) {
             )}
           </div>
 
-          <footer className="flex h-16 shrink-0 items-center justify-center gap-2">
-            {status === "ended" ? (
+          {status === "ended" && (
+            <div className="p-3 text-center">
               <Button variant="outline" onClick={call.dismiss}>
                 Fechar
               </Button>
-            ) : (
-              <>
-                <CallButton
-                  label={muted ? "Ativar microfone" : "Silenciar microfone"}
-                  active={muted}
-                  danger={muted}
-                  disabled={!connected}
-                  onClick={call.toggleMute}
-                >
-                  {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                </CallButton>
-
-                <CallButton
-                  label={cameraOn ? "Desligar câmera" : "Ligar câmera"}
-                  active={cameraOn}
-                  disabled={!connected}
-                  onClick={() => void call.toggleCamera()}
-                >
-                  <VoiceIcon kind="camera" className="h-5 w-5" />
-                </CallButton>
-
-                <CallButton
-                  label={screenOn ? "Configurar transmissão" : "Compartilhar tela"}
-                  active={screenOn}
-                  disabled={!connected}
-                  onClick={() => openScreenSharePanel("call")}
-                >
-                  <VoiceIcon kind="screen" className="h-5 w-5" />
-                </CallButton>
-
-                <NoiseSuppressionToggle />
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      size="icon"
-                      variant="destructive"
-                      className="h-10 w-12 rounded-full"
-                      onClick={call.hangUp}
-                      aria-label="Encerrar chamada"
-                    >
-                      {status === "outgoing" ? (
-                        <Phone className="h-5 w-5 rotate-[135deg]" />
-                      ) : (
-                        <PhoneOff className="h-5 w-5" />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Encerrar</TooltipContent>
-                </Tooltip>
-              </>
-            )}
-          </footer>
+            </div>
+          )}
         </section>
       )}
     </>
-  );
-}
-
-function CallButton({
-  label,
-  active,
-  danger,
-  disabled,
-  onClick,
-  children,
-}: {
-  label: string;
-  active?: boolean;
-  danger?: boolean;
-  disabled?: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          size="icon"
-          variant="ghost"
-          disabled={disabled}
-          onClick={onClick}
-          aria-label={label}
-          className={cn(
-            "border-border bg-surface h-10 w-10 rounded-full border",
-            active && !danger && "border-primary/60 text-primary glow-soft",
-            danger && "border-destructive/60 text-destructive",
-          )}
-        >
-          {children}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
   );
 }
 

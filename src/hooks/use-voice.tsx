@@ -1,4 +1,5 @@
 import type { ScreenShareOptions, ScreenShareController } from "@/services/screen-share";
+import { notifyRemoteScreenSound } from "@/services/call-sounds";
 import { voiceDiagnostic, voiceStage } from "@/services/voice-diagnostics";
 import {
   shouldApplyVoiceMove,
@@ -796,6 +797,9 @@ export function VoiceProviderRoot({
             provider.setDeafened(stateRef.current.deafened);
             await provider.setNoiseSuppression(audioSettings.noiseSuppression);
             await provider.connect(channelId, userId, {
+              onRemoteScreenShareChange: (active) => {
+                if (providerRef.current === provider) notifyRemoteScreenSound(active);
+              },
               onNoiseProcessingChange: (status) => {
                 if (isCurrent()) reportNoiseProcessing("voice", status);
               },

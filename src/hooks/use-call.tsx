@@ -1,4 +1,5 @@
 import type { ScreenShareOptions, ScreenShareController } from "@/services/screen-share";
+import { notifyRemoteScreenSound } from "@/services/call-sounds";
 import {
   createContext,
   useCallback,
@@ -283,6 +284,9 @@ export function CallProviderRoot({
       try {
         await provider.setNoiseSuppression(audioRef.current.noiseSuppression);
         await provider.connect(`call-${callId}`, userId!, {
+          onRemoteScreenShareChange: (active) => {
+            if (providerRef.current === provider) notifyRemoteScreenSound(active);
+          },
           onSpeakingChange: (value) => {
             if (providerRef.current === provider)
               setSpeakingUsers((current) => ({ ...current, [userId!]: value }));
@@ -476,6 +480,9 @@ export function CallProviderRoot({
       try {
         await provider.setNoiseSuppression(audioRef.current.noiseSuppression);
         await provider.connect(`group-call-${id}`, userId, {
+          onRemoteScreenShareChange: (active) => {
+            if (providerRef.current === provider) notifyRemoteScreenSound(active);
+          },
           onSpeakingChange: (value) => {
             if (providerRef.current === provider)
               setSpeakingUsers((current) => ({ ...current, [userId]: value }));

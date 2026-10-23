@@ -23,7 +23,6 @@ import { JoinServerDialog } from "@/components/app/JoinServerDialog";
 import { MemberPanel } from "@/components/app/MemberPanel";
 import { ServerRail } from "@/components/app/ServerRail";
 import { ServerSettingsDialog } from "@/components/server-settings/ServerSettingsDialog";
-import { UserBar } from "@/components/app/UserBar";
 import { CallWorkspace } from "@/components/call/CallOverlay";
 import { ChatView } from "@/components/chat/ChatView";
 import { VoiceRoom } from "@/components/voice/VoiceRoom";
@@ -36,7 +35,7 @@ import {
   useServerPermissions,
 } from "@/hooks/use-servers";
 import { useServerAbilities } from "@/hooks/use-server-admin";
-import { ProfileDialogProvider, useProfileDialog } from "@/components/gamer/ProfileDialog";
+import { useProfileDialog } from "@/components/gamer/ProfileDialog";
 import { DirectChatView } from "@/components/social/DirectChatView";
 import { SocialHome } from "@/components/social/SocialHome";
 import { SocialSidebar, type SocialTab } from "@/components/social/SocialSidebar";
@@ -92,6 +91,8 @@ function AppPage() {
     setServerId: setActiveServerId,
     voiceReturn,
     setVoiceReturn,
+    conversationReturn,
+    setConversationReturn,
   } = useSessionServer();
   const [communityView, setCommunityView] = useState<string | null>(null);
   const visitedCommunity = useRef<string | null>(null);
@@ -130,6 +131,12 @@ function AppPage() {
     setView("social");
     setActiveConversationId(conversationId);
   }
+  useEffect(() => {
+    if (!conversationReturn) return;
+    setView("social");
+    setActiveConversationId(conversationReturn);
+    setConversationReturn(null);
+  }, [conversationReturn, setConversationReturn]);
 
   const finishServerLoad = useRef<((failed?: boolean) => void) | null>(null);
   const activeServer = servers.find((s) => s.id === activeServerId) ?? null;
@@ -257,394 +264,385 @@ function AppPage() {
 
   return (
     <>
-      <ProfileDialogProvider onStartDirect={openConversation}>
-        <div className="bg-background relative flex h-dvh min-h-0 overflow-hidden pt-12 lg:pt-0">
-          <header className="absolute inset-x-0 top-0 z-40 flex h-12 items-center justify-between border-b border-border bg-surface px-3 lg:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Abrir servidores e canais"
-              onClick={() => {
-                setMobileNav(!mobileNav);
-                setMobileMembers(false);
+      <div className="bg-background relative flex h-dvh min-h-0 overflow-hidden pt-12 lg:pt-0">
+        <header className="absolute inset-x-0 top-0 z-40 flex h-12 items-center justify-between border-b border-border bg-surface px-3 lg:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Abrir servidores e canais"
+            onClick={() => {
+              setMobileNav(!mobileNav);
+              setMobileMembers(false);
+            }}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <span className="min-w-0 truncate px-2 text-sm font-semibold">
+            {activeServer?.name ?? "LobbyX"}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Mostrar membros"
+            disabled={view !== "servers" || !activeServer}
+            onClick={() => {
+              setMobileMembers(!mobileMembers);
+              setMobileNav(false);
+            }}
+          >
+            <Users className="h-5 w-5" />
+          </Button>
+        </header>
+        {(mobileNav || mobileMembers) && (
+          <button
+            aria-label="Fechar painel lateral"
+            className="absolute inset-0 z-30 bg-black/60 lg:hidden"
+            onClick={() => {
+              setMobileNav(false);
+              setMobileMembers(false);
+            }}
+          />
+        )}
+        <AppSidebarDrawer open={mobileNav} side="left">
+          <AppNavigationLayout>
+            <ServerRail
+              serverBadges={serverCounts}
+              serverMentions={serverMentions}
+              getPreferences={preferences.get}
+              onUpdatePreferences={preferences.update}
+              onServerAction={(action, server) => {
+                void handleServerAction(action, server);
               }}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-            <span className="min-w-0 truncate px-2 text-sm font-semibold">
-              {activeServer?.name ?? "LobbyX"}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Mostrar membros"
-              disabled={view !== "servers" || !activeServer}
-              onClick={() => {
-                setMobileMembers(!mobileMembers);
+              servers={servers}
+              onHome={() => {
+                void navigate({ to: "/app", search: {}, replace: true });
+                setView("servers");
+                setActiveServerId(null);
+                setActiveChannelId(null);
+                setActiveConversationId(null);
+                setVoiceReturn(null);
                 setMobileNav(false);
               }}
-            >
-              <Users className="h-5 w-5" />
-            </Button>
-          </header>
-          {(mobileNav || mobileMembers) && (
-            <button
-              aria-label="Fechar painel lateral"
-              className="absolute inset-0 z-30 bg-black/60 lg:hidden"
-              onClick={() => {
+              activeServerId={activeServerId}
+              onSelect={(id) => {
+                if (id !== activeServerId) finishServerLoad.current = measureOperation("ui.server");
+                setView("servers");
+                setActiveServerId(id);
+              }}
+              onAdd={() => setCreateOpen(true)}
+              socialActive={view === "social"}
+              onSelectSocial={() => {
+                setView("social");
                 setMobileNav(false);
-                setMobileMembers(false);
+              }}
+              socialBadge={totalUnread + pendingRequests}
+            />
+
+            {view === "social" ? (
+              <SocialSidebar
+                tab={socialTab}
+                onTabChange={(tab) => {
+                  setSocialTab(tab);
+                  setActiveConversationId(null);
+                  setMobileNav(false);
+                }}
+                conversations={conversations}
+                activeConversationId={activeConversationId}
+                onSelectConversation={(id) => {
+                  openConversation(id);
+                  setMobileNav(false);
+                }}
+                pendingRequests={pendingRequests}
+              />
+            ) : activeServer ? (
+              <ChannelSidebar
+                key={activeServer.id}
+                onUpdatePreferences={(patch) => preferences.update(activeServer.id, patch)}
+                onMarkRead={(ids) => {
+                  if (!user) return;
+                  void Promise.all(ids.map((id) => unreadService.markChannel(id, null)))
+                    .then(() => {
+                      refreshUnread();
+                    })
+                    .catch(() => toast.error("Não foi possível marcar como lido."));
+                }}
+                onStartDirect={openConversation}
+                preferences={preferences.get(activeServer.id)}
+                onToggleMuteChannel={(channelId) => {
+                  const current = preferences.get(activeServer.id);
+                  preferences.update(activeServer.id, {
+                    mutedChannels: current.mutedChannels.includes(channelId)
+                      ? current.mutedChannels.filter((id) => id !== channelId)
+                      : [...current.mutedChannels, channelId],
+                  });
+                }}
+                server={activeServer}
+                channels={channels}
+                communityHome={Boolean(community.data)}
+                communityHomeLabel={
+                  community.data?.experience.home_enabled
+                    ? "Início da comunidade"
+                    : "Boas-vindas da comunidade"
+                }
+                communityHomeActive={showCommunity}
+                onCommunityHome={() => {
+                  setCommunityView(activeServer.id);
+                  setMobileNav(false);
+                }}
+                activeChannelId={showCommunity ? null : activeChannelId}
+                onSelectChannel={(id) => {
+                  setCommunityView(null);
+                  setActiveChannelId(id);
+                  setMobileNav(false);
+                }}
+                members={members}
+                unreadChannelIds={unread}
+                unreadCounts={channelCounts}
+                mentionCounts={mentions}
+                canInvite={canManage || abilities.can("create_invite")}
+                canManage={abilities.can("manage_channels")}
+                canOpenSettings={abilities.canOpenSettings}
+                onOpenSettings={() => setSettingsOpen(true)}
+                onInvite={() => setInviteOpen(true)}
+                onCreateChannel={() => setChannelOpen(true)}
+              />
+            ) : (
+              <aside className="bg-surface border-border relative z-20 flex w-64 shrink-0 flex-col border-r">
+                <div className="border-border relative overflow-hidden border-b px-4 py-3.5">
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 opacity-70"
+                    style={{ backgroundImage: "var(--gradient-ambient)" }}
+                  />
+                  <h2 className="relative text-sm font-semibold tracking-tight">
+                    Nenhum servidor aberto
+                  </h2>
+                  <p className="text-muted-foreground relative mt-0.5 text-xs">
+                    Selecione um servidor à esquerda.
+                  </p>
+                </div>
+                <div className="flex-1" />
+              </aside>
+            )}
+          </AppNavigationLayout>
+        </AppSidebarDrawer>
+        <CallWorkspace
+          onOpenConversation={openConversation}
+          conversation={view === "social" ? activeConversation : null}
+        >
+          {view === "social" ? (
+            <SocialMain
+              conversation={activeConversation}
+              userId={user?.id}
+              displayName={profile?.display_name ?? "Alguém"}
+              tab={socialTab}
+              friends={friends}
+              requests={requests}
+              conversations={conversations}
+              onOpenConversation={openConversation}
+              onCloseConversation={() => setActiveConversationId(null)}
+              onEnterCommunity={async (id) => {
+                await queryClient.invalidateQueries({ queryKey: ["servers"] });
+                setActiveServerId(id);
+                setCommunityView(id);
+                setView("servers");
               }}
             />
-          )}
-          <AppSidebarDrawer open={mobileNav} side="left">
-            <AppNavigationLayout profile={<UserBar expanded />}>
-              <ServerRail
-                serverBadges={serverCounts}
-                serverMentions={serverMentions}
-                getPreferences={preferences.get}
-                onUpdatePreferences={preferences.update}
-                onServerAction={(action, server) => {
-                  void handleServerAction(action, server);
-                }}
-                servers={servers}
-                onHome={() => {
-                  void navigate({ to: "/app", search: {}, replace: true });
-                  setView("servers");
-                  setActiveServerId(null);
-                  setActiveChannelId(null);
-                  setActiveConversationId(null);
-                  setVoiceReturn(null);
-                  setMobileNav(false);
-                }}
-                activeServerId={activeServerId}
-                onSelect={(id) => {
-                  if (id !== activeServerId)
-                    finishServerLoad.current = measureOperation("ui.server");
-                  setView("servers");
-                  setActiveServerId(id);
-                }}
-                onAdd={() => setCreateOpen(true)}
-                socialActive={view === "social"}
-                onSelectSocial={() => {
-                  setView("social");
-                  setMobileNav(false);
-                }}
-                socialBadge={totalUnread + pendingRequests}
-              />
-
-              {view === "social" ? (
-                <SocialSidebar
-                  tab={socialTab}
-                  onTabChange={(tab) => {
-                    setSocialTab(tab);
-                    setActiveConversationId(null);
-                    setMobileNav(false);
-                  }}
-                  conversations={conversations}
-                  activeConversationId={activeConversationId}
-                  onSelectConversation={(id) => {
-                    openConversation(id);
-                    setMobileNav(false);
-                  }}
-                  pendingRequests={pendingRequests}
-                />
-              ) : activeServer ? (
-                <ChannelSidebar
-                  key={activeServer.id}
-                  onUpdatePreferences={(patch) => preferences.update(activeServer.id, patch)}
-                  onMarkRead={(ids) => {
-                    if (!user) return;
-                    void Promise.all(ids.map((id) => unreadService.markChannel(id, null)))
-                      .then(() => {
-                        refreshUnread();
-                      })
-                      .catch(() => toast.error("Não foi possível marcar como lido."));
-                  }}
-                  onStartDirect={openConversation}
-                  preferences={preferences.get(activeServer.id)}
-                  onToggleMuteChannel={(channelId) => {
-                    const current = preferences.get(activeServer.id);
-                    preferences.update(activeServer.id, {
-                      mutedChannels: current.mutedChannels.includes(channelId)
-                        ? current.mutedChannels.filter((id) => id !== channelId)
-                        : [...current.mutedChannels, channelId],
-                    });
-                  }}
-                  server={activeServer}
-                  channels={channels}
-                  communityHome={Boolean(community.data)}
-                  communityHomeLabel={
-                    community.data?.experience.home_enabled
-                      ? "Início da comunidade"
-                      : "Boas-vindas da comunidade"
-                  }
-                  communityHomeActive={showCommunity}
-                  onCommunityHome={() => {
-                    setCommunityView(activeServer.id);
-                    setMobileNav(false);
-                  }}
-                  activeChannelId={showCommunity ? null : activeChannelId}
-                  onSelectChannel={(id) => {
-                    setCommunityView(null);
-                    setActiveChannelId(id);
-                    setMobileNav(false);
-                  }}
-                  members={members}
-                  unreadChannelIds={unread}
-                  unreadCounts={channelCounts}
-                  mentionCounts={mentions}
-                  canInvite={canManage || abilities.can("create_invite")}
-                  canManage={abilities.can("manage_channels")}
-                  canOpenSettings={abilities.canOpenSettings}
-                  onOpenSettings={() => setSettingsOpen(true)}
-                  onInvite={() => setInviteOpen(true)}
-                  onCreateChannel={() => setChannelOpen(true)}
-                />
-              ) : (
-                <aside className="bg-surface border-border relative z-20 flex w-64 shrink-0 flex-col border-r">
-                  <div className="border-border relative overflow-hidden border-b px-4 py-3.5">
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute inset-0 opacity-70"
-                      style={{ backgroundImage: "var(--gradient-ambient)" }}
-                    />
-                    <h2 className="relative text-sm font-semibold tracking-tight">
-                      Nenhum servidor aberto
-                    </h2>
-                    <p className="text-muted-foreground relative mt-0.5 text-xs">
-                      Selecione um servidor à esquerda.
-                    </p>
-                  </div>
-                  <div className="flex-1" />
-                </aside>
-              )}
-            </AppNavigationLayout>
-          </AppSidebarDrawer>
-          <CallWorkspace
-            onOpenConversation={openConversation}
-            conversation={view === "social" ? activeConversation : null}
-          >
-            {view === "social" ? (
-              <SocialMain
-                conversation={activeConversation}
-                userId={user?.id}
-                displayName={profile?.display_name ?? "Alguém"}
-                tab={socialTab}
-                friends={friends}
-                requests={requests}
-                conversations={conversations}
-                onOpenConversation={openConversation}
-                onCloseConversation={() => setActiveConversationId(null)}
-                onEnterCommunity={async (id) => {
-                  await queryClient.invalidateQueries({ queryKey: ["servers"] });
-                  setActiveServerId(id);
-                  setCommunityView(id);
-                  setView("servers");
-                }}
-              />
-            ) : activeServer && showCommunity && community.data && user ? (
-              <Suspense
-                fallback={
-                  <div role="status" className="p-6">
-                    Carregando comunidade…
-                  </div>
-                }
-              >
-                <CommunityWorkspace
-                  key={`${user.id}:${activeServer.id}`}
-                  server={activeServer}
-                  data={community.data}
-                  channels={channels}
-                  me={me}
-                  members={members}
-                  userId={user.id}
-                  unavailable={community.isError || community.isPaused}
-                  onChannel={(id) => {
-                    setCommunityView(null);
-                    setActiveChannelId(id);
-                  }}
-                  onSettings={() => setSettingsOpen(true)}
-                />
-              </Suspense>
-            ) : activeServer && activeChannel ? (
-              activeChannel.type === "voice" ? (
-                <VoiceRoom
-                  channel={activeChannel}
-                  members={members}
-                  me={me}
-                  userId={user?.id}
-                  onStartDirect={openConversation}
-                  onInvite={
-                    canManage || abilities.can("create_invite")
-                      ? () => setInviteOpen(true)
-                      : undefined
-                  }
-                  onManageRoles={canManage ? () => setSettingsOpen(true) : undefined}
-                />
-              ) : (
-                <ChatView
-                  key={activeChannel.id}
-                  serverId={activeServer.id}
-                  channel={activeChannel}
-                  members={members}
-                  userId={user?.id}
-                  me={me}
-                  onRead={handleRead}
-                />
-              )
-            ) : (
-              <div className="bg-ambient relative flex flex-1 items-center justify-center overflow-hidden p-8">
-                <span
-                  aria-hidden
-                  className="bg-grid pointer-events-none absolute inset-0 opacity-[0.35] [mask-image:radial-gradient(70%_60%_at_50%_40%,black,transparent)]"
-                />
-                <span
-                  aria-hidden
-                  className="border-primary/15 pointer-events-none absolute top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[80px] border"
-                />
-                <span
-                  aria-hidden
-                  className="border-primary/10 pointer-events-none absolute top-1/2 left-1/2 h-[720px] w-[720px] -translate-x-1/2 -translate-y-1/2 rotate-12 rounded-[120px] border"
-                />
-
-                <div className="animate-fade-up relative max-w-lg text-center">
-                  <span className="surface-elevated glow-soft mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl">
-                    <img
-                      src="/lobbyx-logo.png"
-                      alt="LobbyX"
-                      className="h-20 w-20 rounded-3xl object-contain"
-                    />
-                  </span>
-                  <p className="text-caption mb-3">Plataforma social gamer</p>
-                  <h1 className="text-3xl font-semibold tracking-tight">
-                    Bem-vindo ao <span className="text-brand-gradient">LobbyX</span>
-                  </h1>
-                  <p className="text-muted-foreground mx-auto mt-3 max-w-sm text-sm">
-                    Escolha um lobby na barra lateral, crie a sua própria comunidade ou entre com um
-                    convite.
-                  </p>
-                  <div className="mt-7 flex flex-wrap justify-center gap-3">
-                    <Button size="lg" onClick={() => setCreateOpen(true)}>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Criar servidor
-                    </Button>
-                    <Button size="lg" variant="outline" onClick={() => setJoinOpen(true)}>
-                      Entrar com convite
-                    </Button>
-                  </div>
-
-                  <div className="text-muted-foreground mt-10 grid grid-cols-3 gap-3 text-xs">
-                    {[
-                      { label: "Lobbies", value: servers.length },
-                      { label: "Texto, voz e vídeo", value: "Tempo real" },
-                      { label: "Progressão", value: "XP e badges" },
-                    ].map((stat) => (
-                      <div
-                        key={stat.label}
-                        className="border-border/70 bg-surface/50 rounded-xl border px-3 py-2.5 backdrop-blur-sm"
-                      >
-                        <p className="text-foreground text-sm font-semibold">{stat.value}</p>
-                        <p className="mt-0.5 text-[11px]">{stat.label}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {loadingServers && (
-                    <p className="text-muted-foreground mt-6 text-xs">Carregando seus lobbies...</p>
-                  )}
+          ) : activeServer && showCommunity && community.data && user ? (
+            <Suspense
+              fallback={
+                <div role="status" className="p-6">
+                  Carregando comunidade…
                 </div>
-              </div>
-            )}
-          </CallWorkspace>
-
-          {view === "servers" && activeServer && (
-            <AppSidebarDrawer open={mobileMembers} side="right">
-              <MemberPanel
+              }
+            >
+              <CommunityWorkspace
+                key={`${user.id}:${activeServer.id}`}
                 server={activeServer}
+                data={community.data}
+                channels={channels}
+                me={me}
+                members={members}
+                userId={user.id}
+                unavailable={community.isError || community.isPaused}
+                onChannel={(id) => {
+                  setCommunityView(null);
+                  setActiveChannelId(id);
+                }}
+                onSettings={() => setSettingsOpen(true)}
+              />
+            </Suspense>
+          ) : activeServer && activeChannel ? (
+            activeChannel.type === "voice" ? (
+              <VoiceRoom
+                channel={activeChannel}
+                members={members}
+                me={me}
+                userId={user?.id}
+                onStartDirect={openConversation}
                 onInvite={
                   canManage || abilities.can("create_invite")
                     ? () => setInviteOpen(true)
                     : undefined
                 }
-                members={members}
-                loading={loadingMembers}
-                onStartDirect={openConversation}
+                onManageRoles={canManage ? () => setSettingsOpen(true) : undefined}
               />
-            </AppSidebarDrawer>
-          )}
-        </div>
+            ) : (
+              <ChatView
+                key={activeChannel.id}
+                serverId={activeServer.id}
+                channel={activeChannel}
+                members={members}
+                userId={user?.id}
+                me={me}
+                onRead={handleRead}
+              />
+            )
+          ) : (
+            <div className="bg-ambient relative flex flex-1 items-center justify-center overflow-hidden p-8">
+              <span
+                aria-hidden
+                className="bg-grid pointer-events-none absolute inset-0 opacity-[0.35] [mask-image:radial-gradient(70%_60%_at_50%_40%,black,transparent)]"
+              />
+              <span
+                aria-hidden
+                className="border-primary/15 pointer-events-none absolute top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[80px] border"
+              />
+              <span
+                aria-hidden
+                className="border-primary/10 pointer-events-none absolute top-1/2 left-1/2 h-[720px] w-[720px] -translate-x-1/2 -translate-y-1/2 rotate-12 rounded-[120px] border"
+              />
 
-        <CreateServerDialog
-          open={createOpen}
-          onOpenChange={setCreateOpen}
-          onCreated={(serverId) => {
-            setView("servers");
-            setActiveServerId(serverId);
-            setMobileNav(false);
-          }}
-        />
-        {menuInviteServer && (
-          <InviteDialog
-            key={menuInviteServer.id}
-            serverId={menuInviteServer.id}
-            open
-            onOpenChange={(open) => {
-              if (!open) setMenuInviteServer(null);
-            }}
-          />
-        )}
-        {menuDialog && user && (
-          <ServerPersonalDialog
-            key={`${menuDialog.server.id}:${menuDialog.action}`}
-            {...menuDialog}
-            userId={user.id}
-            onClose={() => setMenuDialog(null)}
-            onLeft={(serverId) => {
-              if (activeServerId === serverId) {
-                setActiveServerId(null);
-                setActiveChannelId(null);
-                setSettingsOpen(false);
-                setInviteOpen(false);
-                setChannelOpen(false);
+              <div className="animate-fade-up relative max-w-lg text-center">
+                <span className="surface-elevated glow-soft mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl">
+                  <img
+                    src="/lobbyx-logo.png"
+                    alt="LobbyX"
+                    className="h-20 w-20 rounded-3xl object-contain"
+                  />
+                </span>
+                <p className="text-caption mb-3">Plataforma social gamer</p>
+                <h1 className="text-3xl font-semibold tracking-tight">
+                  Bem-vindo ao <span className="text-brand-gradient">LobbyX</span>
+                </h1>
+                <p className="text-muted-foreground mx-auto mt-3 max-w-sm text-sm">
+                  Escolha um lobby na barra lateral, crie a sua própria comunidade ou entre com um
+                  convite.
+                </p>
+                <div className="mt-7 flex flex-wrap justify-center gap-3">
+                  <Button size="lg" onClick={() => setCreateOpen(true)}>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Criar servidor
+                  </Button>
+                  <Button size="lg" variant="outline" onClick={() => setJoinOpen(true)}>
+                    Entrar com convite
+                  </Button>
+                </div>
+
+                <div className="text-muted-foreground mt-10 grid grid-cols-3 gap-3 text-xs">
+                  {[
+                    { label: "Lobbies", value: servers.length },
+                    { label: "Texto, voz e vídeo", value: "Tempo real" },
+                    { label: "Progressão", value: "XP e badges" },
+                  ].map((stat) => (
+                    <div
+                      key={stat.label}
+                      className="border-border/70 bg-surface/50 rounded-xl border px-3 py-2.5 backdrop-blur-sm"
+                    >
+                      <p className="text-foreground text-sm font-semibold">{stat.value}</p>
+                      <p className="mt-0.5 text-[11px]">{stat.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {loadingServers && (
+                  <p className="text-muted-foreground mt-6 text-xs">Carregando seus lobbies...</p>
+                )}
+              </div>
+            </div>
+          )}
+        </CallWorkspace>
+
+        {view === "servers" && activeServer && (
+          <AppSidebarDrawer open={mobileMembers} side="right">
+            <MemberPanel
+              server={activeServer}
+              onInvite={
+                canManage || abilities.can("create_invite") ? () => setInviteOpen(true) : undefined
               }
-            }}
-          />
+              members={members}
+              loading={loadingMembers}
+              onStartDirect={openConversation}
+            />
+          </AppSidebarDrawer>
         )}
-        <JoinServerDialog
-          open={joinOpen}
-          onOpenChange={setJoinOpen}
-          onJoined={(serverId) => {
-            setView("servers");
-            setActiveServerId(serverId);
-            setMobileNav(false);
+      </div>
+
+      <CreateServerDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreated={(serverId) => {
+          setView("servers");
+          setActiveServerId(serverId);
+          setMobileNav(false);
+        }}
+      />
+      {menuInviteServer && (
+        <InviteDialog
+          key={menuInviteServer.id}
+          serverId={menuInviteServer.id}
+          open
+          onOpenChange={(open) => {
+            if (!open) setMenuInviteServer(null);
           }}
         />
-        {activeServer && (
-          <>
-            <InviteDialog
-              serverId={activeServer.id}
-              open={inviteOpen}
-              onOpenChange={setInviteOpen}
+      )}
+      {menuDialog && user && (
+        <ServerPersonalDialog
+          key={`${menuDialog.server.id}:${menuDialog.action}`}
+          {...menuDialog}
+          userId={user.id}
+          onClose={() => setMenuDialog(null)}
+          onLeft={(serverId) => {
+            if (activeServerId === serverId) {
+              setActiveServerId(null);
+              setActiveChannelId(null);
+              setSettingsOpen(false);
+              setInviteOpen(false);
+              setChannelOpen(false);
+            }
+          }}
+        />
+      )}
+      <JoinServerDialog
+        open={joinOpen}
+        onOpenChange={setJoinOpen}
+        onJoined={(serverId) => {
+          setView("servers");
+          setActiveServerId(serverId);
+          setMobileNav(false);
+        }}
+      />
+      {activeServer && (
+        <>
+          <InviteDialog serverId={activeServer.id} open={inviteOpen} onOpenChange={setInviteOpen} />
+          <CreateChannelDialog
+            serverId={activeServer.id}
+            open={channelOpen}
+            onOpenChange={setChannelOpen}
+            onCreated={(channelId) => setActiveChannelId(channelId)}
+          />
+          {user && (
+            <ServerSettingsDialog
+              server={activeServer}
+              members={members}
+              currentUserId={user.id}
+              open={settingsOpen}
+              onOpenChange={setSettingsOpen}
             />
-            <CreateChannelDialog
-              serverId={activeServer.id}
-              open={channelOpen}
-              onOpenChange={setChannelOpen}
-              onCreated={(channelId) => setActiveChannelId(channelId)}
-            />
-            {user && (
-              <ServerSettingsDialog
-                server={activeServer}
-                members={members}
-                currentUserId={user.id}
-                open={settingsOpen}
-                onOpenChange={setSettingsOpen}
-              />
-            )}
-          </>
-        )}
-      </ProfileDialogProvider>
+          )}
+        </>
+      )}
     </>
   );
 }

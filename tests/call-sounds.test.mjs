@@ -39,6 +39,7 @@ test("Original audio assets are short nonempty mono PCM WAV files", () => {
     "enter",
     "leave",
     "screen-start",
+    "screen-stop",
     "mic-mute",
     "mic-unmute",
     "deafen",
@@ -87,8 +88,19 @@ test("Screen cue only follows successful capture starts, including restart", () 
   assert.deepEqual(step(false), []); // Cancelled picker or denied permission.
   assert.deepEqual(step(true), ["screen-start"]);
   assert.deepEqual(step(true), []); // Rerenders, quality changes, reconnect.
-  assert.deepEqual(step(false), []); // Stop or call exit.
+  assert.deepEqual(step(false), ["screen-stop"]); // Confirm stop exactly once.
+  assert.deepEqual(step(false), []);
   assert.deepEqual(step(true), ["screen-start"]);
+});
+
+test("Remote screen cues are delivered to listeners and unsubscribe releases them", () => {
+  const heard = [];
+  const off = runtime.exports.subscribeRemoteScreenSounds((sound) => heard.push(sound));
+  runtime.exports.notifyRemoteScreenSound(true);
+  runtime.exports.notifyRemoteScreenSound(false);
+  off();
+  runtime.exports.notifyRemoteScreenSound(true);
+  assert.deepEqual(heard, ["screen-start", "screen-stop"]);
 });
 
 test("Server and private capture trackers are independent and do not replay skipped cues", () => {

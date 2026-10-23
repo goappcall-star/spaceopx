@@ -43,6 +43,25 @@ test("A screen stop from an old session cannot clear the new session's sharing",
   });
   assert.equal(provider.remote.remote.screen, video);
 });
+
+test("Remote start and stop cues follow signaling once, ignoring repeats and retired sessions", async () => {
+  const provider = loadVoiceProvider({});
+  const heard = [];
+  provider.events = { onRemoteScreenShareChange: (active) => heard.push(active) };
+  provider.peers.set("remote", {
+    remoteSessionId: "current",
+    streams: { screen: stream([]), screenAudio: stream([]) },
+  });
+  const signal = (state) =>
+    provider.onSignal({ from: "remote", to: "*", from_session: "current", ...state });
+  await signal({ screenStopped: true });
+  await signal({ screenStarted: true });
+  await signal({ screenStarted: true, screenHasAudio: true });
+  await provider.onSignal({ from: "remote", to: "*", from_session: "old", screenStopped: true });
+  await signal({ screenStopped: true });
+  await signal({ screenStopped: true });
+  assert.deepEqual(heard, [true, false]);
+});
 function track(kind) {
   const events = {};
   return {
@@ -147,7 +166,12 @@ test("Video-only capture works and browser stop removes both screen tracks", asy
 });
 test("Selected 1440p/60 capture does not promise delivered FPS, and disabling system audio keeps voice", async () => {
   const f = fixture(false);
-  await f.provider.startScreenShare({ resolution: 1440, fps: 60, mode: "performance", audio: false });
+  await f.provider.startScreenShare({
+    resolution: 1440,
+    fps: 60,
+    mode: "performance",
+    audio: false,
+  });
   assert.equal(f.constraints().video.height.max, 1440);
   assert.equal(f.constraints().video.frameRate.max, 60);
   assert.equal(f.constraints().audio, false);

@@ -1,5 +1,23 @@
 export type CallSound =
-  "enter" | "leave" | "screen-start" | "mic-mute" | "mic-unmute" | "deafen" | "undeafen";
+  | "enter"
+  | "leave"
+  | "screen-start"
+  | "screen-stop"
+  | "mic-mute"
+  | "mic-unmute"
+  | "deafen"
+  | "undeafen";
+
+const remoteScreenListeners = new Set<(sound: CallSound) => void>();
+export function subscribeRemoteScreenSounds(listener: (sound: CallSound) => void) {
+  remoteScreenListeners.add(listener);
+  return () => {
+    remoteScreenListeners.delete(listener);
+  };
+}
+export function notifyRemoteScreenSound(active: boolean) {
+  remoteScreenListeners.forEach((listener) => listener(active ? "screen-start" : "screen-stop"));
+}
 
 export function isAudioControlSound(sound: CallSound) {
   return ["mic-mute", "mic-unmute", "deafen", "undeafen"].includes(sound);
@@ -22,9 +40,9 @@ export function createAudioControlSoundTracker() {
 export function createScreenShareSoundTracker() {
   let sharing = false;
   return (active: boolean): CallSound[] => {
-    const started = active && !sharing;
+    const changed = active !== sharing;
     sharing = active;
-    return started ? ["screen-start"] : [];
+    return changed ? [active ? "screen-start" : "screen-stop"] : [];
   };
 }
 

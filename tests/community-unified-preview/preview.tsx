@@ -58,6 +58,7 @@ const pages = [
   "Aparência",
   "Acessibilidade",
   "Barra lateral",
+  "Hotbar fixa",
 ] as const;
 type Page = (typeof pages)[number];
 const sid = "c5000000-0000-0000-0000-000000000001",
@@ -167,21 +168,25 @@ function Session() {
         <Profile onBack={() => navigate("Home")} />
       </Suspense>
     );
-  if (page === "Barra lateral")
+  if (page === "Barra lateral" || page === "Transmissão" || page === "Hotbar fixa")
     return (
       <div className="p-6">
-        <h1 className="text-xl font-semibold">Barra lateral e perfil</h1>
+        <h1 className="text-xl font-semibold">
+          {page !== "Barra lateral" ? "Hotbar fixa de chamadas" : "Barra lateral e perfil"}
+        </h1>
         <p className="mt-3 text-sm text-muted-foreground">
           Prévia local isolada com componentes reais e dados fictícios, sem autenticação ou áudio
           real.
         </p>
         <a
           className="mt-4 inline-block text-primary underline"
-          href="http://127.0.0.1:5220/"
+          href={page !== "Barra lateral" ? "http://127.0.0.1:5222/" : "http://127.0.0.1:5220/"}
           target="_blank"
           rel="noreferrer"
         >
-          Abrir prévia da barra lateral
+          {page !== "Barra lateral"
+            ? "Abrir prévia da hotbar fixa"
+            : "Abrir prévia da barra lateral"}
         </a>
         <button className="ml-4 text-sm" onClick={() => navigate("Home")}>
           Voltar

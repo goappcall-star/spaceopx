@@ -213,7 +213,12 @@ export function SettingsShell({
         </div>
       </aside>
       <main className="min-w-0 md:overflow-y-auto">
-        <div className="mx-auto w-full max-w-5xl px-5 py-8 sm:px-10 lg:px-14 lg:py-12">
+        <div
+          className={cn(
+            "mx-auto w-full px-5 py-8 sm:px-10 lg:px-14 lg:py-12",
+            selected.id === "appearance" ? "max-w-[1480px]" : "max-w-5xl",
+          )}
+        >
           <header className="mb-9 flex items-start justify-between gap-5">
             <div>
               <p className="text-muted-foreground mb-2 text-xs">Configurações / {selected.group}</p>

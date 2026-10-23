@@ -97,6 +97,6 @@ test("Account view only navigates to profile/privacy; destructive actions stay d
   buttons.find((button) => text(button).includes("Controle sua privacidade")).props.onClick();
   buttons.find((button) => text(button).includes("Sair da conta")).props.onClick();
   assert.deepEqual([profile, privacy, signout], [1, 1, 1]);
-  assert.match(text(tree), /Senha e segurança ainda indisponível/);
+  assert.match(text(tree), /Gerencie sua senha em Minha conta/);
   assert.match(text(tree), /Sem conexão de rede/);
 });

@@ -1,3 +1,4 @@
+import { AccountPasswordEditor } from "@/components/settings/AccountPasswordEditor";
 import { useState } from "react";
 import { AccountSettingsView } from "@/components/settings/AccountSettingsView";
 import { accountLoginMethods } from "@/lib/account-settings";
@@ -42,6 +43,13 @@ export function AccountPreview({
         platform="LobbyX Desktop · exemplo fictício"
         online={true}
         expires={null}
+        passwordSection={
+          <AccountPasswordEditor
+            onSubmit={async () => {
+              throw { code: "preview_only" };
+            }}
+          />
+        }
         busy={false}
         onProfile={onProfile}
         onPrivacy={() => setNotice("O atalho abre a aba Privacidade no aplicativo autenticado.")}

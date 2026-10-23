@@ -28,7 +28,7 @@ export function AppearancePreview({ onBack }: { onBack: () => void }) {
     };
   }, []);
   return (
-    <div className="mx-auto w-full max-w-5xl px-5 py-8 sm:px-10 lg:px-14">
+    <div className="mx-auto w-full max-w-[1480px] px-5 py-8 sm:px-10 lg:px-14">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <p className="mb-2 text-xs text-muted-foreground">

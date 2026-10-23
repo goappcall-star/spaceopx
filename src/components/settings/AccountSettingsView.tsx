@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
   UserRound,
   KeyRound,
@@ -21,6 +22,7 @@ import type { accountLoginMethods } from "@/lib/account-settings";
 import "./account-settings.css";
 
 export interface AccountSettingsViewProps {
+  passwordSection?: ReactNode;
   name: string;
   username: string;
   avatar: string | undefined;
@@ -152,6 +154,7 @@ export function AccountSettingsView(props: AccountSettingsViewProps) {
               Conectar ou desconectar provedores por esta página ainda não está disponível.
             </p>
           </section>
+          {props.passwordSection}
           <section className="account-section">
             <header>
               <span className="account-heading-icon">
@@ -242,7 +245,7 @@ export function AccountSettingsView(props: AccountSettingsViewProps) {
               </span>
               <div>
                 <strong>Mantenha sua conta segura</strong>
-                <p>Aba Senha e segurança ainda indisponível.</p>
+                <p>Gerencie sua senha em Minha conta.</p>
               </div>
             </div>
             <button type="button" onClick={props.onPrivacy}>

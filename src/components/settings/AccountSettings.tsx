@@ -6,6 +6,8 @@ import { authService } from "@/services/auth";
 import { teardownPresence } from "@/hooks/use-global-presence";
 import { AccountSettingsView } from "./AccountSettingsView";
 import { accountDate, accountLoginMethods } from "@/lib/account-settings";
+import { AccountPasswordEditor } from "./AccountPasswordEditor";
+import { changeAccountPassword } from "@/services/account-password";
 import { toast } from "sonner";
 export function AccountSettings() {
   const { profile, user, session } = useAuth();
@@ -56,6 +58,13 @@ export function AccountSettings() {
               minute: "2-digit",
             })
           : null
+      }
+      passwordSection={
+        <AccountPasswordEditor
+          key={user?.id ?? "signed-out"}
+          enabled={!!user?.identities?.some((identity) => identity.provider === "email")}
+          onSubmit={changeAccountPassword}
+        />
       }
       busy={busy}
       onProfile={() => void navigate({ to: "/settings/profile", search: { section: "profile" } })}

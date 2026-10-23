@@ -9,6 +9,7 @@ import {
 } from "react";
 export const scenarios = [
   "Fora de chamada",
+  "Conectando",
   "Em chamada",
   "Transmitindo",
   "Assistindo",
@@ -84,6 +85,7 @@ export function useAuth() {
 export function useVoice() {
   const c = usePreview();
   const active = [
+    "Conectando",
     "Em chamada",
     "Transmitindo",
     "Assistindo",
@@ -94,7 +96,13 @@ export function useVoice() {
     activeChannelId: active ? "voice-a" : null,
     activeServerId: active ? "server-a" : null,
     connectionState:
-      c.scenario === "Reconectando" ? "reconnecting" : active ? "connected" : "disconnected",
+      c.scenario === "Reconectando"
+        ? "reconnecting"
+        : c.scenario === "Conectando"
+          ? "connecting"
+          : active
+            ? "connected"
+            : "disconnected",
     muted: c.muted,
     deafened: c.deafened,
     cameraOn: c.camera,

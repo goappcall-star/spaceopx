@@ -62,6 +62,7 @@ function fixture() {
     },
     leave: () => {
       voice.activeChannelId = null;
+      voice.connectionState = "disconnected";
       events.push("voice-leave");
     },
   };
@@ -167,13 +168,17 @@ function fixture() {
     "./ScreenViewingProvider": { useScreenViewing: () => viewing },
     "./CallDockView": { CallDockView: "dock" },
   };
-  const component = load("src/components/call/SessionCallDock.tsx", imports).SessionCallDock;
+  const { SessionCallDock: component, IdleSessionProfile } = load(
+    "src/components/call/SessionCallDock.tsx",
+    imports,
+  );
   return {
     voice,
     call,
     viewing,
     events,
-    render: () => component().props,
+    render: () => component()?.props ?? null,
+    renderProfile: () => IdleSessionProfile(),
     browse: (next) => (browsing = next),
     currentPage: () => browsing,
   };
@@ -193,12 +198,36 @@ function action(tree, label) {
 }
 test("Idle and incoming calls retain profile audio without exposing session controls", () => {
   const f = fixture();
-  let dock = f.render();
-  assert.equal(dock.info, null);
-  assert.equal(dock.profile.props.hideAudio, false);
-  assert.equal(dock.controls, undefined);
+  assert.equal(f.render(), null);
+  assert.equal(f.renderProfile().props.expanded, true);
   f.call.status = "incoming";
-  assert.equal(f.render().info, null);
+  assert.equal(f.render(), null);
+  assert.ok(f.renderProfile());
+});
+
+test("Dock visibility follows session state, including connection without a channel and stale channel after disconnect", () => {
+  const f = fixture();
+  for (const state of ["connecting", "connected", "reconnecting"]) {
+    f.voice.connectionState = state;
+    assert.ok(f.render(), state);
+    assert.equal(f.renderProfile(), null, state);
+  }
+  f.voice.activeChannelId = "stale-room";
+  for (const state of ["disconnected", "error"]) {
+    f.voice.connectionState = state;
+    assert.equal(f.render(), null, state);
+    assert.ok(f.renderProfile(), state);
+  }
+  for (const status of ["outgoing", "connecting", "active", "waiting", "reconnecting"]) {
+    f.call.status = status;
+    assert.ok(f.render(), status);
+    assert.equal(f.renderProfile(), null, status);
+  }
+  for (const status of ["idle", "ended", "incoming"]) {
+    f.call.status = status;
+    assert.equal(f.render(), null, status);
+    assert.ok(f.renderProfile(), status);
+  }
 });
 test("Navigation cannot switch the dock away from the actual connected server; return uses that session", async () => {
   const f = fixture();
@@ -274,8 +303,8 @@ test("Reconnect preserves the dock and disables capture; disconnect restores the
   assert.equal(action(dock, "Compartilhar tela").disabled, true);
   action(dock, "Desconectar da voz").onClick();
   dock = f.render();
-  assert.equal(dock.info, null);
-  assert.equal(dock.profile.props.hideAudio, false);
+  assert.equal(dock, null);
+  assert.ok(f.renderProfile());
 });
 test("Private/group calls report confirmed participants and use their own mute/end callbacks", () => {
   const f = fixture();
@@ -294,7 +323,8 @@ test("Private/group calls report confirmed participants and use their own mute/e
   dock = f.render();
   assert.equal(dock.info.participants.length, 2);
   action(dock, "Encerrar chamada").onClick();
-  assert.equal(f.render().info, null);
+  assert.equal(f.render(), null);
+  assert.ok(f.renderProfile());
 });
 test("The single dock can select either existing session without disconnecting the other", () => {
   const f = fixture();

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   activePrivateCall,
+  activeVoiceCall,
   resolveCallDockTarget,
   uniqueDockParticipants,
   type CallDockTarget,
@@ -76,6 +77,15 @@ function DockButton({
   );
 }
 
+/** Normal navigation profile, shown only while the session dock is absent. */
+export function IdleSessionProfile() {
+  const voice = useVoice();
+  const call = useCall();
+  return activeVoiceCall(voice.connectionState) || activePrivateCall(call.status) ? null : (
+    <UserBar expanded />
+  );
+}
+
 /** One view/controller adapter for the existing voice and private-call contexts. */
 export function SessionCallDock() {
   const voice = useVoice(),
@@ -86,7 +96,8 @@ export function SessionCallDock() {
   const navigate = useNavigate();
   const { setVoiceReturn, setConversationReturn } = useSessionServer();
   const [preferred, setPreferred] = useState<CallDockTarget>("call");
-  const target = resolveCallDockTarget(!!voice.activeChannelId, call.status, preferred);
+  const voiceActive = activeVoiceCall(voice.connectionState);
+  const target = resolveCallDockTarget(voiceActive, call.status, preferred);
   const privateSelected = target === "call";
   const { data: servers = [] } = useMyServers(!!voice.activeServerId);
   const { data: channels = [] } = useServerChannels(voice.activeServerId);
@@ -182,6 +193,8 @@ export function SessionCallDock() {
         error: "Falha na conexão",
         disconnected: "Desconectado",
       }[voice.connectionState] ?? "Desconectado");
+  // Providers and media remain mounted in SessionCommunications; only this view disappears.
+  if (!target) return null;
   const controls = target ? (
     <>
       <span className="session-call-audio">
@@ -322,7 +335,7 @@ export function SessionCallDock() {
       }
       controls={controls}
       sessions={
-        voice.activeChannelId && activePrivateCall(call.status) ? (
+        voiceActive && activePrivateCall(call.status) ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button type="button" className="session-call-count" aria-label="Selecionar chamada">

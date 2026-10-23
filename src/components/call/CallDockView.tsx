@@ -117,9 +117,7 @@ export function CallDockView({
           </div>
           <div className="session-call-controls">{controls}</div>
         </>
-      ) : (
-        <p className="session-call-idle">Nenhuma chamada em andamento.</p>
-      )}
+      ) : null}
     </footer>
   );
 }

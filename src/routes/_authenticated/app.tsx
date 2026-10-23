@@ -1,4 +1,5 @@
 import { AppNavigationLayout } from "@/components/app/AppNavigationLayout";
+import { IdleSessionProfile } from "@/components/call/SessionCallDock";
 import { useCommunityEventNotifications } from "@/hooks/use-community-event-notifications";
 import { useQueryClient } from "@tanstack/react-query";
 import { COMMUNITY_V1_ENABLED } from "@/lib/community-feature";
@@ -304,7 +305,7 @@ function AppPage() {
           />
         )}
         <AppSidebarDrawer open={mobileNav} side="left">
-          <AppNavigationLayout>
+          <AppNavigationLayout profile={<IdleSessionProfile />}>
             <ServerRail
               serverBadges={serverCounts}
               serverMentions={serverMentions}

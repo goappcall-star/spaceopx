@@ -1,4 +1,7 @@
 export type CallDockTarget = "voice" | "call";
+export function activeVoiceCall(state: string) {
+  return ["connecting", "connected", "reconnecting"].includes(state);
+}
 export function activePrivateCall(status: string) {
   return ["outgoing", "connecting", "active", "reconnecting", "waiting"].includes(status);
 }

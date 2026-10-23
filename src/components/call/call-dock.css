@@ -45,6 +45,8 @@
   border-radius: 0;
   background: linear-gradient(
     to right,
+    var(--rail) 76px,
+    var(--surface) 76px,
     var(--surface) var(--dock-profile-width),
     var(--background) var(--dock-profile-width)
   );

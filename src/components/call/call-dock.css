@@ -37,7 +37,7 @@
   --dock-profile-width: 332px;
   flex-shrink: 0;
   display: grid;
-  grid-template-columns: var(--dock-profile-width) minmax(220px, 0.95fr) minmax(0, 1fr);
+  grid-template-columns: var(--dock-profile-width) minmax(220px, 1fr) auto;
   align-items: center;
   min-height: 62px;
   margin: 0;
@@ -87,6 +87,9 @@
 .session-call-info {
   display: flex;
   min-width: 0;
+  width: calc(100% - 16px);
+  max-width: 640px;
+  justify-self: center;
   align-items: center;
   gap: 8px;
   padding: 4px 8px;
@@ -225,7 +228,7 @@
   min-width: 0;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 8px;
   border-left: 0;
   padding: 6px 8px;
